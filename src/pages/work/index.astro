@@ -13,7 +13,7 @@ const projects = (await getCollection('work', ({ data }) => !data.draft)).sort(
   description="Selected product design and frontend case studies."
 >
   <section class="px-gutter pb-24 pt-[28vh]">
-    <h1 class="text-display font-medium text-ink" data-anim="reveal-heading">Work</h1>
+    <h1 class="font-display text-display font-normal text-ink" data-anim="reveal-heading">Work</h1>
     <p class="mt-10 max-w-2xl text-lead text-ink-dim" data-anim="reveal">
       {projects.length} selected projects. Longer write-ups on request.
     </p>
@@ -34,7 +34,7 @@ const projects = (await getCollection('work', ({ data }) => !data.draft)).sort(
               data-cursor="grow"
             >
               <span class="flex flex-col gap-2 md:flex-row md:items-baseline md:gap-8">
-                <span class="text-title font-medium tracking-tight text-ink transition-colors duration-500 group-hover:text-accent">
+                <span class="font-display text-title font-normal tracking-tight text-ink transition-colors duration-500 group-hover:text-accent">
                   {entry.data.title}
                 </span>
                 <span class="text-micro uppercase tracking-[0.14em] text-ink-faint">

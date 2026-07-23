@@ -56,9 +56,7 @@ const capabilities = [
         </span>
       </p>
 
-      {/* Serif, weight 400 — Instrument Serif ships a single weight, which is
-          how faces like this are meant to be used at display size anyway. */}
-      <h1 class="mt-8 font-serif text-display font-normal text-ink" data-anim="reveal-heading">
+      <h1 class="mt-8 font-display text-display font-normal text-ink" data-anim="reveal-heading">
         Product Designer With Technical Roots<span class="text-accent">.</span>
       </h1>
 
@@ -69,7 +67,7 @@ const capabilities = [
           {
             stats.map((stat) => (
               <div>
-                <dd class="font-serif text-stat text-ink">{stat.value}</dd>
+                <dd class="font-display text-stat text-ink">{stat.value}</dd>
                 <dt class="mt-3 text-micro uppercase tracking-[0.14em] text-ink-faint">
                   {stat.label}
                 </dt>
@@ -111,7 +109,7 @@ const capabilities = [
   {/* Featured work ---------------------------------------------------- */}
   <section class="px-gutter py-section">
     <div class="mb-16 flex items-end justify-between gap-6">
-      <h2 class="text-title font-medium text-ink" data-anim="reveal-heading">Selected work</h2>
+      <h2 class="font-display text-title font-normal text-ink" data-anim="reveal-heading">Selected work</h2>
       <a
         href="/work"
         class="shrink-0 text-micro uppercase tracking-[0.14em] text-ink-dim transition-colors hover:text-accent"
@@ -127,8 +125,8 @@ const capabilities = [
 
   {/* Contact ---------------------------------------------------------- */}
   <section class="px-gutter py-section text-center">
-    <h2 class="text-display font-medium text-ink" data-anim="reveal-heading">
-      Let's make <em class="font-serif italic text-accent">something</em>.
+    <h2 class="font-display text-display font-normal text-ink" data-anim="reveal-heading">
+      Let's make <span class="text-accent">something</span>.
     </h2>
 
     <div class="mt-16 inline-block" data-anim="magnetic" data-strength="0.4">
