@@ -1,0 +1,122 @@
+---
+// About and Resume are intentionally absent — those pages don't exist yet, and
+// a nav link to a 404 is worse than a shorter nav. Add them here when they land.
+const links = [
+  { href: '/work', label: 'Work' },
+  { href: 'mailto:hi@adam.build', label: 'Connect' },
+];
+
+const path = Astro.url.pathname;
+
+/** Flip to false when not taking work — drives the pill in the top right. */
+const availableForWork = true;
+---
+
+{/*
+  Two columns on mobile, three from `sm`. With three columns the trailing 1fr
+  is empty once the availability pill hides, which drags the "centred" nav
+  noticeably left of centre.
+*/}
+<header
+  data-nav
+  data-nav-state="visible"
+  data-nav-scrim="off"
+  class="site-nav fixed inset-x-0 top-0 z-40 grid grid-cols-[1fr_auto] items-center gap-4 px-gutter py-5 sm:grid-cols-[1fr_auto_1fr]"
+>
+  {/* Wordmark */}
+  <a href="/" class="justify-self-start whitespace-nowrap font-serif text-xl text-ink sm:text-2xl">
+    Adam Robertson<span class="text-accent">.</span>
+  </a>
+
+  {/* Centre nav */}
+  <nav aria-label="Primary" class="justify-self-end sm:justify-self-center">
+    <ul class="flex items-center gap-7">
+      {
+        links.map((link) => (
+          <li>
+            <a
+              href={link.href}
+              aria-current={path.startsWith(link.href) ? 'page' : undefined}
+              class="text-ink-dim transition-colors hover:text-ink aria-[current=page]:text-ink"
+            >
+              {link.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+
+  {/* Availability. Hidden below `sm` — at that width it would crowd the
+      wordmark, and it is the least load-bearing element in the bar. */}
+  {
+    availableForWork && (
+      <p class="hidden justify-self-end items-center gap-2.5 sm:flex">
+        <span class="status-dot" aria-hidden="true" />
+        <span class="whitespace-nowrap text-status">Available for work</span>
+      </p>
+    )
+  }
+</header>
+
+<style>
+  .site-nav {
+    transition:
+      transform 500ms var(--ease-out-expo),
+      background-color 350ms ease,
+      backdrop-filter 350ms ease;
+  }
+
+  /*
+    No mix-blend-mode here. Difference blending kept a monochrome bar legible
+    over any backdrop, but it inverts the green availability dot to magenta and
+    the accent dot in the wordmark to blue. Explicit colours + the scrim below
+    are the trade for keeping those two colour moments intact.
+  */
+  .site-nav[data-nav-scrim='on'] {
+    background-color: color-mix(in oklab, var(--color-surface) 72%, transparent);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  .site-nav[data-nav-state='hidden'] {
+    transform: translateY(-100%);
+  }
+
+  .site-nav[data-nav-state='visible'] {
+    transform: translateY(0);
+  }
+
+  .status-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 9999px;
+    background-color: var(--color-status);
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--color-status) 70%, transparent);
+    animation: status-pulse 2.6s var(--ease-out-expo) infinite;
+  }
+
+  @keyframes status-pulse {
+    0% {
+      box-shadow: 0 0 0 0 color-mix(in oklab, var(--color-status) 60%, transparent);
+    }
+    70% {
+      box-shadow: 0 0 0 6px transparent;
+    }
+    100% {
+      box-shadow: 0 0 0 0 transparent;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .site-nav {
+      transition: none;
+    }
+    .site-nav[data-nav-state='hidden'] {
+      transform: translateY(0);
+    }
+    .status-dot {
+      animation: none;
+    }
+  }
+</style>

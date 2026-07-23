@@ -1,0 +1,185 @@
+@import 'tailwindcss';
+
+@import '@fontsource-variable/instrument-sans';
+@import '@fontsource/instrument-serif/400.css';
+@import '@fontsource/instrument-serif/400-italic.css';
+
+/* ---------------------------------------------------------------------------
+   Design tokens. Tailwind v4 is CSS-first — this @theme block *is* the config,
+   there is no tailwind.config.js. Every key here becomes a utility class
+   (--color-ink -> text-ink, --text-display -> text-display).
+--------------------------------------------------------------------------- */
+@theme {
+  /* Type ------------------------------------------------------------------ */
+  --font-sans: 'Instrument Sans Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-serif: 'Instrument Serif', ui-serif, Georgia, serif;
+
+  /* Display is set in the serif — a high-contrast face carries the hero, with
+     the sans doing all UI and body work. Note the tracking: the sans display
+     wanted -0.04em, but a serif at this size needs far less negative tracking
+     or the thin strokes start colliding with adjacent stems. */
+  --text-display: clamp(3rem, 10.5vw, 11rem);
+  /* 0.92 crowded the descenders — the `g` in "Designer" ran into the cap
+     height of the line below. A serif needs more leading here than the sans
+     did, because its descenders are longer. */
+  --text-display--line-height: 1;
+  --text-display--letter-spacing: -0.02em;
+
+  --text-title: clamp(2.25rem, 5.5vw, 5rem);
+  --text-title--line-height: 0.95;
+  --text-title--letter-spacing: -0.03em;
+
+  /* Hero stat figures — serif, sized to sit under the display without
+     competing with it. */
+  --text-stat: clamp(2.5rem, 4.6vw, 4rem);
+  --text-stat--line-height: 1;
+  --text-stat--letter-spacing: -0.01em;
+
+  --text-lead: clamp(1.25rem, 2.2vw, 1.875rem);
+  --text-lead--line-height: 1.35;
+  --text-lead--letter-spacing: -0.02em;
+
+  --text-body: clamp(1rem, 1.1vw, 1.125rem);
+  --text-body--line-height: 1.6;
+
+  --text-micro: 0.75rem;
+  --text-micro--line-height: 1.2;
+  --text-micro--letter-spacing: 0.08em;
+
+  /* Color — near-monochrome with a single accent. Dark is the default mode,
+     matching the reference sites. */
+  --color-ink: oklch(0.97 0.005 90);
+  --color-ink-dim: oklch(0.72 0.008 90); /* 7.8:1 on --color-surface */
+  /* 4.9:1 on --color-surface. Do not darken below L=0.58 — this token is used
+     almost exclusively at 12px, where WCAG AA needs 4.5:1 and L=0.52 only
+     managed 3.5:1. */
+  --color-ink-faint: oklch(0.6 0.01 90);
+  --color-surface: oklch(0.16 0.006 260);
+  --color-surface-lift: oklch(0.21 0.008 260);
+  --color-line: oklch(0.31 0.01 260);
+  --color-accent: oklch(0.78 0.17 82);
+  /* Availability indicator only — kept separate from --color-accent so the
+     brand colour can change without the "available" signal going with it. */
+  --color-status: oklch(0.8 0.19 148);
+
+  /* Motion — shared between CSS and GSAP so the two never disagree. */
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
+  --dur-fast: 250ms;
+  --dur-base: 600ms;
+  --dur-slow: 1100ms;
+
+  /* Layout */
+  --spacing-gutter: clamp(1.25rem, 4vw, 4rem);
+  --spacing-section: clamp(6rem, 14vw, 14rem);
+}
+
+/* ---------------------------------------------------------------------------
+   Base
+--------------------------------------------------------------------------- */
+@layer base {
+  html {
+    /* Lenis drives scrolling; native smooth would fight it. */
+    scroll-behavior: auto;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background-color: var(--color-surface);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: var(--text-body);
+    line-height: 1.6;
+    overflow-x: clip;
+  }
+
+  ::selection {
+    background-color: var(--color-accent);
+    color: var(--color-surface);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  h1, h2, h3, h4 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Motion primitives
+
+   `data-anim` elements start hidden so there is no flash before GSAP takes
+   over — but ONLY when JS is available and motion is welcome. The `html.no-js`
+   and reduced-motion escape hatches below guarantee content is never
+   permanently invisible, which is the classic way this pattern fails.
+--------------------------------------------------------------------------- */
+@layer components {
+  [data-anim='reveal-heading'],
+  [data-anim='reveal'],
+  [data-anim='reveal-batch'] > * {
+    will-change: transform, opacity;
+  }
+
+  html:not(.no-js) [data-anim='reveal'],
+  html:not(.no-js) [data-anim='reveal-batch'] > * {
+    opacity: 0;
+  }
+
+  /* SplitText wraps each line in this; clipping it produces the "type rises
+     out of a mask" reveal that carries most of the character on these sites. */
+  .split-line {
+    overflow: hidden;
+    display: block;
+    padding-bottom: 0.1em;
+    margin-bottom: -0.1em;
+  }
+
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    will-change: transform;
+  }
+}
+
+/* Reduced motion, belt and braces.
+ *
+ * Two rules, deliberately. The media query is the fast path — it applies
+ * before any JS runs. The [data-motion='reduced'] selector covers the case
+ * where the JS decides to skip animating for a reason the media query cannot
+ * see; initMotion() stamps that attribute, so JS stays the single source of
+ * truth and the two can never disagree and leave content stranded invisible.
+ */
+@media (prefers-reduced-motion: reduce) {
+  html [data-anim='reveal'],
+  html [data-anim='reveal-batch'] > *,
+  html [data-anim='reveal-heading'] {
+    opacity: 1 !important;
+    transform: none !important;
+    will-change: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+html[data-motion='reduced'] [data-anim='reveal'],
+html[data-motion='reduced'] [data-anim='reveal-batch'] > *,
+html[data-motion='reduced'] [data-anim='reveal-heading'] {
+  opacity: 1 !important;
+  transform: none !important;
+  will-change: auto;
+}

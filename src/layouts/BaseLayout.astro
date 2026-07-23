@@ -1,0 +1,72 @@
+---
+import { ClientRouter } from 'astro:transitions';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+import Cursor from '../components/Cursor.svelte';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Absolute or site-relative OG image. Falls back to the default card. */
+  ogImage?: string;
+}
+
+const { title, description, ogImage = '/og/default.jpg' } = Astro.props;
+
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogUrl = new URL(ogImage, Astro.site);
+---
+
+<html lang="en" class="no-js">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="canonical" href={canonical} />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogUrl} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="sitemap" href="/sitemap-index.xml" />
+
+    {/* Swap `no-js` before first paint so the CSS that hides [data-anim]
+        elements only ever applies when JS can actually reveal them. */}
+    <script is:inline>
+      document.documentElement.classList.remove('no-js');
+    </script>
+
+    <ClientRouter />
+  </head>
+
+  <body>
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-accent focus:px-4 focus:py-2 focus:text-surface"
+    >
+      Skip to content
+    </a>
+
+    <Cursor client:idle />
+
+    <Nav transition:persist />
+
+    <main id="main">
+      <slot />
+    </main>
+
+    <Footer transition:persist />
+
+    <script>
+      import { bindMotionLifecycle } from '../lib/motion';
+      bindMotionLifecycle();
+    </script>
+  </body>
+</html>

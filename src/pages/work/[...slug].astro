@@ -1,0 +1,152 @@
+---
+import { getCollection, render } from 'astro:content';
+import { Image } from 'astro:assets';
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Figure from '../../components/mdx/Figure.astro';
+import PullQuote from '../../components/mdx/PullQuote.astro';
+import Stat from '../../components/mdx/Stat.astro';
+
+export const getStaticPaths = (async () => {
+  const projects = (await getCollection('work', ({ data }) => !data.draft)).sort(
+    (a, b) => a.data.order - b.data.order || b.data.year - a.data.year,
+  );
+
+  return projects.map((entry, i) => ({
+    params: { slug: entry.id },
+    props: {
+      entry,
+      // Precomputed so the footer doesn't have to re-query the collection.
+      next: projects[(i + 1) % projects.length],
+    },
+  }));
+}) satisfies GetStaticPaths;
+
+const { entry, next } = Astro.props;
+const { title, client, year, role, summary, cover, coverAlt, accent } = entry.data;
+
+const { Content } = await render(entry);
+---
+
+<BaseLayout title={`${title} — Adam Robertson`} description={summary}>
+  <article style={accent ? `--color-accent: ${accent}` : undefined}>
+    {/* Pinned hero — the title holds while the cover scales beneath it. */}
+    <section class="relative h-svh overflow-hidden" data-anim="pin">
+      <div class="absolute inset-0" data-pin-media>
+        <Image
+          src={cover}
+          alt={coverAlt}
+          widths={[800, 1400, 2000]}
+          sizes="100vw"
+          class="h-full w-full object-cover"
+          transition:name={`cover-${entry.id}`}
+          loading="eager"
+        />
+        <div class="absolute inset-0 bg-surface/55"></div>
+      </div>
+
+      <div
+        class="relative flex h-full flex-col justify-end px-gutter pb-[12vh]"
+        data-pin-fade
+      >
+        <p class="mb-6 text-micro uppercase tracking-[0.14em] text-ink-dim">
+          {client} — {year}
+        </p>
+        <h1 class="max-w-5xl text-title font-medium text-ink">{title}</h1>
+      </div>
+    </section>
+
+    {/* Meta ----------------------------------------------------------- */}
+    <section class="border-b border-line px-gutter py-14">
+      <dl class="grid gap-8 sm:grid-cols-3" data-anim="reveal-batch">
+        <div>
+          <dt class="text-micro uppercase tracking-[0.14em] text-ink-faint">Client</dt>
+          <dd class="mt-2 text-ink">{client}</dd>
+        </div>
+        <div>
+          <dt class="text-micro uppercase tracking-[0.14em] text-ink-faint">Year</dt>
+          <dd class="mt-2 text-ink">{year}</dd>
+        </div>
+        <div>
+          <dt class="text-micro uppercase tracking-[0.14em] text-ink-faint">Role</dt>
+          <dd class="mt-2 text-ink">{role.join(', ')}</dd>
+        </div>
+      </dl>
+    </section>
+
+    {/* Body ----------------------------------------------------------- */}
+    <div class="px-gutter py-section">
+      <p class="mx-auto max-w-3xl text-lead text-ink" data-anim="reveal">{summary}</p>
+
+      <div class="case-body mx-auto mt-20 max-w-3xl">
+        <Content components={{ Figure, PullQuote, Stat }} />
+      </div>
+    </div>
+
+    {/* Next ----------------------------------------------------------- */}
+    <section class="border-t border-line px-gutter py-section">
+      <p class="text-micro uppercase tracking-[0.14em] text-ink-faint">Next project</p>
+      <a
+        href={`/work/${next.id}`}
+        class="group mt-6 block"
+        data-cursor="grow"
+      >
+        <h2
+          class="text-title font-medium text-ink transition-colors duration-500 group-hover:text-accent"
+        >
+          {next.data.title}
+        </h2>
+      </a>
+    </section>
+  </article>
+</BaseLayout>
+
+<style>
+  /*
+    Scoped prose styling for MDX output. Astro 7 uses Sätteri, which emits
+    plain semantic HTML with no wrapper classes — so this targets elements
+    directly rather than reaching for a typography plugin.
+  */
+  .case-body :global(h2) {
+    font-size: var(--text-lead);
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    margin-block: 3.5rem 1.25rem;
+    color: var(--color-ink);
+  }
+
+  .case-body :global(p) {
+    margin-block: 1.25rem;
+    color: var(--color-ink-dim);
+  }
+
+  .case-body :global(strong) {
+    color: var(--color-ink);
+    font-weight: 600;
+  }
+
+  .case-body :global(ul),
+  .case-body :global(ol) {
+    margin-block: 1.5rem;
+    padding-left: 1.25rem;
+    color: var(--color-ink-dim);
+  }
+
+  .case-body :global(ul) {
+    list-style: disc;
+  }
+  .case-body :global(ol) {
+    list-style: decimal;
+  }
+
+  .case-body :global(li) {
+    margin-block: 0.5rem;
+    padding-left: 0.35rem;
+  }
+
+  .case-body :global(a) {
+    color: var(--color-accent);
+    text-underline-offset: 3px;
+    text-decoration: underline;
+  }
+</style>

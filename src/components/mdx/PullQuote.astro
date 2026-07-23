@@ -1,0 +1,20 @@
+---
+interface Props {
+  cite?: string;
+}
+
+const { cite } = Astro.props;
+---
+
+<blockquote class="mx-auto my-20 max-w-4xl text-center" data-anim="reveal">
+  <p class="font-serif text-title italic text-ink">
+    <slot />
+  </p>
+  {
+    cite && (
+      <cite class="mt-6 block text-micro uppercase not-italic tracking-[0.14em] text-ink-faint">
+        {cite}
+      </cite>
+    )
+  }
+</blockquote>

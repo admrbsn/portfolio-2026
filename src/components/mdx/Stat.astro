@@ -1,0 +1,25 @@
+---
+interface Props {
+  items: { value: string; label: string }[];
+}
+
+const { items } = Astro.props;
+---
+
+<dl class="mx-auto my-16 grid max-w-5xl gap-8 sm:grid-cols-3" data-anim="reveal-batch">
+  {
+    items.map((item) => (
+      <div class="border-t border-line pt-5">
+        <dt class="text-micro uppercase tracking-[0.14em] text-ink-faint">{item.label}</dt>
+        {/*
+          Not `text-title` — at three columns that ramp overflows the cell for
+          any value longer than a few characters ("9m → 1m48s" wraps mid-arrow).
+          This clamp tops out where the widest realistic stat still fits.
+        */}
+        <dd class="mt-2 text-[clamp(1.5rem,2.6vw,2.5rem)] font-medium leading-[1.1] tracking-tight text-balance text-accent">
+          {item.value}
+        </dd>
+      </div>
+    ))
+  }
+</dl>

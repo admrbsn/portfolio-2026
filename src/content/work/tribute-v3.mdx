@@ -1,0 +1,57 @@
+---
+title: 'Rebuilding Tribute from the ground up'
+client: 'Tribute'
+year: 2025
+role: ['Product design', 'Design system', 'Frontend']
+summary: 'A full platform redesign that cut time-to-first-video from nine minutes to under two.'
+cover: '../../assets/work/tribute-v3.jpg'
+coverAlt: 'Placeholder cover artwork for the Tribute V3 case study'
+accent: 'oklch(0.78 0.17 82)'
+featured: true
+order: 1
+---
+
+import PullQuote from '../../components/mdx/PullQuote.astro';
+import Stat from '../../components/mdx/Stat.astro';
+
+**Placeholder copy.** Everything below is scaffolding to prove the template —
+swap it for the real narrative.
+
+Tribute's group video product had grown by accretion over six years. Every new
+feature had bolted another step onto the invite flow, and the result was a
+product that tested well with people who already understood it and lost
+everyone else.
+
+<Stat
+  items={[
+    { value: '9m → 1m48s', label: 'Time to first video' },
+    { value: '+34%', label: 'Invite completion' },
+    { value: '212', label: 'Components retired' },
+  ]}
+/>
+
+## Where it broke down
+
+Session replays showed the same drop-off in three places: choosing an occasion,
+inviting contributors, and the moment of first record. Each screen individually
+tested fine. The sequence did not.
+
+<PullQuote cite="Head of Growth, Tribute">
+  We had been optimising the steps. Nobody had questioned whether the steps
+  needed to exist.
+</PullQuote>
+
+## What changed
+
+The redesign collapsed the first three screens into one and deferred every
+decision that could be made later. Occasion selection became a default with an
+edit affordance rather than a blocking choice.
+
+- Invite and record became parallel paths instead of sequential gates
+- The design system dropped from 340 components to 128
+- Every surface moved onto a single fluid type ramp
+
+## Outcome
+
+Placeholder outcome text. Note the metrics above are illustrative and should be
+replaced with real figures before this goes anywhere near production.

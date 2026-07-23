@@ -1,0 +1,144 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import WorkCard from '../components/WorkCard.astro';
+
+const featured = (await getCollection('work', ({ data }) => !data.draft && data.featured)).sort(
+  (a, b) => a.data.order - b.data.order || b.data.year - a.data.year,
+);
+
+/*
+ * Hero stats.
+ *
+ * `20+` is derived from the 2006 start date on adamrobertson.co, and `8` from
+ * the roles listed in that timeline — both are checkable, unlike the invented
+ * metrics in the placeholder case studies. Confirm before shipping regardless.
+ */
+const stats = [
+  { value: '20+', label: 'Years shipping product' },
+  { value: '8', label: 'Teams built with' },
+];
+
+const capabilities = [
+  'Product design',
+  'Design systems',
+  'Frontend',
+  'Prototyping',
+  'Research',
+  'Motion',
+  'Figma',
+  'Astro',
+  'Svelte',
+  'Tailwind',
+];
+---
+
+<BaseLayout
+  title="Adam Robertson — Product designer & developer"
+  description="Product designer and developer in Brooklyn. Head of Product Design, building interfaces where the details carry the weight."
+>
+  {/* Hero -------------------------------------------------------------
+      `mt-auto` on the inner wrapper rather than `justify-end` on the section:
+      with justify-end, content taller than the container overflows past the
+      *top* padding and collides with the fixed nav. mt-auto collapses to 0
+      instead, so tall content flows down and short content still sits at the
+      bottom of the viewport. */}
+  <section class="flex min-h-svh flex-col px-gutter pb-[10vh] pt-32">
+    {/* `my-auto` centres the block in the leftover space. Like mt-auto it
+        collapses to 0 when content is taller than the viewport, so it keeps
+        the overflow-safety that justify-center would lose. */}
+    <div class="my-auto">
+      <p data-anim="reveal">
+        <span
+          class="inline-flex items-center gap-2 rounded-full border border-line px-4 py-2 text-ink-dim"
+        >
+          <span aria-hidden="true">👋</span> Hey there, I'm Adam!
+        </span>
+      </p>
+
+      {/* Serif, weight 400 — Instrument Serif ships a single weight, which is
+          how faces like this are meant to be used at display size anyway. */}
+      <h1 class="mt-8 font-serif text-display font-normal text-ink" data-anim="reveal-heading">
+        Product Designer With Technical Roots<span class="text-accent">.</span>
+      </h1>
+
+      {/* Stats left, positioning statement right — the reference splits these
+          across the base of the hero rather than stacking them. */}
+      <div class="mt-14 grid gap-10 lg:grid-cols-2 lg:gap-16">
+        <dl class="flex gap-12 sm:gap-16" data-anim="reveal">
+          {
+            stats.map((stat) => (
+              <div>
+                <dd class="font-serif text-stat text-ink">{stat.value}</dd>
+                <dt class="mt-3 text-micro uppercase tracking-[0.14em] text-ink-faint">
+                  {stat.label}
+                </dt>
+              </div>
+            ))
+          }
+        </dl>
+
+        <p class="max-w-xl text-ink-dim lg:justify-self-end" data-anim="reveal">
+          I'm a Brooklyn-based product designer and developer with technical roots and grit. I work
+          end to end — research through shipped frontend — turning complex product problems into
+          interfaces that hold up under real use.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  {/* Marquee ---------------------------------------------------------- */}
+  <section class="overflow-hidden border-y border-line py-6" data-anim="marquee" data-speed="34">
+    <div class="marquee-track">
+      {/* Duplicated so the -50% translate lands on an identical frame. */}
+      {
+        [0, 1].map((copy) => (
+          <ul class="flex shrink-0" aria-hidden={copy === 1 ? 'true' : undefined}>
+            {capabilities.map((c) => (
+              <li class="flex items-center whitespace-nowrap px-8 text-micro uppercase tracking-[0.14em] text-ink-dim">
+                <span class="mr-8 text-accent" aria-hidden="true">
+                  ✳
+                </span>
+                {c}
+              </li>
+            ))}
+          </ul>
+        ))
+      }
+    </div>
+  </section>
+
+  {/* Featured work ---------------------------------------------------- */}
+  <section class="px-gutter py-section">
+    <div class="mb-16 flex items-end justify-between gap-6">
+      <h2 class="text-title font-medium text-ink" data-anim="reveal-heading">Selected work</h2>
+      <a
+        href="/work"
+        class="shrink-0 text-micro uppercase tracking-[0.14em] text-ink-dim transition-colors hover:text-accent"
+      >
+        All projects →
+      </a>
+    </div>
+
+    <div class="grid gap-x-10 gap-y-20 lg:grid-cols-2" data-anim="reveal-batch">
+      {featured.map((entry, i) => <WorkCard entry={entry} index={i} />)}
+    </div>
+  </section>
+
+  {/* Contact ---------------------------------------------------------- */}
+  <section class="px-gutter py-section text-center">
+    <h2 class="text-display font-medium text-ink" data-anim="reveal-heading">
+      Let's make <em class="font-serif italic text-accent">something</em>.
+    </h2>
+
+    <div class="mt-16 inline-block" data-anim="magnetic" data-strength="0.4">
+      <a
+        href="mailto:hi@adam.build"
+        class="inline-flex items-center gap-3 rounded-full border border-line px-9 py-4 text-micro uppercase tracking-[0.14em] text-ink transition-colors hover:border-accent hover:text-accent"
+      >
+        hi@adam.build
+        <span aria-hidden="true">→</span>
+      </a>
+    </div>
+  </section>
+</BaseLayout>
