@@ -19,15 +19,12 @@ const featured = (await getCollection('work', ({ data }) => !data.draft && data.
 );
 
 /*
- * Hero stats.
- *
- * `20+` is derived from the 2006 start date on adamrobertson.co, and `8` from
- * the roles listed in that timeline — both are checkable, unlike the invented
- * metrics in the placeholder case studies. Confirm before shipping regardless.
+ * Hero stats. `20×` is the Tribute growth figure; the second is a suggested
+ * placeholder — swap the value/label for a real metric before shipping.
  */
 const stats = [
-  { value: '20+', label: 'Years shipping product' },
-  { value: '8', label: 'Teams built with' },
+  { value: '20×', label: 'Growth at Tribute' },
+  { value: '0→1', label: 'Products shipped' },
 ];
 
 const capabilities = [
