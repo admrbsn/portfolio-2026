@@ -67,9 +67,9 @@
     inset: 0;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='1.6' intercept='-0.1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     background-size: 140px 140px;
-    /* Overlay shows grain clearly; ~0.45 keeps it obvious without lifting the
-       near-black base to grey (which higher values or a soft-light blend do). */
-    opacity: 0.45;
+    /* Overlay shows grain clearly; ~0.38 keeps it obvious while letting the
+       flat (grey) areas sit a little darker. */
+    opacity: 0.38;
     mix-blend-mode: overlay;
   }
 
