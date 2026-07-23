@@ -289,3 +289,28 @@ export function storyLine(el: HTMLElement): Teardown {
     gsap.set(el, { clearProps: 'all' });
   };
 }
+
+/* -------------------------------------------------------------------------
+   Self-drawing signature. Sweeps the reveal mask (`--p`, see .signature in
+   global.css) left→right once the name scrolls into view, so the script letters
+   appear the way a pen writes them. Eased so it starts and ends gently rather
+   than at a mechanical constant speed. The font is swappable via --font-script.
+   ------------------------------------------------------------------------- */
+export function signature(el: HTMLElement): Teardown {
+  const tween = gsap.fromTo(
+    el,
+    { '--p': 0 },
+    {
+      '--p': 105,
+      duration: 2,
+      ease: 'power1.inOut',
+      scrollTrigger: { trigger: el, start: 'top 80%', once: true },
+    },
+  );
+
+  return () => {
+    tween.scrollTrigger?.kill();
+    tween.kill();
+    gsap.set(el, { clearProps: '--p' });
+  };
+}

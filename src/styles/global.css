@@ -5,6 +5,8 @@
    gone entirely. */
 @import '@fontsource-variable/geist';
 @import '@fontsource/vidaloka/400.css';
+/* Signature script — swap this + --font-script to try another handwriting face. */
+@import '@fontsource/oooh-baby/400.css';
 
 /* ---------------------------------------------------------------------------
    Design tokens. Tailwind v4 is CSS-first — this @theme block *is* the config,
@@ -22,6 +24,9 @@
      titles, stats, wordmark). Vidaloka is single-weight; where a heading needs
      more heft, thicken with the text-stroke helper rather than a bolder cut. */
   --font-display: 'Vidaloka', ui-serif, Georgia, serif;
+
+  /* Signature only — the self-drawing name at the end of the origin story. */
+  --font-script: 'Oooh Baby', ui-serif, cursive;
 
   /* Display font tuning. Set for Vidaloka — a high-contrast display serif with
      a large x-height and sturdy stems; gentle tracking, modest leading. Sizing
@@ -158,6 +163,32 @@
     width: max-content;
     will-change: transform;
   }
+
+  /* Self-drawing signature. `--p` is the reveal position (0 = nothing, 105 =
+     fully drawn, with a little overshoot so the feathered edge clears the last
+     letter). A soft-edged mask sweeps left→right so the ink appears the way a
+     pen lays it down. Default is fully drawn, so no-JS gets a static signature;
+     the `:not(.no-js)` rule hides it only when JS can animate it. */
+  .signature {
+    --p: 105;
+    display: inline-block;
+    padding: 0.12em 0.08em 0.22em; /* room for Oooh Baby's long descenders */
+    -webkit-mask-image: linear-gradient(
+      to right,
+      #000 calc((var(--p) - 8) * 1%),
+      transparent calc(var(--p) * 1%)
+    );
+    mask-image: linear-gradient(
+      to right,
+      #000 calc((var(--p) - 8) * 1%),
+      transparent calc(var(--p) * 1%)
+    );
+    will-change: mask-image;
+  }
+
+  html:not(.no-js) [data-anim='signature'] {
+    --p: 0;
+  }
 }
 
 /* Reduced motion, belt and braces.
@@ -178,6 +209,12 @@
     will-change: auto;
   }
 
+  /* Signature: skip the draw, show it whole. */
+  html [data-anim='signature'] {
+    --p: 105 !important;
+    will-change: auto;
+  }
+
   *,
   *::before,
   *::after {
@@ -193,5 +230,10 @@ html[data-motion='reduced'] [data-anim='reveal-heading'],
 html[data-motion='reduced'] [data-anim='story-line'] {
   opacity: 1 !important;
   transform: none !important;
+  will-change: auto;
+}
+
+html[data-motion='reduced'] [data-anim='signature'] {
+  --p: 105 !important;
   will-change: auto;
 }
