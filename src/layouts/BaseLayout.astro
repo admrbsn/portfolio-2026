@@ -53,6 +53,39 @@ const ogUrl = new URL(ogImage, Astro.site);
       document.documentElement.classList.remove('no-js');
     </script>
 
+    {/* Drive the Tegaki signature. Inline + is:inline so it runs during parse,
+        before Tegaki's deferred hydration module — that guarantees the
+        `tegaki:ready` listener is attached before the event fires. The moment
+        the engine exists we pin it to a controlled blank frame (which runs no
+        playback loop, so it can't autoplay to the end on font-load), then draw
+        it once it scrolls into view. Reduced motion snaps to the finished mark. */}
+    <script is:inline>
+      (function () {
+        var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+        document.addEventListener('tegaki:ready', function (e) {
+          var engine = e.detail.engine;
+          if (reduce) {
+            engine.update({ time: '100%' });
+            return;
+          }
+          engine.update({ time: '0%' });
+          var io = new IntersectionObserver(
+            function (entries) {
+              for (var i = 0; i < entries.length; i++) {
+                if (entries[i].isIntersecting) {
+                  io.disconnect();
+                  engine.update({ time: { mode: 'uncontrolled', playing: true, duration: 3 } });
+                  engine.restart();
+                }
+              }
+            },
+            { threshold: 0.4 },
+          );
+          io.observe(e.target);
+        });
+      })();
+    </script>
+
     <ClientRouter />
   </head>
 

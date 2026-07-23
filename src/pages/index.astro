@@ -1,7 +1,17 @@
 ---
 import { getCollection } from 'astro:content';
+import TegakiRenderer from 'tegaki/astro';
+import parisienne from 'tegaki/fonts/parisienne';
+// The bundle's `fontUrl` is an absolute file:// path baked in for Tegaki's CLI;
+// the browser engine loads the font from it and needs a real URL. Import the
+// TTF through Vite (relative path sidesteps the package's `exports` map) to get
+// a served, hashed asset URL, then repoint the bundle at it before rendering.
+import parisienneTtf from '../../node_modules/tegaki/dist/fonts/parisienne/parisienne-3dc76002.ttf?url';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import WorkCard from '../components/WorkCard.astro';
+
+// Copy the bundle with the served font URL rather than mutating the shared import.
+const signatureFont = { ...parisienne, fontUrl: parisienneTtf };
 
 const featured = (await getCollection('work', ({ data }) => !data.draft && data.featured)).sort(
   (a, b) => a.data.order - b.data.order || b.data.year - a.data.year,
@@ -116,16 +126,27 @@ const story = [
         ))
       }
 
-      {/* Signature — a pen nib tracks across and writes it in once it scrolls
-          in (see `signature` in effects.ts). The ink is real text, so it reads
-          fine to assistive tech and with JS off. */}
-      <span
-        class="signature-wrap mt-[6vh] font-script text-[clamp(1.6rem,5.4vw,4rem)] leading-[1.15] text-ink"
-        data-anim="signature"
-      >
-        <span class="signature">Adam Robertson</span>
-        <span class="signature-nib" aria-hidden="true"></span>
-      </span>
+      {/* Signature — Tegaki draws it stroke by stroke (real glyph skeletons),
+          triggered on scroll-in by the `signature` effect. The canvas is
+          decorative (aria-hidden); the sr-only name and noscript fallback carry
+          it for assistive tech and no-JS. */}
+      <div class="mt-[6vh]">
+        {/* Controlled at 0 so it renders blank and never runs a playback loop
+            at rest (uncontrolled autoplay races the async font load and
+            fast-forwards to the end). The `signature` effect switches it to
+            uncontrolled and restarts it on scroll-in. */}
+        <TegakiRenderer
+          text="Adam Robertson"
+          font={signatureFont}
+          time="0%"
+          class="signature-canvas"
+          aria-hidden="true"
+        />
+        <span class="sr-only">Adam Robertson</span>
+        <noscript>
+          <span class="font-display text-title text-ink">Adam Robertson</span>
+        </noscript>
+      </div>
     </div>
   </section>
 
