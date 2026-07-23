@@ -1,5 +1,5 @@
 ---
-// Decorative dark backdrop: soft colour blobs + film-grain noise. Purely CSS
+// Decorative dark backdrop: organic colour blobs + film-grain noise. Purely CSS
 // and an inline SVG turbulence texture — no external assets. Sits behind
 // content (the parent must be `relative`; keep real content at a higher
 // z-index), so it never affects text contrast.
@@ -7,7 +7,7 @@
 
 <div class="noise-gradient" aria-hidden="true">
   <div class="blob blob-violet"></div>
-  <div class="blob blob-cool"></div>
+  <div class="blob blob-blue"></div>
   <div class="grain"></div>
 </div>
 
@@ -18,69 +18,72 @@
     z-index: 0;
     overflow: hidden;
     pointer-events: none;
-    /* Fade the whole backdrop out toward the bottom so the grain and blobs
-       melt into the dark section below instead of ending on a hard seam. */
-    -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 52%, transparent 88%);
-    mask-image: linear-gradient(to bottom, #000 0%, #000 52%, transparent 88%);
+    /* Fade only the very bottom edge so the grain doesn't end on a hard seam,
+       while leaving the blobs in the lower half fully visible. */
+    -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 82%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 0%, #000 82%, transparent 100%);
   }
 
+  /* Organic blobs: a flat fill clipped to an irregular border-radius, then
+     heavily blurred so the lopsided shape reads as a soft, non-circular glow
+     rather than a perfect disc. */
   .blob {
     position: absolute;
-    border-radius: 9999px;
-    /* Big soft blur so the blobs read as ambient light, not shapes. */
-    filter: blur(80px);
+    filter: blur(85px);
     will-change: transform;
   }
 
-  /* Violet, weighted to the right so the left column — where the heading and
-     wordmark sit — stays dark and legible. */
+  /* Deep violet — darker and calmer than the electric accent so it doesn't
+     glare. Weighted right; the left column (heading, wordmark) stays dark. */
   .blob-violet {
-    width: 62vw;
-    height: 62vw;
+    width: 60vw;
+    height: 48vw;
     right: -12vw;
-    top: -16vw;
-    background: radial-gradient(
-      circle at center,
-      color-mix(in oklab, var(--color-accent) 62%, transparent),
-      transparent 66%
-    );
+    top: -14vw;
+    background: oklch(0.52 0.22 300);
+    opacity: 0.55;
+    border-radius: 42% 58% 57% 43% / 52% 42% 58% 48%;
+    transform: rotate(-16deg);
   }
 
-  /* Cool indigo/teal counterpoint down the right edge, high enough to stay
-     above the bottom fade. */
-  .blob-cool {
-    width: 52vw;
-    height: 52vw;
-    right: -10vw;
-    top: 40%;
-    background: radial-gradient(
-      circle at center,
-      oklch(0.7 0.16 232 / 0.48),
-      transparent 66%
-    );
+  /* Richer royal blue, brighter and set lower-right below the violet so both
+     read distinctly and blend where they meet. */
+  .blob-blue {
+    width: 56vw;
+    height: 48vw;
+    right: -4vw;
+    top: 34%;
+    background: oklch(0.54 0.2 255);
+    opacity: 0.6;
+    border-radius: 56% 44% 47% 53% / 38% 56% 44% 62%;
+    transform: rotate(12deg);
   }
 
-  /* Film grain. Inline SVG fractal noise, desaturated, tiled small and blended
-     so it reads as texture over the blobs and the dark base. */
+  /* Film grain. Inline SVG fractal noise, desaturated and pushed to higher
+     contrast (feComponentTransfer), tiled small and blended so it reads as an
+     obvious texture over the blobs and the dark base. */
   .grain {
     position: absolute;
     inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    background-size: 150px 150px;
-    /* Kept modest so the base stays dark rather than lifting to charcoal. */
-    opacity: 0.3;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='1.6' intercept='-0.1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 140px 140px;
+    /* Overlay shows grain clearly; ~0.45 keeps it obvious without lifting the
+       near-black base to grey (which higher values or a soft-light blend do). */
+    opacity: 0.45;
     mix-blend-mode: overlay;
   }
 
-  /* A touch less colour on small screens, where text crowds the whole frame. */
+  /* Scale the blobs up on small screens so the colour still reads when text
+     fills the whole frame. */
   @media (max-width: 640px) {
-    .blob-violet,
-    .blob-cool {
-      width: 90vw;
-      height: 90vw;
+    .blob-violet {
+      width: 92vw;
+      height: 78vw;
     }
-    .blob-cool {
-      opacity: 0.8;
+    .blob-blue {
+      width: 88vw;
+      height: 76vw;
+      opacity: 0.7;
     }
   }
 </style>
