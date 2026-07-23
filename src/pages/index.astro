@@ -1,17 +1,17 @@
 ---
 import { getCollection } from 'astro:content';
 import TegakiRenderer from 'tegaki/astro';
-import parisienne from 'tegaki/fonts/parisienne';
+import signatureBundle from 'tegaki/fonts/caveat';
 // The bundle's `fontUrl` is an absolute file:// path baked in for Tegaki's CLI;
 // the browser engine loads the font from it and needs a real URL. Import the
 // TTF through Vite (relative path sidesteps the package's `exports` map) to get
 // a served, hashed asset URL, then repoint the bundle at it before rendering.
-import parisienneTtf from '../../node_modules/tegaki/dist/fonts/parisienne/parisienne-3dc76002.ttf?url';
+import signatureTtf from '../../node_modules/tegaki/dist/fonts/caveat/caveat-3dc76002.ttf?url';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import WorkCard from '../components/WorkCard.astro';
 
 // Copy the bundle with the served font URL rather than mutating the shared import.
-const signatureFont = { ...parisienne, fontUrl: parisienneTtf };
+const signatureFont = { ...signatureBundle, fontUrl: signatureTtf };
 
 const featured = (await getCollection('work', ({ data }) => !data.draft && data.featured)).sort(
   (a, b) => a.data.order - b.data.order || b.data.year - a.data.year,
