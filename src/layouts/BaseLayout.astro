@@ -5,6 +5,13 @@ import Footer from '../components/Footer.astro';
 import Cursor from '../components/Cursor.svelte';
 import '../styles/global.css';
 
+// Preload the two fonts above the fold. Without this the big Vidaloka display
+// heading paints in the Georgia fallback and reflows when the webfont lands —
+// worth ~0.1 of CLS on its own. Importing with ?url gives the hashed, Astro-
+// served path so the <link> below points at the real built asset.
+import vidalokaWoff2 from '@fontsource/vidaloka/files/vidaloka-latin-400-normal.woff2?url';
+import geistWoff2 from '@fontsource-variable/geist/files/geist-latin-wght-normal.woff2?url';
+
 interface Props {
   title: string;
   description: string;
@@ -24,6 +31,9 @@ const ogUrl = new URL(ogImage, Astro.site);
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="canonical" href={canonical} />
+
+    <link rel="preload" href={vidalokaWoff2} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={geistWoff2} as="font" type="font/woff2" crossorigin />
 
     <title>{title}</title>
     <meta name="description" content={description} />

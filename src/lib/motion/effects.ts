@@ -232,3 +232,60 @@ export function magnetic(el: HTMLElement): Teardown {
     gsap.set(el, { clearProps: 'all' });
   };
 }
+
+/* -------------------------------------------------------------------------
+   Hero fade-out. Scrub-linked to the hero's own scroll: the content fades and
+   drifts up as you leave, handing the viewport to the story below. Sits on the
+   hero's inner wrapper, so it composes with the on-load reveals of its children
+   (those finish before any scroll happens).
+   ------------------------------------------------------------------------- */
+export function heroFade(el: HTMLElement): Teardown {
+  const tween = gsap.to(el, {
+    opacity: 0,
+    y: -80,
+    ease: 'none',
+    scrollTrigger: {
+      trigger: el.closest('section') ?? el,
+      start: 'top top',
+      // Finish before the hero fully clears, so it's gone by the time the first
+      // story line is in reading position rather than lingering behind it.
+      end: 'bottom 35%',
+      scrub: true,
+    },
+  });
+
+  return () => {
+    tween.scrollTrigger?.kill();
+    tween.kill();
+    gsap.set(el, { clearProps: 'all' });
+  };
+}
+
+/* -------------------------------------------------------------------------
+   Story line. Scrub-linked to each sentence's journey across the viewport:
+   fades and rises in as it enters the lower half, holds full through the
+   middle, then dims and lifts away near the top. The dim (rather than a full
+   fade) spotlights whichever line is centred while keeping neighbours faintly
+   present — so the eye follows the story as you scroll.
+   ------------------------------------------------------------------------- */
+export function storyLine(el: HTMLElement): Teardown {
+  const tl = gsap.timeline({
+    scrollTrigger: {
+      trigger: el,
+      start: 'top bottom',
+      end: 'bottom top',
+      scrub: true,
+    },
+  });
+
+  // Durations are proportions of the scrubbed range, not seconds.
+  tl.fromTo(el, { opacity: 0, y: 46 }, { opacity: 1, y: 0, ease: 'none', duration: 0.34 })
+    .to(el, { opacity: 1, duration: 0.32 }) // hold at full through centre
+    .to(el, { opacity: 0.16, y: -34, ease: 'none', duration: 0.34 });
+
+  return () => {
+    tl.scrollTrigger?.kill();
+    tl.kill();
+    gsap.set(el, { clearProps: 'all' });
+  };
+}

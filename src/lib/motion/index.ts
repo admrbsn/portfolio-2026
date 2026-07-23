@@ -9,6 +9,8 @@ import {
   pinSection,
   marquee,
   magnetic,
+  heroFade,
+  storyLine,
   type Teardown,
 } from './effects';
 
@@ -24,6 +26,8 @@ const registry: Record<string, (el: HTMLElement) => Teardown> = {
   pin: pinSection,
   marquee,
   magnetic,
+  'hero-fade': heroFade,
+  'story-line': storyLine,
 };
 
 let teardowns: Teardown[] = [];
