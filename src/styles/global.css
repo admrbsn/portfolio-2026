@@ -6,7 +6,7 @@
 @import '@fontsource-variable/geist';
 @import '@fontsource/vidaloka/400.css';
 /* Signature script — swap this + --font-script to try another handwriting face. */
-@import '@fontsource/oooh-baby/400.css';
+@import '@fontsource/rock-salt/400.css';
 
 /* ---------------------------------------------------------------------------
    Design tokens. Tailwind v4 is CSS-first — this @theme block *is* the config,
@@ -26,7 +26,7 @@
   --font-display: 'Vidaloka', ui-serif, Georgia, serif;
 
   /* Signature only — the self-drawing name at the end of the origin story. */
-  --font-script: 'Oooh Baby', ui-serif, cursive;
+  --font-script: 'Rock Salt', ui-serif, cursive;
 
   /* Display font tuning. Set for Vidaloka — a high-contrast display serif with
      a large x-height and sturdy stems; gentle tracking, modest leading. Sizing
@@ -164,30 +164,56 @@
     will-change: transform;
   }
 
-  /* Self-drawing signature. `--p` is the reveal position (0 = nothing, 105 =
-     fully drawn, with a little overshoot so the feathered edge clears the last
-     letter). A soft-edged mask sweeps left→right so the ink appears the way a
-     pen lays it down. Default is fully drawn, so no-JS gets a static signature;
-     the `:not(.no-js)` rule hides it only when JS can animate it. */
-  .signature {
+  /* Self-drawing signature.
+
+     `--p` (0 → 105) is the reveal position, held on the WRAPPER so it cascades
+     to the masked ink while the pen nib — a sibling — stays unmasked. A
+     soft-edged mask reveals the ink just behind the nib as it tracks across the
+     word (see the `signature` effect for the nib motion). Default is fully
+     drawn, so no-JS and reduced-motion get a static signature; `:not(.no-js)`
+     hides it only when JS can animate it. */
+  .signature-wrap {
     --p: 105;
+    position: relative;
     display: inline-block;
-    padding: 0.12em 0.08em 0.22em; /* room for Oooh Baby's long descenders */
+    white-space: nowrap; /* nib x-maths assume one line */
+  }
+
+  html:not(.no-js) [data-anim='signature'] {
+    --p: 0;
+  }
+
+  .signature {
+    display: inline-block;
+    padding: 0.14em 0.06em 0.28em; /* room for Rock Salt's tall, ragged glyphs */
     -webkit-mask-image: linear-gradient(
       to right,
-      #000 calc((var(--p) - 8) * 1%),
+      #000 calc((var(--p) - 7) * 1%),
       transparent calc(var(--p) * 1%)
     );
     mask-image: linear-gradient(
       to right,
-      #000 calc((var(--p) - 8) * 1%),
+      #000 calc((var(--p) - 7) * 1%),
       transparent calc(var(--p) * 1%)
     );
     will-change: mask-image;
   }
 
-  html:not(.no-js) [data-anim='signature'] {
-    --p: 0;
+  /* Pen nib — a small glowing tip the `signature` effect drives across the word
+     with a gentle vertical wander, so the ink reads as written rather than
+     wiped. Positioned by JS; hidden until the effect runs (and in no-JS). */
+  .signature-nib {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0.62rem;
+    height: 0.62rem;
+    border-radius: 9999px;
+    background: var(--color-accent);
+    box-shadow: 0 0 0.55rem 0.05rem color-mix(in oklab, var(--color-accent) 70%, transparent);
+    opacity: 0;
+    pointer-events: none;
+    will-change: transform, opacity;
   }
 }
 

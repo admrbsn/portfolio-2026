@@ -116,13 +116,15 @@ const story = [
         ))
       }
 
-      {/* Signature — draws itself once it scrolls in (see `signature` in
-          effects.ts). Real text, so it reads fine to AT and with JS off. */}
+      {/* Signature — a pen nib tracks across and writes it in once it scrolls
+          in (see `signature` in effects.ts). The ink is real text, so it reads
+          fine to assistive tech and with JS off. */}
       <span
-        class="signature mt-[6vh] font-script text-[clamp(3.5rem,10vw,7rem)] leading-[1.1] text-ink"
+        class="signature-wrap mt-[6vh] font-script text-[clamp(1.6rem,5.4vw,4rem)] leading-[1.15] text-ink"
         data-anim="signature"
       >
-        Adam Robertson
+        <span class="signature">Adam Robertson</span>
+        <span class="signature-nib" aria-hidden="true"></span>
       </span>
     </div>
   </section>

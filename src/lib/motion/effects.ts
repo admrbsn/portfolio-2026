@@ -291,26 +291,50 @@ export function storyLine(el: HTMLElement): Teardown {
 }
 
 /* -------------------------------------------------------------------------
-   Self-drawing signature. Sweeps the reveal mask (`--p`, see .signature in
-   global.css) left→right once the name scrolls into view, so the script letters
-   appear the way a pen writes them. Eased so it starts and ends gently rather
-   than at a mechanical constant speed. The font is swappable via --font-script.
+   Self-drawing signature. Once the name scrolls in, a pen nib tracks left→right
+   across the word with a gentle vertical wander, and the reveal mask (`--p`,
+   see .signature-wrap in global.css) lays the ink down just behind the tip — so
+   it reads as written, not wiped. `el` is the wrapper; the ink and nib are its
+   children. Font/word-agnostic: the nib maths key off the ink's live width, so
+   swapping --font-script needs no changes here.
    ------------------------------------------------------------------------- */
 export function signature(el: HTMLElement): Teardown {
-  const tween = gsap.fromTo(
-    el,
-    { '--p': 0 },
-    {
-      '--p': 105,
-      duration: 2,
-      ease: 'power1.inOut',
-      scrollTrigger: { trigger: el, start: 'top 80%', once: true },
+  const ink = el.querySelector<HTMLElement>('.signature');
+  const nib = el.querySelector<HTMLElement>('.signature-nib');
+
+  // Progress proxy: one tween drives both the CSS reveal and the nib so they
+  // can never drift apart.
+  const state = { p: 0 };
+
+  const tween = gsap.to(state, {
+    p: 105,
+    duration: 2.6,
+    ease: 'power1.inOut',
+    scrollTrigger: { trigger: el, start: 'top 80%', once: true },
+    onUpdate: () => {
+      el.style.setProperty('--p', String(state.p));
+      if (!ink || !nib) return;
+
+      const frac = Math.min(Math.max(state.p / 100, 0), 1);
+      const w = ink.offsetWidth;
+      const h = ink.offsetHeight;
+
+      // Ride the reveal edge (mask edge sits at p% of the ink width), wandering
+      // vertically ±16% of the height a few times across — a hand, not a ruler.
+      const x = frac * w;
+      const y = h / 2 + Math.sin(frac * Math.PI * 4.5) * h * 0.16;
+      nib.style.transform = `translate(${x}px, ${y}px) translate(-50%, -50%)`;
+
+      // Uncap the tip as it starts and settle it as the last letter lands.
+      nib.style.opacity =
+        frac <= 0.02 ? String(frac / 0.02) : frac >= 0.97 ? String(1 - (frac - 0.97) / 0.03) : '1';
     },
-  );
+  });
 
   return () => {
     tween.scrollTrigger?.kill();
     tween.kill();
-    gsap.set(el, { clearProps: '--p' });
+    el.style.removeProperty('--p');
+    if (nib) nib.style.cssText = '';
   };
 }
