@@ -9,6 +9,7 @@ import signatureBundle from 'tegaki/fonts/caveat';
 import signatureTtf from '../../node_modules/tegaki/dist/fonts/caveat/caveat-3dc76002.ttf?url';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import WorkCard from '../components/WorkCard.astro';
+import NoiseGradient from '../components/NoiseGradient.astro';
 
 // Copy the bundle with the served font URL rather than mutating the shared import.
 const signatureFont = { ...signatureBundle, fontUrl: signatureTtf };
@@ -67,11 +68,13 @@ const story = [
       *top* padding and collides with the fixed nav. mt-auto collapses to 0
       instead, so tall content flows down and short content still sits at the
       bottom of the viewport. */}
-  <section class="flex min-h-svh flex-col px-gutter pb-[10vh] pt-32">
+  <section class="relative flex min-h-svh flex-col overflow-hidden px-gutter pb-[10vh] pt-32">
+    <NoiseGradient />
     {/* `my-auto` centres the block in the leftover space. Like mt-auto it
         collapses to 0 when content is taller than the viewport, so it keeps
-        the overflow-safety that justify-center would lose. */}
-    <div class="my-auto" data-anim="hero-fade">
+        the overflow-safety that justify-center would lose. `relative z-10`
+        keeps it above the decorative backdrop. */}
+    <div class="relative z-10 my-auto" data-anim="hero-fade">
       <p data-anim="reveal">
         <span
           class="inline-flex items-center gap-2 rounded-full border border-line px-4 py-2 text-ink-dim"

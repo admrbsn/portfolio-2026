@@ -1,0 +1,86 @@
+---
+// Decorative dark backdrop: soft colour blobs + film-grain noise. Purely CSS
+// and an inline SVG turbulence texture — no external assets. Sits behind
+// content (the parent must be `relative`; keep real content at a higher
+// z-index), so it never affects text contrast.
+---
+
+<div class="noise-gradient" aria-hidden="true">
+  <div class="blob blob-violet"></div>
+  <div class="blob blob-cool"></div>
+  <div class="grain"></div>
+</div>
+
+<style>
+  .noise-gradient {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+    /* Fade the whole backdrop out toward the bottom so the grain and blobs
+       melt into the dark section below instead of ending on a hard seam. */
+    -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 52%, transparent 88%);
+    mask-image: linear-gradient(to bottom, #000 0%, #000 52%, transparent 88%);
+  }
+
+  .blob {
+    position: absolute;
+    border-radius: 9999px;
+    /* Big soft blur so the blobs read as ambient light, not shapes. */
+    filter: blur(80px);
+    will-change: transform;
+  }
+
+  /* Violet, weighted to the right so the left column — where the heading and
+     wordmark sit — stays dark and legible. */
+  .blob-violet {
+    width: 62vw;
+    height: 62vw;
+    right: -12vw;
+    top: -16vw;
+    background: radial-gradient(
+      circle at center,
+      color-mix(in oklab, var(--color-accent) 62%, transparent),
+      transparent 66%
+    );
+  }
+
+  /* Cool indigo/teal counterpoint down the right edge, high enough to stay
+     above the bottom fade. */
+  .blob-cool {
+    width: 52vw;
+    height: 52vw;
+    right: -10vw;
+    top: 40%;
+    background: radial-gradient(
+      circle at center,
+      oklch(0.7 0.16 232 / 0.48),
+      transparent 66%
+    );
+  }
+
+  /* Film grain. Inline SVG fractal noise, desaturated, tiled small and blended
+     so it reads as texture over the blobs and the dark base. */
+  .grain {
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='150' height='150'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 150px 150px;
+    /* Kept modest so the base stays dark rather than lifting to charcoal. */
+    opacity: 0.3;
+    mix-blend-mode: overlay;
+  }
+
+  /* A touch less colour on small screens, where text crowds the whole frame. */
+  @media (max-width: 640px) {
+    .blob-violet,
+    .blob-cool {
+      width: 90vw;
+      height: 90vw;
+    }
+    .blob-cool {
+      opacity: 0.8;
+    }
+  }
+</style>
