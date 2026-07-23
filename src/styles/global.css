@@ -62,9 +62,13 @@
   --color-surface: oklch(0.16 0.006 260);
   --color-surface-lift: oklch(0.21 0.008 260);
   --color-line: oklch(0.31 0.01 260);
-  --color-accent: oklch(0.78 0.17 82);
+  /* Electric violet. High chroma for edge; L=0.66 lands it at 5.2:1 on
+     --color-surface, which clears AA for the small case-study link text that
+     uses it. Don't drop below L≈0.62 or those links fall under 4.5:1. */
+  --color-accent: oklch(0.66 0.27 302);
   /* Availability indicator only — kept separate from --color-accent so the
-     brand colour can change without the "available" signal going with it. */
+     brand colour can change without the "available" signal going with it.
+     Green reads as "go / available" by convention, so it stays green. */
   --color-status: oklch(0.8 0.19 148);
 
   /* Motion — shared between CSS and GSAP so the two never disagree. */
