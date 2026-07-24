@@ -66,8 +66,8 @@ const story = [
       instead, so tall content flows down and short content still sits at the
       bottom of the viewport. */}
   <section class="relative flex min-h-svh flex-col overflow-hidden px-gutter pb-[10vh] pt-32">
-    {/* Swap variant="violet" to go back to the brand wash. */}
-    <NoiseGradient variant="teal" />
+    {/* Defaults to the teal brand wash; variant="violet" restores the old one. */}
+    <NoiseGradient />
     {/* `my-auto` centres the block in the leftover space. Like mt-auto it
         collapses to 0 when content is taller than the viewport, so it keeps
         the overflow-safety that justify-center would lose. `relative z-10`

@@ -4,16 +4,15 @@
 // content (the parent must be `relative`; keep real content at a higher
 // z-index), so it never affects text contrast.
 //
-// `variant` swaps only the palette (and a little geometry), so the two can be
-// compared without touching anything else:
-//   violet — the electric-violet/royal-blue brand wash
-//   teal   — warm khaki highlight falling into emerald over a teal-black base
+// `variant` swaps only the palette (and a little geometry):
+//   teal   — the brand: neon yellow highlight falling into emerald (default)
+//   violet — the previous electric-violet/royal-blue wash, kept for comparison
 
 interface Props {
   variant?: 'violet' | 'teal';
 }
 
-const { variant = 'violet' } = Astro.props;
+const { variant = 'teal' } = Astro.props;
 ---
 
 <div class:list={['noise-gradient', variant]} aria-hidden="true">
@@ -43,19 +42,21 @@ const { variant = 'violet' } = Astro.props;
     --tint: transparent;
   }
 
-  /* Sampled from the reference: khaki highlight #858868, emerald #317163,
-     teal-black base #071212 — the "black" there is tinted, not neutral.
-     Note the source colours here are brighter than those samples: these are
-     semi-transparent layers over a near-black base, so they composite *down*.
-     Working back through the alpha is what lands them on the reference tones. */
+  /* The brand wash, derived from the reference (khaki highlight #858868,
+     emerald #317163, teal-black base #071212) then pushed bolder and more
+     saturated. Source colours are brighter than those samples on purpose:
+     these are semi-transparent layers over a near-black base, so they
+     composite *down* — working back through the alpha is what lands them.
+     The page surface is already teal-tinted, so the tint here only has to add
+     the lift toward the right. */
   .teal {
-    --blob-a: oklch(0.72 0.07 100 / 0.7);
-    --blob-b: oklch(0.58 0.1 168 / 0.65);
+    --blob-a: oklch(0.8 0.14 98 / 0.65);
+    --blob-b: oklch(0.66 0.16 168 / 0.62);
     --tint: linear-gradient(
       115deg,
-      oklch(0.15 0.02 200 / 0.98) 0%,
-      oklch(0.2 0.04 190 / 0.9) 55%,
-      oklch(0.26 0.06 178 / 0.85) 100%
+      transparent 0%,
+      oklch(0.3 0.07 180 / 0.4) 60%,
+      oklch(0.4 0.1 172 / 0.45) 100%
     );
   }
 

@@ -56,25 +56,27 @@
   --text-micro--line-height: 1.2;
   --text-micro--letter-spacing: 0.08em;
 
-  /* Color — near-monochrome with a single accent. Dark is the default mode,
-     matching the reference sites. */
-  --color-ink: oklch(0.97 0.005 90);
-  --color-ink-dim: oklch(0.72 0.008 90); /* 7.8:1 on --color-surface */
-  /* 4.9:1 on --color-surface. Do not darken below L=0.58 — this token is used
-     almost exclusively at 12px, where WCAG AA needs 4.5:1 and L=0.52 only
-     managed 3.5:1. */
-  --color-ink-faint: oklch(0.6 0.01 90);
-  --color-surface: oklch(0.16 0.006 260);
-  --color-surface-lift: oklch(0.21 0.008 260);
-  --color-line: oklch(0.31 0.01 260);
-  /* Electric violet. High chroma for edge; L=0.66 lands it at 5.2:1 on
-     --color-surface, which clears AA for the small case-study link text that
-     uses it. Don't drop below L≈0.62 or those links fall under 4.5:1. */
-  --color-accent: oklch(0.66 0.27 302);
-  /* Availability indicator only — kept separate from --color-accent so the
-     brand colour can change without the "available" signal going with it.
-     Green reads as "go / available" by convention, so it stays green. */
-  --color-status: oklch(0.8 0.19 148);
+  /* Colour. Dark is the only mode. The surface is a teal-tinted black rather
+     than a neutral one — that tint is what makes the greens read as part of the
+     same family instead of sitting on top of a grey page. */
+  --color-ink: oklch(0.97 0.005 150);
+  --color-ink-dim: oklch(0.72 0.012 160); /* ~7.6:1 on --color-surface */
+  /* Used almost exclusively at 12px, where WCAG AA needs 4.5:1. Do not darken
+     below L≈0.58. */
+  --color-ink-faint: oklch(0.6 0.014 160);
+  --color-surface: oklch(0.16 0.022 190);
+  --color-surface-lift: oklch(0.21 0.03 185);
+  --color-line: oklch(0.32 0.035 180);
+
+  /* Neon spring green — the primary. Very high contrast on the teal-black
+     surface, so it clears AA comfortably even as small link text. */
+  --color-accent: oklch(0.84 0.21 152);
+  /* Warm neon yellow, pulled from the reference's khaki highlight and pushed
+     brighter. Secondary: the tail of accent gradients, never body text. */
+  --color-accent-warm: oklch(0.87 0.17 96);
+  /* Availability indicator. Now that the brand is green, this shares the family
+     but stays its own token so the signal can be retuned independently. */
+  --color-status: oklch(0.86 0.2 145);
 
   /* Motion — shared between CSS and GSAP so the two never disagree. */
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
@@ -127,9 +129,10 @@
     text-wrap: pretty;
   }
 
-  /* Purple→blue gradient text, for select accent words and marks (the hero
-     period, "shampoo bottles"). Picks up the hero's royal blue at the tail.
-     Real text underneath, so it stays accessible.
+  /* Green→yellow gradient text, for select accent words and marks (the hero
+     period, "shampoo bottles"). Runs the brand green into the warm neon yellow,
+     mirroring the hero's emerald→khaki fall. Real text underneath, so it stays
+     accessible.
 
      The descendant selector matters: SplitText rewraps the hero heading and
      moves the period's text into a child element, which would leave the span
@@ -139,9 +142,9 @@
   .accent-gradient > * {
     background-image: linear-gradient(
       120deg,
-      oklch(0.8 0.17 300),
-      oklch(0.66 0.24 302) 42%,
-      oklch(0.6 0.18 258)
+      oklch(0.8 0.2 172),
+      var(--color-accent) 45%,
+      var(--color-accent-warm)
     );
     -webkit-background-clip: text;
     background-clip: text;
@@ -177,15 +180,15 @@
      0, so no-JS and reduced-motion simply get no glow. */
   [data-anim='story-line'] {
     --glow: 0;
-    /* A wide, low-intensity bloom in the hero's blue — big enough to light the
+    /* A wide, low-intensity bloom in the brand green — big enough to light the
        area behind the line so the text pops, but soft enough not to read as a
        heavy neon outline. A faint white core adds just a little lift. All
        alphas scale off --glow so it still fades cleanly with the text. */
     text-shadow:
       0 0 calc(var(--glow) * 14px) rgb(255 255 255 / calc(var(--glow) * 0.13)),
-      0 0 calc(var(--glow) * 40px) oklch(0.64 0.16 272 / calc(var(--glow) * 0.3)),
-      0 0 calc(var(--glow) * 90px) oklch(0.6 0.16 260 / calc(var(--glow) * 0.26)),
-      0 0 calc(var(--glow) * 160px) oklch(0.56 0.15 258 / calc(var(--glow) * 0.2));
+      0 0 calc(var(--glow) * 40px) oklch(0.78 0.2 155 / calc(var(--glow) * 0.28)),
+      0 0 calc(var(--glow) * 90px) oklch(0.7 0.18 165 / calc(var(--glow) * 0.24)),
+      0 0 calc(var(--glow) * 160px) oklch(0.62 0.15 175 / calc(var(--glow) * 0.2));
   }
 
   /* SplitText wraps each line in this; clipping it produces the "type rises
