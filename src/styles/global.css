@@ -31,7 +31,7 @@
   /* Display font tuning. Set for Vidaloka — a high-contrast display serif with
      a large x-height and sturdy stems; gentle tracking, modest leading. Sizing
      stays at the reduced scale (max 10.25rem) per feedback. */
-  --text-display: clamp(2.5rem, 9vw, 9.25rem);
+  --text-display: clamp(2.25rem, 8vw, 8.25rem);
   --text-display--line-height: 1.04;
   --text-display--letter-spacing: -0.01em;
 
@@ -180,17 +180,22 @@
      state — `--glow` (0→1) is driven by the same scrubbed timeline as the
      opacity, so the glow arrives and leaves exactly with the text. Defaults to
      0, so no-JS and reduced-motion simply get no glow. */
+  /* A wide, low-intensity bloom in the brand green — big enough to light the
+     area behind the line so the text pops, but soft enough not to read as a
+     heavy neon outline. A faint white core adds a little lift.
+
+     Deliberately STATIC. Animating these radii per frame was costing ~34ms a
+     frame with 250ms stalls: text-shadow paints on the CPU, so a 160px blur
+     across six lines repaints constantly. Baked at full strength, the line's
+     own opacity animation fades it instead — opacity composites on the GPU, so
+     it paints once. Same look, ~8ms frames. */
   [data-anim='story-line'] {
-    --glow: 0;
-    /* A wide, low-intensity bloom in the brand green — big enough to light the
-       area behind the line so the text pops, but soft enough not to read as a
-       heavy neon outline. A faint white core adds just a little lift. All
-       alphas scale off --glow so it still fades cleanly with the text. */
     text-shadow:
-      0 0 calc(var(--glow) * 14px) rgb(255 255 255 / calc(var(--glow) * 0.13)),
-      0 0 calc(var(--glow) * 40px) oklch(0.78 0.18 168 / calc(var(--glow) * 0.28)),
-      0 0 calc(var(--glow) * 90px) oklch(0.7 0.16 178 / calc(var(--glow) * 0.24)),
-      0 0 calc(var(--glow) * 160px) oklch(0.62 0.14 186 / calc(var(--glow) * 0.2));
+      0 0 14px rgb(255 255 255 / 0.13),
+      0 0 38px oklch(0.78 0.18 168 / 0.3),
+      0 0 72px oklch(0.7 0.16 178 / 0.26),
+      0 0 118px oklch(0.62 0.14 186 / 0.22);
+    will-change: opacity, transform;
   }
 
   /* SplitText wraps each line in this; clipping it produces the "type rises
@@ -234,6 +239,12 @@
     will-change: auto;
   }
 
+  /* Every line is visible at once here, so the halo would light all six
+     simultaneously rather than tracking a single active one. */
+  html [data-anim='story-line'] {
+    text-shadow: none;
+  }
+
   *,
   *::before,
   *::after {
@@ -250,4 +261,8 @@ html[data-motion='reduced'] [data-anim='story-line'] {
   opacity: 1 !important;
   transform: none !important;
   will-change: auto;
+}
+
+html[data-motion='reduced'] [data-anim='story-line'] {
+  text-shadow: none;
 }

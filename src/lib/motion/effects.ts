@@ -278,16 +278,13 @@ export function storyLine(el: HTMLElement): Teardown {
     },
   });
 
-  // Durations are proportions of the scrubbed range, not seconds. `--glow`
-  // rides the same curve as the opacity so the halo arrives and leaves with
-  // the line rather than lagging it.
-  tl.fromTo(
-    el,
-    { opacity: 0, y: 46, '--glow': 0 },
-    { opacity: 1, y: 0, '--glow': 1, ease: 'none', duration: 0.34 },
-  )
+  // Durations are proportions of the scrubbed range, not seconds. Only opacity
+  // and transform are animated — both composite on the GPU. The halo is a
+  // static text-shadow (see global.css) that this opacity carries in and out;
+  // animating the shadow itself repainted large blurs every frame.
+  tl.fromTo(el, { opacity: 0, y: 46 }, { opacity: 1, y: 0, ease: 'none', duration: 0.34 })
     .to(el, { opacity: 1, duration: 0.32 }) // hold at full through centre
-    .to(el, { opacity: 0.16, y: -34, '--glow': 0, ease: 'none', duration: 0.34 });
+    .to(el, { opacity: 0.16, y: -34, ease: 'none', duration: 0.34 });
 
   return () => {
     tl.scrollTrigger?.kill();
