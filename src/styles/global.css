@@ -5,6 +5,9 @@
    gone entirely. */
 @import '@fontsource-variable/geist';
 @import '@fontsource/vidaloka/400.css';
+/* Wordmark only — a geometric sans in the Google Sans vein (that font is
+   proprietary and can't be self-hosted, so this is the closest free stand-in). */
+@import '@fontsource/poppins/500.css';
 
 /* ---------------------------------------------------------------------------
    Design tokens. Tailwind v4 is CSS-first — this @theme block *is* the config,
@@ -22,6 +25,9 @@
      titles, stats, wordmark). Vidaloka is single-weight; where a heading needs
      more heft, thicken with the text-stroke helper rather than a bolder cut. */
   --font-display: 'Vidaloka', ui-serif, Georgia, serif;
+
+  /* Wordmark (nav brand only). */
+  --font-wordmark: 'Poppins', ui-sans-serif, system-ui, sans-serif;
 
   /* Display font tuning. Set for Vidaloka — a high-contrast display serif with
      a large x-height and sturdy stems; gentle tracking, modest leading. Sizing
