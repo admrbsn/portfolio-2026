@@ -1,71 +1,73 @@
 ---
-// Home-page "Leadership" teaser. Each point is a real result pulled from the
-// how-i-lead write-up; the full argument lives on /about.
+import { Image } from 'astro:assets';
+import portrait from '../assets/home/portrait.jpg';
+import workspace from '../assets/home/workspace.jpg';
 
-const points = [
-  {
-    lead: 'Led product design at Tribute',
-    rest: 'through 20× growth in two years.',
-  },
-  {
-    lead: 'Took Figma off the critical path',
-    rest: 'with an AI-driven system that outputs working code, not static files.',
-  },
-  {
-    lead: 'Shipped a 4.6-star iOS app',
-    rest: 'in 90 days — 10,000+ downloads, featured by Apple.',
-  },
-  {
-    lead: 'Ran design and engineering across two continents',
-    rest: 'on a fully asynchronous cycle.',
-  },
-];
+// Home-page "About me" module. Content drawn from the leadership write-up; the
+// full argument, principles and experience live on /about. Images are
+// placeholders for now.
+
+const toolkit = ['Figma', 'Webflow', 'Tailwind', 'Vue', 'TypeScript', 'Astro'];
 ---
 
-<section class="px-gutter py-section text-center" aria-labelledby="leadership">
-  <p class="text-micro uppercase tracking-[0.14em]" data-anim="reveal">
-    <span class="accent-gradient">Why me</span>
-  </p>
+<section class="px-gutter py-section" aria-labelledby="about-me">
+  <div class="grid items-stretch gap-8 lg:grid-cols-[0.85fr_1fr_0.9fr] lg:gap-12">
+    {/* Left: intro + toolkit, pinned top and bottom */}
+    <div class="flex flex-col" data-anim="reveal">
+      <p class="text-micro uppercase tracking-[0.14em] text-ink-faint">About me</p>
 
-  <h2
-    id="leadership"
-    class="mt-5 font-display text-title font-normal text-ink"
-    data-anim="reveal-heading"
-  >
-    Leadership
-  </h2>
-
-  <p class="mx-auto mt-6 max-w-2xl text-lead text-ink-dim" data-anim="reveal">
-    I build teams that ship things no one could build alone.
-  </p>
-
-  <ul class="mx-auto mt-16 grid max-w-5xl gap-5 text-left sm:grid-cols-2" data-anim="reveal-batch">
-    {
-      points.map((point) => (
-        <li class="rounded-2xl border border-line bg-surface-lift/40 p-6 sm:p-7">
-          <p class="flex gap-4 text-ink-dim">
-            <span class="accent-gradient mt-1 shrink-0 text-sm leading-none" aria-hidden="true">
-              ◆
-            </span>
-            <span>
-              <span class="font-medium text-ink">{point.lead}</span> {point.rest}
-            </span>
-          </p>
-        </li>
-      ))
-    }
-  </ul>
-
-  <div class="mt-14" data-anim="reveal">
-    <a
-      href="/about"
-      class="group inline-flex items-center gap-3 text-micro uppercase tracking-[0.14em] text-ink transition-colors hover:text-accent"
-    >
-      How I lead
-      <span
-        class="transition-transform duration-500 ease-[var(--ease-out-expo)] group-hover:translate-x-1"
-        aria-hidden="true">→</span
+      <h2
+        id="about-me"
+        class="mt-6 font-display text-[clamp(2rem,3.4vw,3.25rem)] font-normal leading-[1.05] text-ink"
       >
-    </a>
+        Where design meets code, and teams do their best work<span class="accent-gradient">.</span>
+      </h2>
+
+      <ul class="mt-auto flex flex-wrap gap-2.5 pt-12">
+        {
+          toolkit.map((tool) => (
+            <li class="rounded-full border border-line px-4 py-2 text-micro text-ink-dim">{tool}</li>
+          ))
+        }
+      </ul>
+    </div>
+
+    {/* Centre: portrait */}
+    <Image
+      src={portrait}
+      alt="Adam Robertson"
+      widths={[420, 700, 900]}
+      sizes="(min-width: 1024px) 34vw, 92vw"
+      class="h-full w-full rounded-xl object-cover"
+      data-anim="reveal"
+    />
+
+    {/* Right: workspace image, copy, link */}
+    <div class="flex flex-col" data-anim="reveal">
+      <Image
+        src={workspace}
+        alt="Adam's workspace"
+        widths={[420, 700, 1000]}
+        sizes="(min-width: 1024px) 30vw, 92vw"
+        class="w-full rounded-xl object-cover"
+      />
+
+      <p class="mt-8 max-w-md text-lead text-ink-dim">
+        I came up doing both design and development — two disciplines that rarely sit in one person.
+        Somewhere along the way it clicked that I could do more by improving how a team thinks than
+        by executing faster myself.
+      </p>
+
+      <a
+        href="/about"
+        class="group mt-8 inline-flex items-center gap-2 self-start text-ink transition-colors hover:text-accent"
+      >
+        Learn more about how I lead
+        <span
+          class="transition-transform duration-500 ease-[var(--ease-out-expo)] group-hover:translate-x-1 group-hover:-translate-y-1"
+          aria-hidden="true">↗</span
+        >
+      </a>
+    </div>
   </div>
 </section>
