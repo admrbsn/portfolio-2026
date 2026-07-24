@@ -51,7 +51,7 @@ const { variant = 'teal' } = Astro.props;
      the lift toward the right. */
   .teal {
     --blob-a: oklch(0.76 0.11 100 / 0.6);
-    --blob-b: oklch(0.62 0.13 178 / 0.6);
+    --blob-b: oklch(0.62 0.12 178 / 0.48);
     --tint: linear-gradient(
       115deg,
       transparent 0%,
@@ -101,13 +101,15 @@ const { variant = 'teal' } = Astro.props;
     transform: rotate(12deg);
   }
 
-  /* The reference spreads its green much further down and across than the
-     violet wash does, so give that blob more reach in this variant. */
+  /* The reference spreads its green further down and across than the violet
+     wash does, so give that blob more reach in this variant — but keep it
+     shallow enough that its falloff finishes well before the bottom edge,
+     where a long, low-contrast ramp into black shows visible banding. */
   .teal .blob-b {
     width: 80vw;
-    height: 70vw;
+    height: 60vw;
     right: -18vw;
-    top: 2%;
+    top: -2%;
   }
 
   /* Film grain. Inline SVG fractal noise, desaturated, tiled small and blended

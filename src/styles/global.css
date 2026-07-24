@@ -31,7 +31,7 @@
   /* Display font tuning. Set for Vidaloka — a high-contrast display serif with
      a large x-height and sturdy stems; gentle tracking, modest leading. Sizing
      stays at the reduced scale (max 10.25rem) per feedback. */
-  --text-display: clamp(2.75rem, 9.8vw, 10.25rem);
+  --text-display: clamp(2.5rem, 9vw, 9.25rem);
   --text-display--line-height: 1.04;
   --text-display--letter-spacing: -0.01em;
 
