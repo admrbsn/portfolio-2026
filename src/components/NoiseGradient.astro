@@ -3,11 +3,23 @@
 // and an inline SVG turbulence texture — no external assets. Sits behind
 // content (the parent must be `relative`; keep real content at a higher
 // z-index), so it never affects text contrast.
+//
+// `variant` swaps only the palette (and a little geometry), so the two can be
+// compared without touching anything else:
+//   violet — the electric-violet/royal-blue brand wash
+//   teal   — warm khaki highlight falling into emerald over a teal-black base
+
+interface Props {
+  variant?: 'violet' | 'teal';
+}
+
+const { variant = 'violet' } = Astro.props;
 ---
 
-<div class="noise-gradient" aria-hidden="true">
-  <div class="blob blob-violet"></div>
-  <div class="blob blob-blue"></div>
+<div class:list={['noise-gradient', variant]} aria-hidden="true">
+  <div class="tint"></div>
+  <div class="blob blob-a"></div>
+  <div class="blob blob-b"></div>
   <div class="grain"></div>
 </div>
 
@@ -24,6 +36,37 @@
     mask-image: linear-gradient(to bottom, #000 0%, #000 82%, transparent 100%);
   }
 
+  /* Palette ---------------------------------------------------------------- */
+  .violet {
+    --blob-a: oklch(0.5 0.16 300 / 0.46);
+    --blob-b: oklch(0.52 0.15 255 / 0.44);
+    --tint: transparent;
+  }
+
+  /* Sampled from the reference: khaki highlight #858868, emerald #317163,
+     teal-black base #071212 — the "black" there is tinted, not neutral.
+     Note the source colours here are brighter than those samples: these are
+     semi-transparent layers over a near-black base, so they composite *down*.
+     Working back through the alpha is what lands them on the reference tones. */
+  .teal {
+    --blob-a: oklch(0.72 0.07 100 / 0.7);
+    --blob-b: oklch(0.58 0.1 168 / 0.65);
+    --tint: linear-gradient(
+      115deg,
+      oklch(0.15 0.02 200 / 0.98) 0%,
+      oklch(0.2 0.04 190 / 0.9) 55%,
+      oklch(0.26 0.06 178 / 0.85) 100%
+    );
+  }
+
+  /* Base tint. Only the teal variant uses it — the violet one sits straight on
+     the neutral page surface. */
+  .tint {
+    position: absolute;
+    inset: 0;
+    background: var(--tint);
+  }
+
   /* Organic blobs. A radial fill that fades to transparent (rather than a flat
      fill with a blurred edge) gives a genuinely gradual falloff — a flat fill
      reads as a defined shape with an abrupt edge. Both sit mostly off the
@@ -36,25 +79,34 @@
     filter: blur(50px);
   }
 
-  /* Deep, muted violet, mostly off the top-right corner. */
-  .blob-violet {
+  /* Highlight, mostly off the top-right corner. */
+  .blob-a {
     width: 62vw;
     height: 52vw;
     right: -20vw;
     top: -28vw;
-    background: radial-gradient(closest-side, oklch(0.5 0.16 300 / 0.46), transparent);
+    background: radial-gradient(closest-side, var(--blob-a), transparent);
     transform: rotate(-14deg);
   }
 
-  /* Muted royal blue, overlapping below the violet so the two melt into one
-     wash rather than reading as separate orbs. */
-  .blob-blue {
+  /* Secondary, overlapping below the first so the two melt into one wash
+     rather than reading as separate orbs. */
+  .blob-b {
     width: 54vw;
     height: 48vw;
     right: -14vw;
     top: -8%;
-    background: radial-gradient(closest-side, oklch(0.52 0.15 255 / 0.44), transparent);
+    background: radial-gradient(closest-side, var(--blob-b), transparent);
     transform: rotate(12deg);
+  }
+
+  /* The reference spreads its green much further down and across than the
+     violet wash does, so give that blob more reach in this variant. */
+  .teal .blob-b {
+    width: 80vw;
+    height: 70vw;
+    right: -18vw;
+    top: 2%;
   }
 
   /* Film grain. Inline SVG fractal noise, desaturated, tiled small and blended
@@ -74,17 +126,23 @@
      text fills the whole frame. Intensity lives in the gradient's alpha now,
      so there's no separate opacity to adjust here. */
   @media (max-width: 640px) {
-    .blob-violet {
+    .blob-a {
       width: 130vw;
       height: 110vw;
       right: -40vw;
       top: -55vw;
     }
-    .blob-blue {
+    .blob-b {
       width: 115vw;
       height: 100vw;
       right: -32vw;
       top: -14%;
+    }
+    .teal .blob-b {
+      width: 140vw;
+      height: 120vw;
+      right: -28vw;
+      top: -4%;
     }
   }
 </style>
