@@ -1,0 +1,354 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import NoiseGradient from '../components/NoiseGradient.astro';
+
+/*
+ * About / How I lead. Content carried over from adamrobertson.co — the
+ * leadership write-up, the design process, and the full experience timeline,
+ * which doubles as the resume.
+ */
+
+const principles = [
+  {
+    title: 'Stay close to the work',
+    body: 'I stay in the tools and in the execution. Feedback only lands when it comes from someone who understands what it took to make the thing, and decisions only stick when the people doing the work were part of them.',
+  },
+  {
+    title: 'Challenge process before pixels',
+    body: "When output is off, the workflow is usually the reason. I go after the root cause rather than critiquing a design in isolation — the artefact is a symptom, not the problem.",
+  },
+  {
+    title: 'Make AI a team sport',
+    body: 'I experiment alongside the team rather than mandating tools from above. Adoption that comes from people finding their own wins holds; adoption by decree does not.',
+  },
+  {
+    title: 'Lead with compassion',
+    body: 'Real human connection over performance theatre. Knowing what someone is actually dealing with matters more than a rating on a form.',
+  },
+  {
+    title: 'Lead with intent',
+    body: 'Directness and clarity over false comfort. Being straight with someone is a form of respect — vagueness just moves the discomfort onto them.',
+  },
+];
+
+const process = [
+  {
+    phase: 'Research',
+    title: 'Establishing why',
+    body: 'Finding the purpose that every later decision gets measured against — user research, mental models, storyboards.',
+    tools: 'PlaybookUX, Userbrain, Dovetail, Maze',
+  },
+  {
+    phase: 'Ideate',
+    title: 'Explore and expand options',
+    body: 'Collaborative divergence before convergence. Design sprints, How Might We, Crazy 8s, and spicy debates to get more than one real option on the table.',
+    tools: 'Mural, Miro',
+  },
+  {
+    phase: 'Make',
+    title: 'Realizing our vision',
+    body: 'Turning ideas into something tangible enough to react to. My favourite part of the process.',
+    tools: 'Figma, Bolt, v0',
+  },
+  {
+    phase: 'Check',
+    title: 'Ongoing improvement',
+    body: "Validating assumptions against real use and real data. It doesn't stop at launch — that's where the measuring starts.",
+    tools: 'PostHog, GA4',
+  },
+];
+
+const experience = [
+  {
+    period: '2021 — Present',
+    role: 'Head of Product Design',
+    company: 'Tribute',
+    points: [
+      'Led the platform redesign behind 20× growth in two years',
+      'Built a tokenized design system and shipped TypeScript applications',
+      'Folded research, A/B testing and analytics into the loop — up to 30% conversion gains',
+      'Ran a six-month acquisition integration',
+      'Built and launched two native iOS apps',
+      'Consolidated three PM systems into one workflow',
+    ],
+  },
+  {
+    period: '2015 — 2021',
+    role: 'Sr. Manager, UX/UI Design & Frontend Development',
+    company: "Peterson's",
+    points: [
+      'Led design and frontend across web and mobile products',
+      'Launched a mobile app — 4.6 stars, 10,000+ downloads, 90%+ positive reviews',
+      'Redesigned LMS workflows off the back of usability testing',
+    ],
+  },
+  {
+    period: 'Dec 2019 — Mar 2020',
+    role: 'Product Design & Development Consultant',
+    company: 'Droplr',
+    points: ['Grew organic traffic 115%', 'Hit a 98/100 Lighthouse score on a custom WordPress Multisite'],
+  },
+  {
+    period: '2017 — 2019',
+    role: 'Product Design & Development Consultant',
+    company: 'ETHDenver',
+    points: ['96% CSAT across the event platform'],
+  },
+  {
+    period: '2014 — 2017',
+    role: 'Product Design & Development Consultant',
+    company: 'Inspirato',
+    points: ['Acquired 4,000+ members for the Amex joint venture'],
+  },
+  {
+    period: '2011 — 2014',
+    role: 'Staff Designer / Engineer',
+    company: 'Webolutions',
+    points: ['Delivered 15+ client websites', 'Two Communicator Awards'],
+  },
+  {
+    period: '2006 — 2011',
+    role: 'Lead Interactive Designer',
+    company: 'Miles Partnership',
+    points: ['Led interactive design for 10+ tourism brands', 'Directed the Colorado.com redesign'],
+  },
+  {
+    period: '2007 — 2009',
+    role: 'Technical Specialist',
+    company: 'Apple',
+    points: ['Hardware and software consultation'],
+  },
+];
+
+const inPractice = [
+  {
+    year: '2025',
+    company: 'Tribute',
+    title: 'Process transformation',
+    body: 'Took Figma off the critical path and put an AI-driven design system in its place — one that produces working code instead of static files. A four-person team went from sceptical to proficient inside a couple of sprints. One-week cycles became the norm.',
+  },
+  {
+    year: '2017',
+    company: "Peterson's",
+    title: 'Distributed execution',
+    body: 'Design in Denver, engineering in Ukraine, no overlapping hours. We shipped a production app in 90 days — 4.6 stars, 10,000+ downloads, and featured by Apple straight away.',
+  },
+];
+
+const toolkit = [
+  'Figma',
+  'Webflow',
+  'Tailwind',
+  'Vue',
+  'Nuxt',
+  'Astro',
+  'TypeScript',
+  'Ionic',
+  'WordPress',
+  'Sass',
+  'PostHog',
+  'GA4',
+  'Google Tag Manager',
+];
+---
+
+<BaseLayout
+  title="About — Adam Robertson"
+  description="How I lead, how I work, and where I've done it. Product design leader with technical roots, based in Colorado."
+>
+  {/* Hero -------------------------------------------------------------- */}
+  <section class="relative flex min-h-[72svh] flex-col overflow-hidden px-gutter pb-[10vh] pt-40">
+    <NoiseGradient />
+
+    <div class="relative z-10 my-auto">
+      <p class="text-micro uppercase tracking-[0.14em]" data-anim="reveal">
+        <span class="accent-gradient">About</span>
+      </p>
+
+      <h1
+        class="mt-6 max-w-5xl font-display text-display font-normal text-ink"
+        data-anim="reveal-heading"
+      >
+        I build teams that ship things no one could build alone<span class="accent-gradient">.</span>
+      </h1>
+
+      <p class="mt-10 max-w-2xl text-[clamp(1.0625rem,1.35vw,1.3rem)] leading-[1.55] text-white/90" data-anim="reveal">
+        The best design leaders I've worked with weren't the strongest individual contributors —
+        they made everyone around them better. That's the job I'm trying to do.
+      </p>
+    </div>
+  </section>
+
+  {/* Point of view ------------------------------------------------------ */}
+  <section class="px-gutter py-section" aria-labelledby="pov">
+    <div class="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[minmax(0,18rem)_1fr] lg:gap-20">
+      <h2
+        id="pov"
+        class="font-display text-title font-normal text-ink lg:sticky lg:top-32 lg:self-start"
+        data-anim="reveal-heading"
+      >
+        Point of view
+      </h2>
+
+      <div class="max-w-2xl space-y-6 text-ink-dim" data-anim="reveal-batch">
+        <p>
+          I came up doing both design and development — two disciplines that rarely sit in the same
+          person. That combination shaped how I lead: I know what it costs to build the thing, so I
+          know which conversations are worth having.
+        </p>
+        <p>
+          At some point it became obvious that I could have more impact improving how a team thinks
+          than by executing faster myself. That's the job. Not executing the vision, but building
+          the conditions where great work is inevitable.
+        </p>
+        <p class="text-ink">
+          Two things underpin all of it: <span class="accent-gradient font-medium">compassion</span>
+          and <span class="accent-gradient font-medium">intent</span>.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  {/* Principles --------------------------------------------------------- */}
+  <section class="px-gutter py-section" aria-labelledby="principles">
+    <h2 id="principles" class="font-display text-title font-normal text-ink" data-anim="reveal-heading">
+      How I lead
+    </h2>
+
+    <ul class="mt-16 grid gap-5 md:grid-cols-2 lg:grid-cols-3" data-anim="reveal-batch">
+      {
+        principles.map((p) => (
+          <li class="rounded-2xl border border-line bg-surface-lift/40 p-7">
+            <h3 class="flex items-start gap-3 text-lead font-medium leading-tight text-ink">
+              <span class="accent-gradient mt-2 shrink-0 text-xs leading-none" aria-hidden="true">
+                ◆
+              </span>
+              {p.title}
+            </h3>
+            <p class="mt-4 text-ink-dim">{p.body}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  {/* In practice -------------------------------------------------------- */}
+  <section class="px-gutter py-section" aria-labelledby="in-practice">
+    <h2 id="in-practice" class="font-display text-title font-normal text-ink" data-anim="reveal-heading">
+      In practice
+    </h2>
+
+    <div class="mt-16 grid gap-5 lg:grid-cols-2" data-anim="reveal-batch">
+      {
+        inPractice.map((item) => (
+          <article class="rounded-2xl border border-line bg-surface-lift/40 p-8">
+            <p class="text-micro uppercase tracking-[0.14em] text-ink-faint">
+              {item.company} — {item.year}
+            </p>
+            <h3 class="mt-4 font-display text-lead font-normal text-ink">{item.title}</h3>
+            <p class="mt-4 text-ink-dim">{item.body}</p>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  {/* Process ------------------------------------------------------------ */}
+  <section class="px-gutter py-section" aria-labelledby="process">
+    <h2 id="process" class="font-display text-title font-normal text-ink" data-anim="reveal-heading">
+      How I work
+    </h2>
+    <p class="mt-6 max-w-2xl text-ink-dim" data-anim="reveal">
+      Four phases, scaled to the size of the team and the problem. Not every project needs all of
+      it — but skipping a phase should be a decision, not an accident.
+    </p>
+
+    <ol class="mt-16 grid gap-5 md:grid-cols-2 lg:grid-cols-4" data-anim="reveal-batch">
+      {
+        process.map((step, i) => (
+          <li class="rounded-2xl border border-line bg-surface-lift/40 p-7">
+            <p class="font-display text-stat text-ink">
+              <span class="accent-gradient">{String(i + 1).padStart(2, '0')}</span>
+            </p>
+            <h3 class="mt-5 text-micro uppercase tracking-[0.14em] text-ink-faint">{step.phase}</h3>
+            <p class="mt-2 text-lead font-medium leading-tight text-ink">{step.title}</p>
+            <p class="mt-4 text-ink-dim">{step.body}</p>
+            <p class="mt-5 text-micro uppercase tracking-[0.14em] text-ink-faint">{step.tools}</p>
+          </li>
+        ))
+      }
+    </ol>
+  </section>
+
+  {/* Experience --------------------------------------------------------- */}
+  <section class="px-gutter py-section" aria-labelledby="experience">
+    <div class="flex items-end justify-between gap-6">
+      <h2 id="experience" class="font-display text-title font-normal text-ink" data-anim="reveal-heading">
+        Experience
+      </h2>
+      <a
+        href="mailto:hi@adam.build?subject=Resume%20request"
+        class="shrink-0 text-micro uppercase tracking-[0.14em] text-ink-dim transition-colors hover:text-accent"
+      >
+        Request a PDF →
+      </a>
+    </div>
+
+    <ol class="mt-16 border-t border-line" data-anim="reveal-batch">
+      {
+        experience.map((job) => (
+          <li class="grid gap-4 border-b border-line py-8 md:grid-cols-[minmax(0,12rem)_1fr] md:gap-10">
+            <p class="text-micro uppercase tracking-[0.14em] text-ink-faint md:pt-1">{job.period}</p>
+            <div>
+              <h3 class="text-lead font-medium leading-tight text-ink">{job.role}</h3>
+              <p class="mt-1 text-ink-dim">{job.company}</p>
+              <ul class="mt-4 space-y-2">
+                {job.points.map((point) => (
+                  <li class="flex gap-3 text-ink-dim">
+                    <span class="mt-2 shrink-0 text-[0.5rem] leading-none text-accent" aria-hidden="true">
+                      ◆
+                    </span>
+                    {point}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+  </section>
+
+  {/* Toolkit ------------------------------------------------------------ */}
+  <section class="px-gutter py-section" aria-labelledby="toolkit">
+    <h2 id="toolkit" class="font-display text-title font-normal text-ink" data-anim="reveal-heading">
+      Toolkit
+    </h2>
+    <ul class="mt-12 flex flex-wrap gap-3" data-anim="reveal-batch">
+      {
+        toolkit.map((tool) => (
+          <li class="rounded-full border border-line px-5 py-2 text-micro uppercase tracking-[0.14em] text-ink-dim">
+            {tool}
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+
+  {/* Contact ------------------------------------------------------------ */}
+  <section class="px-gutter py-section text-center">
+    <h2 class="font-display text-display font-normal text-ink" data-anim="reveal-heading">
+      Let's make <span class="accent-gradient">something</span>.
+    </h2>
+
+    <div class="mt-16 inline-block" data-anim="magnetic" data-strength="0.4">
+      <a
+        href="mailto:hi@adam.build"
+        class="inline-flex items-center gap-3 rounded-full border border-line px-9 py-4 text-micro uppercase tracking-[0.14em] text-ink transition-colors hover:border-accent hover:text-accent"
+      >
+        hi@adam.build
+        <span aria-hidden="true">→</span>
+      </a>
+    </div>
+  </section>
+</BaseLayout>
