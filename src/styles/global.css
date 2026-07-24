@@ -177,9 +177,12 @@
      0, so no-JS and reduced-motion simply get no glow. */
   [data-anim='story-line'] {
     --glow: 0;
+    /* Three layers: a tight white core for punch, a mid violet bloom, and a
+       wide soft halo. All alphas scale off --glow so it still fades cleanly. */
     text-shadow:
-      0 0 calc(var(--glow) * 34px) rgb(180 83 255 / calc(var(--glow) * 0.45)),
-      0 0 calc(var(--glow) * 14px) rgb(255 255 255 / calc(var(--glow) * 0.22));
+      0 0 calc(var(--glow) * 9px) rgb(255 255 255 / calc(var(--glow) * 0.4)),
+      0 0 calc(var(--glow) * 24px) rgb(180 83 255 / calc(var(--glow) * 0.85)),
+      0 0 calc(var(--glow) * 52px) rgb(180 83 255 / calc(var(--glow) * 0.55));
   }
 
   /* SplitText wraps each line in this; clipping it produces the "type rises
