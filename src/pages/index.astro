@@ -10,7 +10,6 @@ import signatureTtf from '../../node_modules/tegaki/dist/fonts/caveat/caveat-3dc
 import BaseLayout from '../layouts/BaseLayout.astro';
 import WorkCard from '../components/WorkCard.astro';
 import NoiseGradient from '../components/NoiseGradient.astro';
-import WorkedWith from '../components/WorkedWith.astro';
 import Leadership from '../components/Leadership.astro';
 
 // Copy the bundle with the served font URL rather than mutating the shared import.
@@ -29,17 +28,50 @@ const stats = [
   { value: '0→1', label: 'Products shipped' },
 ];
 
+// Full skill set from the resume, scrolling in the marquee strip.
 const capabilities = [
-  'Product design',
+  'AI-native workflows',
+  'Product strategy',
   'Design systems',
-  'Frontend',
-  'Prototyping',
-  'Research',
-  'Motion',
   'Figma',
-  'Astro',
-  'Svelte',
+  'Frontend architecture',
+  'Cross-functional leadership',
+  'TypeScript',
+  'UX research',
   'Tailwind',
+  'Accessibility',
+  'Design sprints',
+  'A/B testing',
+  'LLM-powered design',
+  'Usability testing',
+  'Conversion optimization',
+  'Vue',
+  'PostHog',
+  'Design mentorship',
+  'React',
+  'Webflow',
+  'JavaScript',
+  'Claude Code',
+  'Roadmap planning',
+  'Cursor',
+  'Qualitative research',
+  'Design tokens',
+  'Lean UX',
+  'User journey mapping',
+  'Growth design',
+  'JTBD',
+  'Agile / Scrum',
+  'GA4',
+  'Rapid prototyping',
+  'iOS & responsive',
+  'Git',
+  'Framer',
+  'HTML',
+  'CSS / SCSS',
+  'Performance optimization',
+  'REST APIs',
+  'Early-stage startups',
+  'User activation & retention',
 ];
 
 /*
@@ -190,9 +222,6 @@ const story = [
 
   {/* Leadership ------------------------------------------------------- */}
   <Leadership />
-
-  {/* Worked with ------------------------------------------------------ */}
-  <WorkedWith />
 
   {/* Contact ---------------------------------------------------------- */}
   <section class="px-gutter py-section text-center">
