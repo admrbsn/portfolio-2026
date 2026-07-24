@@ -6,64 +6,55 @@ import workspace from '../assets/home/workspace.jpg';
 // Home-page "About me" module. Content drawn from the leadership write-up; the
 // full argument, principles and experience live on /about.
 
-// Every skill from the resume as a weighted word cloud. `w` (1–5) drives both
-// size and colour, mixed order so heavy and light tags interleave for a real
-// cloud feel rather than a sorted list. The colour floor is --color-ink-faint
-// (~4.9:1 on the surface), so even the faintest tag clears AA — an opacity-based
-// cloud would fail the contrast audit.
+// Skills from the resume as a faint weighted word-wallpaper. `w` (1–5) drives
+// size and how faint each tag is; heaviest and most current up top (they read
+// first and survive the bottom fade), the long tail below. The visible cloud is
+// decorative — too faint to pass a contrast audit — so it's aria-hidden and an
+// sr-only list carries the same skills for assistive tech.
 const skills: { name: string; w: number }[] = [
+  { name: 'AI-native workflows', w: 5 },
   { name: 'Product strategy', w: 5 },
-  { name: 'Accessibility', w: 3 },
   { name: 'Design systems', w: 5 },
-  { name: 'Vue', w: 3 },
-  { name: 'Cross-functional leadership', w: 4 },
-  { name: 'HTML', w: 2 },
   { name: 'Figma', w: 5 },
-  { name: 'A/B testing', w: 3 },
-  { name: 'Design sprints', w: 3 },
-  { name: 'REST APIs', w: 1 },
   { name: 'Frontend architecture', w: 4 },
-  { name: 'Roadmap planning', w: 2 },
-  { name: 'UX research', w: 4 },
-  { name: 'PostHog', w: 3 },
+  { name: 'Accessibility', w: 3 },
+  { name: 'Cross-functional leadership', w: 4 },
   { name: 'TypeScript', w: 4 },
-  { name: 'Lean UX', w: 2 },
-  { name: 'Design mentorship', w: 3 },
-  { name: 'v0', w: 1 },
+  { name: 'UX research', w: 4 },
+  { name: 'Design sprints', w: 3 },
   { name: 'Tailwind', w: 4 },
-  { name: 'Conversion optimization', w: 3 },
-  { name: 'Usability testing', w: 3 },
-  { name: 'CSS / SCSS', w: 2 },
-  { name: 'Growth design', w: 2 },
-  { name: 'React', w: 3 },
-  { name: 'Design tokens', w: 2 },
-  { name: 'GA4', w: 2 },
-  { name: 'JTBD', w: 2 },
-  { name: 'Webflow', w: 3 },
-  { name: 'User journey mapping', w: 2 },
-  { name: 'Claude Code', w: 2 },
-  { name: 'Agile / Scrum', w: 2 },
-  { name: 'Rapid prototyping', w: 2 },
-  { name: 'Qualitative research', w: 2 },
-  { name: 'JavaScript', w: 3 },
+  { name: 'A/B testing', w: 3 },
   { name: 'LLM-powered design', w: 3 },
-  { name: 'Git', w: 2 },
-  { name: 'Executive communication', w: 1 },
+  { name: 'Usability testing', w: 3 },
+  { name: 'Conversion optimization', w: 3 },
+  { name: 'Vue', w: 3 },
+  { name: 'PostHog', w: 3 },
+  { name: 'Design mentorship', w: 3 },
+  { name: 'Claude Code', w: 2 },
+  { name: 'React', w: 3 },
+  { name: 'Webflow', w: 3 },
+  { name: 'JavaScript', w: 3 },
+  { name: 'Roadmap planning', w: 2 },
   { name: 'Cursor', w: 2 },
-  { name: 'Funnel analysis', w: 1 },
-  { name: 'Framer', w: 2 },
+  { name: 'Qualitative research', w: 2 },
+  { name: 'Design tokens', w: 2 },
+  { name: 'Lean UX', w: 2 },
+  { name: 'User journey mapping', w: 2 },
+  { name: 'Growth design', w: 2 },
+  { name: 'JTBD', w: 2 },
+  { name: 'Agile / Scrum', w: 2 },
+  { name: 'GA4', w: 2 },
+  { name: 'Rapid prototyping', w: 2 },
   { name: 'iOS & responsive', w: 2 },
-  { name: 'Cohort analysis', w: 1 },
-  { name: 'Performance optimization', w: 2 },
+  { name: 'Git', w: 2 },
+  { name: 'Framer', w: 1 },
+  { name: 'HTML', w: 2 },
+  { name: 'CSS / SCSS', w: 2 },
+  { name: 'Performance optimization', w: 1 },
+  { name: 'REST APIs', w: 1 },
   { name: 'Early-stage startups', w: 1 },
-  { name: 'shadcn', w: 1 },
   { name: 'User activation & retention', w: 1 },
-  { name: 'Design documentation', w: 1 },
-  { name: 'DaisyUI', w: 1 },
-  { name: 'Headless CMS', w: 1 },
-  { name: 'Maze', w: 1 },
-  { name: 'Relume', w: 1 },
-  { name: 'WordPress', w: 2 },
+  { name: 'v0', w: 1 },
 ];
 ---
 
@@ -80,7 +71,16 @@ const skills: { name: string; w: number }[] = [
         Where design meets code, and teams do their best work<span class="accent-gradient">.</span>
       </h2>
 
-      <ul class="skill-cloud mt-auto flex flex-wrap items-baseline gap-x-4 gap-y-1.5 pt-14" aria-label="Skills">
+      {/* Accessible copy for AT — the visible cloud below is decorative. */}
+      <p class="sr-only">
+        Skills: {skills.map((s) => s.name).join(', ')}.
+      </p>
+
+      {/* Decorative faint word-wallpaper, fading out at the bottom. */}
+      <ul
+        class="skill-cloud mt-auto flex flex-wrap items-baseline gap-x-4 gap-y-1 pt-14"
+        aria-hidden="true"
+      >
         {
           skills.map((skill) => (
             <li class="skill" style={`--w:${skill.w}`}>
@@ -132,23 +132,31 @@ const skills: { name: string; w: number }[] = [
 </section>
 
 <style>
-  /* Weighted cloud. `--w` (1–5) scales the size and lerps the colour from the
-     faint token up to full ink, so heavier skills read brighter and larger.
-     Baseline alignment lets mixed sizes share a line like a real tag cloud. */
+  /* Faint word-wallpaper. `--w` (1–5) scales the size and the base alpha — even
+     the heaviest tag is barely-there ink, so the whole block reads as texture
+     behind the section rather than a legible list. The bottom edge fades to
+     transparent so the tail dissolves into the background. */
+  .skill-cloud {
+    -webkit-mask-image: linear-gradient(to bottom, #000 52%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 52%, transparent 100%);
+  }
+
   .skill {
-    font-size: calc(0.78rem + (var(--w) - 1) * 0.17rem);
-    line-height: 1.1;
-    color: color-mix(in oklab, var(--color-ink-faint), var(--color-ink) calc((var(--w) - 1) * 25%));
-    transition: color 300ms var(--ease-out-expo);
+    font-size: calc(0.82rem + (var(--w) - 1) * 0.2rem);
+    line-height: 1.12;
+    color: oklch(0.97 0.01 155 / calc(5% + (var(--w) - 1) * 3.5%));
+    transition: color 350ms var(--ease-out-expo);
     cursor: default;
   }
 
-  /* Whole cloud lifts slightly on hover, and the pointed-at tag goes accent. */
-  .skill-cloud:hover .skill {
-    color: color-mix(in oklab, var(--color-ink-faint) 55%, var(--color-ink));
+  /* Only the pointed-at tag lights up — a small reward for exploring the wall. */
+  .skill:hover {
+    color: var(--color-accent);
   }
 
-  .skill:hover {
-    color: var(--color-accent) !important;
+  @media (prefers-reduced-motion: reduce) {
+    .skill {
+      transition: none;
+    }
   }
 </style>
