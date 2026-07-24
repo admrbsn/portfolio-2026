@@ -19,5 +19,12 @@ export default defineConfig({
 
   vite: {
     plugins: [tailwindcss()],
+    // Sharp is a native module. Left to Vite, the dev server's SSR pipeline
+    // tries to process it and breaks its binding — Astro's image endpoint then
+    // reports "MissingSharp" and every optimised <Image> shows broken in dev
+    // (the production build is unaffected). Externalising it makes dev require
+    // the real native module, so images work locally too.
+    ssr: { external: ['sharp'] },
+    optimizeDeps: { exclude: ['sharp'] },
   },
 });
