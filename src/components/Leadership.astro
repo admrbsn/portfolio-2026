@@ -5,62 +5,11 @@ import workspace from '../assets/home/workspace.jpg';
 
 // Home-page "About me" module. Content drawn from the leadership write-up; the
 // full argument, principles and experience live on /about.
-
-// Skills from the resume as a faint weighted word-wallpaper. `w` (1–5) drives
-// size and how faint each tag is; heaviest and most current up top (they read
-// first and survive the bottom fade), the long tail below. The visible cloud is
-// decorative — too faint to pass a contrast audit — so it's aria-hidden and an
-// sr-only list carries the same skills for assistive tech.
-const skills: { name: string; w: number }[] = [
-  { name: 'AI-native workflows', w: 5 },
-  { name: 'Product strategy', w: 5 },
-  { name: 'Design systems', w: 5 },
-  { name: 'Figma', w: 5 },
-  { name: 'Frontend architecture', w: 4 },
-  { name: 'Accessibility', w: 3 },
-  { name: 'Cross-functional leadership', w: 4 },
-  { name: 'TypeScript', w: 4 },
-  { name: 'UX research', w: 4 },
-  { name: 'Design sprints', w: 3 },
-  { name: 'Tailwind', w: 4 },
-  { name: 'A/B testing', w: 3 },
-  { name: 'LLM-powered design', w: 3 },
-  { name: 'Usability testing', w: 3 },
-  { name: 'Conversion optimization', w: 3 },
-  { name: 'Vue', w: 3 },
-  { name: 'PostHog', w: 3 },
-  { name: 'Design mentorship', w: 3 },
-  { name: 'Claude Code', w: 2 },
-  { name: 'React', w: 3 },
-  { name: 'Webflow', w: 3 },
-  { name: 'JavaScript', w: 3 },
-  { name: 'Roadmap planning', w: 2 },
-  { name: 'Cursor', w: 2 },
-  { name: 'Qualitative research', w: 2 },
-  { name: 'Design tokens', w: 2 },
-  { name: 'Lean UX', w: 2 },
-  { name: 'User journey mapping', w: 2 },
-  { name: 'Growth design', w: 2 },
-  { name: 'JTBD', w: 2 },
-  { name: 'Agile / Scrum', w: 2 },
-  { name: 'GA4', w: 2 },
-  { name: 'Rapid prototyping', w: 2 },
-  { name: 'iOS & responsive', w: 2 },
-  { name: 'Git', w: 2 },
-  { name: 'Framer', w: 1 },
-  { name: 'HTML', w: 2 },
-  { name: 'CSS / SCSS', w: 2 },
-  { name: 'Performance optimization', w: 1 },
-  { name: 'REST APIs', w: 1 },
-  { name: 'Early-stage startups', w: 1 },
-  { name: 'User activation & retention', w: 1 },
-  { name: 'v0', w: 1 },
-];
 ---
 
 <section class="px-gutter py-section" aria-labelledby="about-me">
   <div class="grid items-stretch gap-8 lg:grid-cols-[0.85fr_1fr_0.9fr] lg:gap-12">
-    {/* Left: intro + toolkit, pinned top and bottom */}
+    {/* Left: intro */}
     <div class="flex flex-col" data-anim="reveal">
       <p class="text-micro uppercase tracking-[0.14em] text-ink-faint">About me</p>
 
@@ -70,25 +19,6 @@ const skills: { name: string; w: number }[] = [
       >
         Where design meets code, and teams do their best work<span class="accent-gradient">.</span>
       </h2>
-
-      {/* Accessible copy for AT — the visible cloud below is decorative. */}
-      <p class="sr-only">
-        Skills: {skills.map((s) => s.name).join(', ')}.
-      </p>
-
-      {/* Decorative faint word-wallpaper, fading out at the bottom. */}
-      <ul
-        class="skill-cloud mt-auto flex flex-wrap items-baseline gap-x-4 gap-y-1 pt-14"
-        aria-hidden="true"
-      >
-        {
-          skills.map((skill) => (
-            <li class="skill" style={`--w:${skill.w}`}>
-              {skill.name}
-            </li>
-          ))
-        }
-      </ul>
     </div>
 
     {/* Centre: portrait */}
@@ -111,7 +41,7 @@ const skills: { name: string; w: number }[] = [
         class="w-full rounded-xl object-cover"
       />
 
-      <p class="mt-8 max-w-md text-lead text-white/90">
+      <p class="mt-8 max-w-md text-[clamp(1.125rem,1.6vw,1.5rem)] leading-[1.4] text-white/90">
         I came up doing both design and development — two disciplines that rarely sit in one person.
         Somewhere along the way it clicked that I could do more by improving how a team thinks than
         by executing faster myself.
@@ -130,33 +60,3 @@ const skills: { name: string; w: number }[] = [
     </div>
   </div>
 </section>
-
-<style>
-  /* Faint word-wallpaper. `--w` (1–5) scales the size and the base alpha — even
-     the heaviest tag is barely-there ink, so the whole block reads as texture
-     behind the section rather than a legible list. The bottom edge fades to
-     transparent so the tail dissolves into the background. */
-  .skill-cloud {
-    -webkit-mask-image: linear-gradient(to bottom, #000 52%, transparent 100%);
-    mask-image: linear-gradient(to bottom, #000 52%, transparent 100%);
-  }
-
-  .skill {
-    font-size: calc(0.82rem + (var(--w) - 1) * 0.2rem);
-    line-height: 1.12;
-    color: oklch(0.97 0.01 155 / calc(5% + (var(--w) - 1) * 3.5%));
-    transition: color 350ms var(--ease-out-expo);
-    cursor: default;
-  }
-
-  /* Only the pointed-at tag lights up — a small reward for exploring the wall. */
-  .skill:hover {
-    color: var(--color-accent);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .skill {
-      transition: none;
-    }
-  }
-</style>
