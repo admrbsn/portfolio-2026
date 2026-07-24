@@ -1,0 +1,78 @@
+---
+// "I've worked with" logo wall. Logos live in /public/logos and are listed
+// here — adding another is one entry, and the grid reflows on its own.
+//
+// `invert` normalises a logo that ships dark-on-light (or in colours that fight
+// the palette) to flat white. Leave it off for marks that already read on dark.
+
+interface Logo {
+  name: string;
+  src: string;
+  /** Per-logo optical sizing — logos rarely balance at one uniform height. */
+  height: string;
+  invert?: boolean;
+}
+
+// Heights are per-logo because the artwork isn't a consistent shape: Tribute is
+// a wide wordmark, the rest are square marks, and a square set to the same
+// height as a wordmark reads far smaller. These are balanced by eye, not maths.
+const logos: Logo[] = [
+  { name: 'Tribute', src: '/logos/tribute.svg', height: 'h-10 sm:h-12' },
+  { name: 'U.S. Department of Defense', src: '/logos/dod.svg', height: 'h-24 sm:h-28' },
+  { name: 'American Express', src: '/logos/amex.svg', height: 'h-24 sm:h-28' },
+  { name: 'State of Colorado', src: '/logos/colorado.svg', height: 'h-24 sm:h-28' },
+];
+---
+
+<section class="px-gutter py-section" aria-labelledby="worked-with">
+  <h2
+    id="worked-with"
+    class="font-display text-title font-normal text-ink"
+    data-anim="reveal-heading"
+  >
+    I've worked with
+  </h2>
+
+  {/* Flex-wrap rather than a grid: with a count that isn't a multiple of the
+      column number, a grid strands the last item at the left edge, while a
+      centred flex row keeps an incomplete row balanced. */}
+  <ul
+    class="mt-[10vh] flex flex-wrap items-center justify-center gap-x-6 gap-y-[8vh] md:gap-x-10"
+    data-anim="reveal-batch"
+  >
+    {
+      logos.map((logo) => (
+        <li class="flex basis-[45%] items-center justify-center md:basis-[28%]">
+          <img
+            src={logo.src}
+            alt={logo.name}
+            loading="lazy"
+            decoding="async"
+            class:list={['logo w-auto max-w-[70%] object-contain', logo.height, logo.invert && 'is-inverted']}
+          />
+        </li>
+      ))
+    }
+  </ul>
+</section>
+
+<style>
+  /* Held back a touch so the wall reads as supporting material, then brought
+     up on hover. */
+  .logo {
+    opacity: 0.72;
+    transition:
+      opacity 400ms var(--ease-out-expo),
+      filter 400ms var(--ease-out-expo);
+  }
+
+  .logo:hover {
+    opacity: 1;
+  }
+
+  /* Flatten to white. `brightness(0)` crushes every colour to black first, so
+     `invert(1)` lands on a clean white regardless of the source palette. */
+  .is-inverted {
+    filter: brightness(0) invert(1);
+  }
+</style>
