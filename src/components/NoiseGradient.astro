@@ -24,40 +24,37 @@
     mask-image: linear-gradient(to bottom, #000 0%, #000 82%, transparent 100%);
   }
 
-  /* Organic blobs: a flat fill clipped to an irregular border-radius, then
-     heavily blurred so the lopsided shape reads as a soft, non-circular glow.
-     Both are concentrated in the upper-right and overlap so the colour flows as
-     one fluid violet→blue wash there, leaving most of the frame dark rather
-     than splitting it in half. */
+  /* Organic blobs. A radial fill that fades to transparent (rather than a flat
+     fill with a blurred edge) gives a genuinely gradual falloff — a flat fill
+     reads as a defined shape with an abrupt edge. Both sit mostly off the
+     top-right corner so only their soft inner edge bleeds into frame, keeping
+     the colour a corner wash instead of owning the right half. Elliptical +
+     rotated so they aren't perfect circles. */
   .blob {
     position: absolute;
-    filter: blur(100px);
     will-change: transform;
+    filter: blur(50px);
   }
 
-  /* Deep, muted violet in the top-right corner. */
+  /* Deep, muted violet, mostly off the top-right corner. */
   .blob-violet {
-    width: 46vw;
-    height: 40vw;
-    right: -8vw;
-    top: -14vw;
-    background: oklch(0.5 0.18 300);
-    opacity: 0.34;
-    border-radius: 46% 54% 62% 38% / 56% 48% 52% 44%;
-    transform: rotate(-18deg);
+    width: 62vw;
+    height: 52vw;
+    right: -20vw;
+    top: -28vw;
+    background: radial-gradient(closest-side, oklch(0.5 0.16 300 / 0.46), transparent);
+    transform: rotate(-14deg);
   }
 
-  /* Muted royal blue overlapping just below the violet, so they melt together
-     into an organic wash instead of two distinct orbs. */
+  /* Muted royal blue, overlapping below the violet so the two melt into one
+     wash rather than reading as separate orbs. */
   .blob-blue {
-    width: 44vw;
-    height: 42vw;
-    right: 2vw;
-    top: 8%;
-    background: oklch(0.52 0.16 255);
-    opacity: 0.36;
-    border-radius: 58% 42% 44% 56% / 40% 56% 44% 60%;
-    transform: rotate(14deg);
+    width: 54vw;
+    height: 48vw;
+    right: -14vw;
+    top: -8%;
+    background: radial-gradient(closest-side, oklch(0.52 0.15 255 / 0.44), transparent);
+    transform: rotate(12deg);
   }
 
   /* Film grain. Inline SVG fractal noise, desaturated, tiled small and blended
@@ -69,21 +66,25 @@
     background-size: 140px 140px;
     /* Overlay lifts a near-black base toward grey; keep it low so the flat
        areas stay dark while the texture is still there. */
-    opacity: 0.2;
+    opacity: 0.12;
     mix-blend-mode: overlay;
   }
 
-  /* Scale the blobs up a little on small screens so the colour still reads
-     when text fills the whole frame, but keep them muted. */
+  /* Scale the blobs up on small screens so the corner wash still reads when
+     text fills the whole frame. Intensity lives in the gradient's alpha now,
+     so there's no separate opacity to adjust here. */
   @media (max-width: 640px) {
     .blob-violet {
-      width: 78vw;
-      height: 66vw;
+      width: 130vw;
+      height: 110vw;
+      right: -40vw;
+      top: -55vw;
     }
     .blob-blue {
-      width: 74vw;
-      height: 66vw;
-      opacity: 0.42;
+      width: 115vw;
+      height: 100vw;
+      right: -32vw;
+      top: -14%;
     }
   }
 </style>
