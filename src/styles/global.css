@@ -68,15 +68,17 @@
   --color-surface-lift: oklch(0.21 0.03 185);
   --color-line: oklch(0.32 0.035 180);
 
-  /* Neon spring green — the primary. Very high contrast on the teal-black
-     surface, so it clears AA comfortably even as small link text. */
-  --color-accent: oklch(0.84 0.21 152);
+  /* Neon green, biased toward teal to sit closer to the reference. Very high
+     contrast on the teal-black surface, so it clears AA comfortably even as
+     small link text. */
+  --color-accent: oklch(0.84 0.19 168);
   /* Warm neon yellow, pulled from the reference's khaki highlight and pushed
-     brighter. Secondary: the tail of accent gradients, never body text. */
-  --color-accent-warm: oklch(0.87 0.17 96);
-  /* Availability indicator. Now that the brand is green, this shares the family
-     but stays its own token so the signal can be retuned independently. */
-  --color-status: oklch(0.86 0.2 145);
+     brighter. Deliberately stays warm — it's the counterpoint that keeps the
+     palette from going flat. Secondary: gradient tails, never body text. */
+  --color-accent-warm: oklch(0.87 0.16 100);
+  /* Availability indicator. Shares the family but stays its own token so the
+     signal can be retuned independently. */
+  --color-status: oklch(0.86 0.19 160);
 
   /* Motion — shared between CSS and GSAP so the two never disagree. */
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
@@ -142,7 +144,7 @@
   .accent-gradient > * {
     background-image: linear-gradient(
       120deg,
-      oklch(0.8 0.2 172),
+      oklch(0.79 0.17 188),
       var(--color-accent) 45%,
       var(--color-accent-warm)
     );
@@ -186,9 +188,9 @@
        alphas scale off --glow so it still fades cleanly with the text. */
     text-shadow:
       0 0 calc(var(--glow) * 14px) rgb(255 255 255 / calc(var(--glow) * 0.13)),
-      0 0 calc(var(--glow) * 40px) oklch(0.78 0.2 155 / calc(var(--glow) * 0.28)),
-      0 0 calc(var(--glow) * 90px) oklch(0.7 0.18 165 / calc(var(--glow) * 0.24)),
-      0 0 calc(var(--glow) * 160px) oklch(0.62 0.15 175 / calc(var(--glow) * 0.2));
+      0 0 calc(var(--glow) * 40px) oklch(0.78 0.18 168 / calc(var(--glow) * 0.28)),
+      0 0 calc(var(--glow) * 90px) oklch(0.7 0.16 178 / calc(var(--glow) * 0.24)),
+      0 0 calc(var(--glow) * 160px) oklch(0.62 0.14 186 / calc(var(--glow) * 0.2));
   }
 
   /* SplitText wraps each line in this; clipping it produces the "type rises
