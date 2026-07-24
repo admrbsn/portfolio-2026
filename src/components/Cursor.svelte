@@ -20,6 +20,11 @@
 
     enabled = true;
 
+    // Hand the native cursor over to this one. Flagged on <html> rather than
+    // set unconditionally in CSS so touch, reduced-motion and no-JS visitors
+    // keep their real cursor — hiding it for them would leave them with none.
+    document.documentElement.classList.add('has-custom-cursor');
+
     let mx = window.innerWidth / 2;
     let my = window.innerHeight / 2;
     let rx = mx;
@@ -51,6 +56,9 @@
     return () => {
       window.removeEventListener('pointermove', onMove);
       cancelAnimationFrame(raf);
+      // Give the real cursor back if this island ever goes away, so the page
+      // can never be left with no cursor at all.
+      document.documentElement.classList.remove('has-custom-cursor');
     };
   });
 </script>
@@ -63,6 +71,14 @@
 {/if}
 
 <style>
+  /* Full takeover: hide the native cursor once this one is live. The universal
+     selector is needed because links and buttons set `cursor: pointer`
+     themselves, which would otherwise win over a rule on <html> alone. */
+  :global(html.has-custom-cursor),
+  :global(html.has-custom-cursor *) {
+    cursor: none;
+  }
+
   .cursor-layer {
     position: fixed;
     inset: 0;
