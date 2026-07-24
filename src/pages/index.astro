@@ -122,9 +122,9 @@ const story = [
           triggered on scroll-in by the `signature` effect. The canvas is
           decorative (aria-hidden); the sr-only name and noscript fallback carry
           it for assistive tech and no-JS. */}
-      {/* Negative margin pulls the signature back up against the 24vh flex gap
-          it inherits from the story column, tightening it to the last line. */}
-      <div class="-mt-[10vh]">
+      {/* Slight negative margin trims the 24vh flex gap inherited from the
+          story column, without crowding the last line. */}
+      <div class="-mt-[4vh]">
         {/* Controlled at 0 so it renders blank and never runs a playback loop
             at rest (uncontrolled autoplay races the async font load and
             fast-forwards to the end). The `signature` effect switches it to
