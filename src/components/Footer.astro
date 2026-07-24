@@ -1,45 +1,86 @@
 ---
-const socials = [
-  { href: 'mailto:hi@adam.build', label: 'Email' },
-  { href: 'https://dribbble.com/', label: 'Dribbble' },
-  { href: 'https://www.linkedin.com/', label: 'LinkedIn' },
-  { href: 'https://github.com/', label: 'GitHub' },
-];
-
+const email = 'hi@adam.build';
 const year = new Date().getFullYear();
+
+// LinkedIn and GitHub are the real handles from the resume; Dribbble and X are
+// placeholders pointing at the site root — swap in real profile URLs.
+const socials = [
+  { label: 'LinkedIn', href: 'https://www.linkedin.com/in/admrbsn' },
+  { label: 'GitHub', href: 'https://github.com/admrbsn' },
+  { label: 'Dribbble', href: 'https://dribbble.com/' },
+  { label: 'X', href: 'https://x.com/' },
+];
 ---
 
-<footer class="border-t border-line px-gutter py-14">
-  <div class="flex flex-col gap-10 sm:flex-row sm:items-end sm:justify-between">
-    <div>
-      <p class="text-micro uppercase tracking-[0.14em] text-ink-faint">Available for work</p>
-      <a
-        href="mailto:hi@adam.build"
-        class="mt-3 block font-display text-title text-ink transition-colors hover:text-accent"
-      >
-        hi@adam.build
-      </a>
-    </div>
+<footer class="border-t border-line px-gutter py-28 text-center">
+  <p class="text-micro uppercase tracking-[0.2em] text-ink-faint">Message me</p>
 
-    <ul class="flex flex-wrap gap-x-6 gap-y-2">
-      {
-        socials.map((s) => (
-          <li>
-            <a
-              href={s.href}
-              class="text-micro uppercase tracking-[0.14em] text-ink-dim transition-colors hover:text-ink"
-              rel={s.href.startsWith('http') ? 'noopener noreferrer' : undefined}
-              target={s.href.startsWith('http') ? '_blank' : undefined}
-            >
-              {s.label}
-            </a>
-          </li>
-        ))
-      }
-    </ul>
-  </div>
+  {/* Click-to-copy. Real text underneath, so screen readers read the address;
+      the label doubles as an aria-live region announcing "Copied". */}
+  <button
+    type="button"
+    data-copy={email}
+    class="group mx-auto mt-8 block font-display text-[clamp(2.25rem,7vw,5rem)] uppercase leading-none text-ink transition-colors hover:text-accent"
+    aria-describedby="copy-hint"
+  >
+    {email}
+  </button>
 
-  <p class="mt-14 text-micro uppercase tracking-[0.14em] text-ink-faint">
-    &copy; {year} — Colorado
+  <p
+    id="copy-hint"
+    data-copy-label
+    aria-live="polite"
+    class="mt-8 text-micro uppercase tracking-[0.2em] text-ink-faint"
+  >
+    Click to copy
+  </p>
+
+  <ul class="mt-24 flex flex-wrap justify-center gap-x-8 gap-y-3">
+    {
+      socials.map((s) => (
+        <li>
+          <a
+            href={s.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-micro uppercase tracking-[0.14em] text-ink-dim transition-colors hover:text-ink"
+          >
+            {s.label}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+
+  <p class="mt-12 text-micro uppercase tracking-[0.14em] text-ink-faint">
+    &copy; 2006&ndash;{year} Adam Robertson. All rights reserved.
   </p>
 </footer>
+
+<script is:inline>
+  // Delegated + guarded so it binds exactly once and survives the footer's
+  // transition:persist across client-side navigations.
+  if (!window.__copyEmailBound) {
+    window.__copyEmailBound = true;
+    document.addEventListener('click', async (e) => {
+      const btn = e.target.closest('[data-copy]');
+      if (!btn) return;
+      const value = btn.getAttribute('data-copy');
+      let ok = true;
+      try {
+        await navigator.clipboard.writeText(value);
+      } catch {
+        ok = false;
+      }
+      const footer = btn.closest('footer');
+      const label = footer && footer.querySelector('[data-copy-label]');
+      if (!label) return;
+      if (!label.dataset.default) label.dataset.default = label.textContent;
+      clearTimeout(label._t);
+      label.textContent = ok ? 'Copied!' : 'Press ⌘C to copy';
+      label._t = setTimeout(() => {
+        label.textContent = label.dataset.default;
+      }, 2000);
+    });
+  }
+</script>
