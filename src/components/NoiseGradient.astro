@@ -60,17 +60,16 @@
     transform: rotate(14deg);
   }
 
-  /* Film grain. Inline SVG fractal noise, desaturated. A large 320px tile barely
-     repeats (reads as truly random) and 3 octaves add organic detail. The RGB
-     transfer is dark-biased (mean pulled below 0.5) *and* high-contrast, so
-     under `overlay` the grain oscillates around the near-black base instead of
-     lifting it — the texture gets heavier without the hero going grey. */
+  /* Film grain. Inline SVG fractal noise, desaturated, tiled small and blended
+     so it reads as an obvious texture over the blobs and the dark base. */
   .grain {
     position: absolute;
     inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='1.8' intercept='-0.62'/%3E%3CfeFuncG type='linear' slope='1.8' intercept='-0.62'/%3E%3CfeFuncB type='linear' slope='1.8' intercept='-0.62'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    background-size: 320px 320px;
-    opacity: 0.75;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='1.6' intercept='-0.1'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 140px 140px;
+    /* Overlay lifts a near-black base toward grey; keep it low so the flat
+       areas stay dark while the texture is still there. */
+    opacity: 0.2;
     mix-blend-mode: overlay;
   }
 
