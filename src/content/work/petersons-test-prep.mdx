@@ -1,37 +1,80 @@
 ---
-title: 'A test prep app that respects the clock'
+title: "Taking Peterson's test prep native"
 client: "Peterson's"
-year: 2022
-role: ['Product design', 'Research']
-summary: 'Redesigning study sessions around the twenty minutes people actually have, not the two hours the curriculum assumed.'
+year: 2020
+role: ['Product design', 'iOS & Android', 'Frontend']
+summary: 'Turning a clunky responsive LMS into native iOS and Android apps, part of growing DTC sales from $50K to about $1M.'
 cover: '../../assets/work/petersons-test-prep.jpg'
-coverAlt: "Placeholder cover artwork for the Peterson's test prep case study"
+coverAlt: "Abstract green-to-dark gradient cover for the Peterson's test prep case study"
 accent: 'oklch(0.86 0.2 128)'
 featured: false
-order: 3
+order: 5
 ---
 
+import PullQuote from '../../components/mdx/PullQuote.astro';
 import Stat from '../../components/mdx/Stat.astro';
 
-**Placeholder copy.**
+Sixty percent of Peterson's test-prep users already studied on mobile, despite a
+barely functional responsive experience. As direct-to-consumer sales climbed from
+$50K in 2017 toward roughly $1M by 2021, leadership decided in Q2 2020 to build
+native iOS and Android apps. I joined as design lead after an outsourced designer
+departed, inheriting a four-month deadline.
 
-The existing product was built around study plans measured in hours. Analytics
-said the median session was nineteen minutes, usually on a phone, usually
-somewhere loud.
+## Who we were designing for
+
+Peterson's 185 courses served very different learners: 16 to 18-year-olds taking
+the ACT and SAT, active-duty military preparing for the ASVAB, and mid-career
+professionals pursuing licensing like real estate. The core problem was blunt.
+
+<PullQuote cite="Peterson's research">
+  Test prep on mobile is hard. Complex math, long reading passages, and
+  interactive content simply don't render well on a phone.
+</PullQuote>
+
+Competitors like Duolingo and Masterclass succeeded with simpler content; Peterson's
+needed to handle breadth. A SWOT teardown of Coursera showed functional but
+uninspired design, syncing issues, and heavy reliance on webviews that felt
+disconnected from native. Three personas anchored the work: June, a 16-year-old
+studying in short bursts; David, an Army servicemember needing offline access; and
+Frank, a 40-year-old electrician syncing across phone and computer.
+
+## Framing the build
+
+The approach paired native iOS and Android with Auth0 single sign-on to sync
+progress across devices, webview-delivered course content to stay in sync with the
+LMS, a rewards and badge system for engagement, and strict adherence to Apple's
+Human Interface Guidelines and Android's Material Design. Wireframes iterated
+through daily design calls and testing with three participants before moving to
+high fidelity, with the design system built in Sketch and exported through Zeplin,
+using Inter and full light and dark modes.
+
+## The hard parts
+
+Two rounds of testing on UserTesting.com validated the direction: the Auth0 flow
+drew praise for smoothness, and people found account creation and course discovery
+intuitive. The constraints came from course content delivered through D2L
+Brightspace webviews, where cross-origin policies blocked styling control and dark
+mode failed inside the webview.
+
+Both problems came down to code. I wrote custom JavaScript and CSS to make the
+Auth0 login match native behavior closely enough that testers never flagged it.
+For the webviews, user-agent detection served app-specific stylesheets, and CSS
+custom properties plus `prefers-color-scheme` restored dark mode despite
+Brightspace's limitations.
+
+## Outcomes
 
 <Stat
   items={[
-    { value: '19 min', label: 'Median session' },
-    { value: '71%', label: 'Mobile sessions' },
-    { value: '+2.4×', label: 'Weekly retention' },
+    { value: '4.6★', label: 'App Store rating' },
+    { value: '10K+', label: 'First-week downloads' },
+    { value: '~$1M', label: 'Annual DTC sales' },
   ]}
 />
 
-## Designing for the interruption
-
-Placeholder section on session resumability, state persistence, and why every
-question had to be answerable in isolation.
-
-## Outcome
-
-Placeholder closing text. Replace with the real story and verified numbers.
+The apps shipped inside the four-month window and supported Peterson's growth. In
+hindsight, Brightspace's iframe architecture constrained design freedom throughout,
+and negotiating rendering control during planning would have been worth the
+schedule cost. The personas held up well: June's chip-away pattern shaped the
+reward system, David's offline needs shaped content caching, and Frank's
+cross-device requirement validated the Auth0 architecture.

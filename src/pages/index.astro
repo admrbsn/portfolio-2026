@@ -1,19 +1,35 @@
 ---
 import { getCollection } from 'astro:content';
 import TegakiRenderer from 'tegaki/astro';
-import signatureBundle from 'tegaki/fonts/caveat';
-// The bundle's `fontUrl` is an absolute file:// path baked in for Tegaki's CLI;
-// the browser engine loads the font from it and needs a real URL. Import the
-// TTF through Vite (relative path sidesteps the package's `exports` map) to get
-// a served, hashed asset URL, then repoint the bundle at it before rendering.
-import signatureTtf from '../../node_modules/tegaki/dist/fonts/caveat/caveat-3dc76002.ttf?url';
+import { createBundle } from 'tegaki/core';
+import type { TegakiGlyphData } from 'tegaki';
+// Custom signature font: a Reenie Beanie bundle generated with tegaki-generator
+// (skeletons + stroke order from the Google Font). We ship only the subset TTF
+// (the letters in "Adam Robertson") plus the glyph skeleton JSON. Tegaki draws
+// the strokes from glyphData and paints the letterforms with the font itself,
+// so the TTF has to resolve to a real served URL — hence the Vite `?url` import.
+import signatureGlyphData from '../assets/fonts/reenie-beanie/glyphData.json';
+import signatureTtf from '../assets/fonts/reenie-beanie/reenie-beanie.ttf?url';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import WorkCard from '../components/WorkCard.astro';
 import NoiseGradient from '../components/NoiseGradient.astro';
 import Leadership from '../components/Leadership.astro';
+import Experience from '../components/Experience.astro';
 
-// Copy the bundle with the served font URL rather than mutating the shared import.
-const signatureFont = { ...signatureBundle, fontUrl: signatureTtf };
+// Metrics come straight from the generated bundle.ts. createBundle assembles the
+// runtime bundle from these parts, which is the supported path when the prebuilt
+// font module isn't shipped in the package.
+const signatureFont = createBundle({
+  family: 'Reenie Beanie Tegaki ff4a336b',
+  fullFamily: 'Reenie Beanie',
+  fontUrl: signatureTtf,
+  fullFontUrl: signatureTtf,
+  glyphData: signatureGlyphData as unknown as Record<string, TegakiGlyphData>,
+  lineCap: 'round',
+  unitsPerEm: 1000,
+  ascender: 750,
+  descender: -250,
+});
 
 const featured = (await getCollection('work', ({ data }) => !data.draft && data.featured)).sort(
   (a, b) => a.data.order - b.data.order || b.data.year - a.data.year,
@@ -80,8 +96,8 @@ const capabilities = [
  * user input). Each string is one on-screen beat.
  */
 const story = [
-  'It started with <span class="accent-gradient">shampoo bottles</span>.',
-  'Late 1980s — first the bath, then the shower.',
+  'It started with <span class="accent-gradient" data-anim="jiggle">shampoo bottles.</span>',
+  'Late 1980s. First the bath, then the shower.',
   "I'd turn the bottle over. Study the label, the cap, the curve of it. Decide what I'd change.",
   'Then I&rsquo;d pitch my redesign out loud &mdash; to a boardroom of nobody.',
   'I didn&rsquo;t know &ldquo;designer&rdquo; was a job yet.',
@@ -90,7 +106,7 @@ const story = [
 ---
 
 <BaseLayout
-  title="Adam Robertson — Product designer & developer"
+  title="Adam Robertson · Product designer & developer"
   description="Product designer and developer in Colorado. Head of Product Design, building interfaces where the details carry the weight."
 >
   {/* Hero -------------------------------------------------------------
@@ -132,7 +148,7 @@ const story = [
           data-anim="reveal"
         >
           I'm a Colorado-based product designer and developer with technical roots and grit. I work
-          end to end — research through shipped frontend — turning complex product problems into
+          end to end, from research through shipped frontend, turning complex product problems into
           interfaces that hold up under real use.
         </p>
       </div>
@@ -223,6 +239,9 @@ const story = [
   {/* Leadership ------------------------------------------------------- */}
   <Leadership />
 
+  {/* Experience / résumé ---------------------------------------------- */}
+  <Experience />
+
   {/* Contact ---------------------------------------------------------- */}
   <section class="px-gutter py-section text-center">
     <h2 class="font-display text-display font-normal text-ink" data-anim="reveal-heading">
@@ -231,10 +250,10 @@ const story = [
 
     <div class="mt-16 inline-block" data-anim="magnetic" data-strength="0.4">
       <a
-        href="mailto:hi@adam.build"
+        href="mailto:hi@adamrobertson.co"
         class="inline-flex items-center gap-3 rounded-full border border-line px-9 py-4 text-micro uppercase tracking-[0.14em] text-ink transition-colors hover:border-accent hover:text-accent"
       >
-        hi@adam.build
+        hi@adamrobertson.co
         <span aria-hidden="true">→</span>
       </a>
     </div>

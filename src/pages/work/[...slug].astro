@@ -28,7 +28,7 @@ const { title, client, year, role, summary, cover, coverAlt, accent } = entry.da
 const { Content } = await render(entry);
 ---
 
-<BaseLayout title={`${title} — Adam Robertson`} description={summary}>
+<BaseLayout title={`${title} · Adam Robertson`} description={summary}>
   <article style={accent ? `--color-accent: ${accent}` : undefined}>
     {/* Pinned hero — the title holds while the cover scales beneath it. */}
     <section class="relative h-svh overflow-hidden" data-anim="pin">
@@ -50,7 +50,7 @@ const { Content } = await render(entry);
         data-pin-fade
       >
         <p class="mb-6 text-micro uppercase tracking-[0.14em] text-ink-dim">
-          {client} — {year}
+          {client} · {year}
         </p>
         <h1 class="max-w-5xl font-display text-title font-normal text-ink">{title}</h1>
       </div>

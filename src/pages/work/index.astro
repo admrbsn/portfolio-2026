@@ -9,7 +9,7 @@ const projects = (await getCollection('work', ({ data }) => !data.draft)).sort(
 ---
 
 <BaseLayout
-  title="Work — Adam Robertson"
+  title="Work · Adam Robertson"
   description="Selected product design and frontend case studies."
 >
   <section class="px-gutter pb-24 pt-[28vh]">
@@ -32,6 +32,7 @@ const projects = (await getCollection('work', ({ data }) => !data.draft)).sort(
               href={`/work/${entry.id}`}
               class="flex items-baseline justify-between gap-6 py-10 md:py-14"
               data-cursor="grow"
+              data-cursor-label="View case study"
             >
               <span class="flex flex-col gap-2 md:flex-row md:items-baseline md:gap-8">
                 <span class="font-display text-title font-normal tracking-tight text-ink transition-colors duration-500 group-hover:text-accent">

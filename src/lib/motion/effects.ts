@@ -293,3 +293,46 @@ export function storyLine(el: HTMLElement): Teardown {
   };
 }
 
+/* -------------------------------------------------------------------------
+   Jiggle. A quick damped side-to-side shake fired when the element scrolls
+   into view, and again each time it re-enters. Used on the "shampoo bottles"
+   phrase to give the origin story a bit of playful, physical character.
+   Non-replaced inline elements ignore transforms, so the target is switched
+   to inline-block for the duration (which also keeps the phrase unbroken).
+   ------------------------------------------------------------------------- */
+export function jiggle(el: HTMLElement): Teardown {
+  // Origin near the baseline so it rocks on its feet like a bottle tipping
+  // side to side, rather than spinning about its middle.
+  gsap.set(el, { display: 'inline-block', transformOrigin: '50% 90%' });
+
+  // A quick wind-up, a springy side-to-side wobble with a little hop, then a
+  // bouncy elastic settle. The squash-and-stretch (scaleX/scaleY trading off)
+  // and the overshoot are what keep it playful instead of a rigid rattle.
+  // Paused so the ScrollTrigger drives it; restarted so re-entries replay.
+  const shake = gsap
+    .timeline({ paused: true })
+    .to(el, { rotation: -8, scaleX: 1.07, scaleY: 0.93, duration: 0.14, ease: 'power2.out' })
+    .to(el, { rotation: 7, y: -6, scaleX: 0.97, scaleY: 1.05, duration: 0.16, ease: 'sine.inOut' })
+    .to(el, { rotation: -5, y: 0, scaleX: 1.02, scaleY: 0.99, duration: 0.14, ease: 'sine.inOut' })
+    .to(el, {
+      rotation: 0,
+      scaleX: 1,
+      scaleY: 1,
+      duration: 1.2,
+      ease: 'elastic.out(1, 0.3)',
+    });
+
+  const st = ScrollTrigger.create({
+    trigger: el,
+    start: 'top 82%',
+    onEnter: () => shake.restart(),
+    onEnterBack: () => shake.restart(),
+  });
+
+  return () => {
+    st.kill();
+    shake.kill();
+    gsap.set(el, { clearProps: 'all' });
+  };
+}
+

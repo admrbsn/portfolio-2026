@@ -1,0 +1,73 @@
+---
+title: "The redesign that set Tribute's foundation"
+client: 'Tribute'
+year: 2020
+role: ['Product design', 'Design systems', 'Research']
+summary: 'A ground-up platform redesign and design-org rebuild during pandemic-driven growth, from $250K a year to $700K a month.'
+cover: '../../assets/work/tribute.jpg'
+coverAlt: 'Abstract cyan-to-dark gradient cover for the Tribute redesign case study'
+accent: 'oklch(0.82 0.14 210)'
+featured: true
+order: 3
+---
+
+import PullQuote from '../../components/mdx/PullQuote.astro';
+import Stat from '../../components/mdx/Stat.astro';
+
+I joined Tribute in late March 2020, just as the pandemic sent demand for group
+video montages sharply upward. Revenue went from $250K in 2019 to $700K in a
+single month by May 2020, with a million videos created. The backend held up. Almost
+everything users touched, and the design organization meant to improve it, did not
+yet exist in any structured form.
+
+## The problem
+
+User research kept returning the same three pain points. New visitors could not
+tell what the product was. Pricing was unclear about what you paid for and when.
+And the recording flow, the heart of the product, was dated, unreliable, and
+barely usable on mobile.
+
+<PullQuote cite="User research, 2020">
+  The homepage didn't explain the product. New visitors couldn't tell what
+  Tribute was or how it worked.
+</PullQuote>
+
+## Building the system before the screens
+
+The strategy was clarity, simplicity, and reliability, but none of it could hold
+without infrastructure to support it. I established a shared design system in
+Figma, stood up GA and PostHog for funnel visibility, set up continuous A/B
+testing through Google Optimize, and put a regular customer-feedback cadence in
+place.
+
+To do the work, I hired two full-time designers and brought in a small NYC design
+agency, then ran weekly design sprints using Crazy Eights, affinity mapping, and
+structured "spicy debates" that forced the team to articulate tradeoffs out loud.
+We bootstrapped the design system from Pegasus and tested prototypes in Maze, with
+designers working alongside engineers through implementation and A/B testing after
+launch.
+
+## Moving to Vue 3
+
+The responsive interactivity we wanted was not achievable inside Django's
+server-side rendering. We migrated to Vue 3, using Vite to embed Vue apps into the
+existing Django structure so we could prototype and deploy independently.
+Decoupling frontend from backend let the two ship on their own schedules and made
+the whole product easier to maintain.
+
+## Outcomes
+
+<Stat
+  items={[
+    { value: '+24%', label: 'User-generated tributes' },
+    { value: '+21%', label: 'Invitee participation' },
+    { value: '98%', label: 'Record-flow completion' },
+  ]}
+/>
+
+Checkout conversion rose 16% and average order value climbed about $30 alongside
+those gains. This was the project that set the foundation for everything Tribute
+has shipped since; the real work was building the design infrastructure, because
+no system, analytics, testing process, or full-time team existed when I arrived.
+My one regret is waiting as long as I did to move to Vue, after months spent
+pushing against the limits of the Django-rendered frontend.

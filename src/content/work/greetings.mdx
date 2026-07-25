@@ -1,0 +1,64 @@
+---
+title: 'Extending Tribute into one-to-one gifting'
+client: 'Tribute'
+year: 2021
+role: ['Product design', 'Research', 'Cross-platform']
+summary: 'Taking a group-video platform into personalized one-to-one digital gifting across web, iOS and Android.'
+cover: '../../assets/work/greetings.jpg'
+coverAlt: 'Abstract coral-to-dark gradient cover for the Tribute Greetings case study'
+accent: 'oklch(0.78 0.14 25)'
+featured: true
+order: 4
+---
+
+import PullQuote from '../../components/mdx/PullQuote.astro';
+
+Tribute's group-video product had proven that multimedia changes how people
+respond to a message. Greetings took that insight into a new category: one-to-one
+digital gifting, pairing a personal video message with a curated gift. It launched
+across web, iOS, and Android within six to eight months, built by two designers
+and a small engineering team.
+
+## The problem
+
+Existing digital greetings and gift cards felt transactional and emotionally flat.
+The opportunity was to bring Tribute's multimedia warmth to a much simpler
+interaction, without dragging along the complexity of the group-video flow.
+
+## The shape of the product
+
+Three features carried the concept. Curated gifts, from gift cards to flowers to
+artisanal products, gave more personality than a standard e-gift card. Prompt
+cards answered the hesitation people feel in front of a blank text field. And
+group gifting let several contributors add to a single greeting, preserving some
+of the collaborative energy of the original product.
+
+## Research and restraint
+
+I ran research with 300 participants across moderated and unmoderated sessions
+using Lookback and PlaybookUX, synthesizing in Dovetail. People wanted one-to-one
+gifting alongside the group model, consistently preferred clean, uncluttered
+interfaces, and cared about scheduling and dual email or SMS delivery.
+
+Unmoderated, task-based testing in Maze then delivered the most useful finding:
+audio features and social integrations were not valued. That pushed the roadmap
+toward cuts rather than additions, removing social options and deprioritizing
+audio.
+
+<PullQuote cite="Reflection, Greetings">
+  The strongest version was the simplest. Cutting features strengthened the core
+  experience rather than weakening it.
+</PullQuote>
+
+## Design and build
+
+Both primary flows stayed deliberately linear. Sending walked people through
+recipient details, message creation, gift selection, and scheduling. Receiving
+used a story-player format familiar from Instagram and Snapchat. Crazy Eights kept
+ideation fast inside tight constraints.
+
+The team built cross-platform with Ionic, Vue, and Tailwind, reusing existing
+authentication and marketplace code to save time. Web shipped first under the
+Tribute domain to avoid app-store delays, followed by iOS with native
+authentication adjustments, then Android. The lasting lesson was restraint:
+validating earlier would have surfaced the case for simplicity sooner.

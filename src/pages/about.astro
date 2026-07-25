@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import NoiseGradient from '../components/NoiseGradient.astro';
+import { experience } from '../data/experience';
 
 /*
  * About / How I lead. Content carried over from adamrobertson.co — the
@@ -15,7 +16,7 @@ const principles = [
   },
   {
     title: 'Challenge process before pixels',
-    body: "When output is off, the workflow is usually the reason. I go after the root cause rather than critiquing a design in isolation — the artefact is a symptom, not the problem.",
+    body: "When output is off, the workflow is usually the reason. I go after the root cause rather than critiquing a design in isolation. The artefact is a symptom, not the problem.",
   },
   {
     title: 'Make AI a team sport',
@@ -27,7 +28,7 @@ const principles = [
   },
   {
     title: 'Lead with intent',
-    body: 'Directness and clarity over false comfort. Being straight with someone is a form of respect — vagueness just moves the discomfort onto them.',
+    body: 'Directness and clarity over false comfort. Being straight with someone is a form of respect, and vagueness just moves the discomfort onto them.',
   },
 ];
 
@@ -35,7 +36,7 @@ const process = [
   {
     phase: 'Research',
     title: 'Establishing why',
-    body: 'Finding the purpose that every later decision gets measured against — user research, mental models, storyboards.',
+    body: 'Finding the purpose that every later decision gets measured against: user research, mental models, storyboards.',
     tools: 'PlaybookUX, Userbrain, Dovetail, Maze',
   },
   {
@@ -53,70 +54,8 @@ const process = [
   {
     phase: 'Check',
     title: 'Ongoing improvement',
-    body: "Validating assumptions against real use and real data. It doesn't stop at launch — that's where the measuring starts.",
+    body: "Validating assumptions against real use and real data. It doesn't stop at launch. That's where the measuring starts.",
     tools: 'PostHog, GA4',
-  },
-];
-
-const experience = [
-  {
-    period: '2021 — Present',
-    role: 'Head of Product Design',
-    company: 'Tribute',
-    points: [
-      'Led the platform redesign behind 20× growth in two years',
-      'Built a tokenized design system and shipped TypeScript applications',
-      'Folded research, A/B testing and analytics into the loop — up to 30% conversion gains',
-      'Ran a six-month acquisition integration',
-      'Built and launched two native iOS apps',
-      'Consolidated three PM systems into one workflow',
-    ],
-  },
-  {
-    period: '2015 — 2021',
-    role: 'Sr. Manager, UX/UI Design & Frontend Development',
-    company: "Peterson's",
-    points: [
-      'Led design and frontend across web and mobile products',
-      'Launched a mobile app — 4.6 stars, 10,000+ downloads, 90%+ positive reviews',
-      'Redesigned LMS workflows off the back of usability testing',
-    ],
-  },
-  {
-    period: 'Dec 2019 — Mar 2020',
-    role: 'Product Design & Development Consultant',
-    company: 'Droplr',
-    points: ['Grew organic traffic 115%', 'Hit a 98/100 Lighthouse score on a custom WordPress Multisite'],
-  },
-  {
-    period: '2017 — 2019',
-    role: 'Product Design & Development Consultant',
-    company: 'ETHDenver',
-    points: ['96% CSAT across the event platform'],
-  },
-  {
-    period: '2014 — 2017',
-    role: 'Product Design & Development Consultant',
-    company: 'Inspirato',
-    points: ['Acquired 4,000+ members for the Amex joint venture'],
-  },
-  {
-    period: '2011 — 2014',
-    role: 'Staff Designer / Engineer',
-    company: 'Webolutions',
-    points: ['Delivered 15+ client websites', 'Two Communicator Awards'],
-  },
-  {
-    period: '2006 — 2011',
-    role: 'Lead Interactive Designer',
-    company: 'Miles Partnership',
-    points: ['Led interactive design for 10+ tourism brands', 'Directed the Colorado.com redesign'],
-  },
-  {
-    period: '2007 — 2009',
-    role: 'Technical Specialist',
-    company: 'Apple',
-    points: ['Hardware and software consultation'],
   },
 ];
 
@@ -125,13 +64,13 @@ const inPractice = [
     year: '2025',
     company: 'Tribute',
     title: 'Process transformation',
-    body: 'Took Figma off the critical path and put an AI-driven design system in its place — one that produces working code instead of static files. A four-person team went from sceptical to proficient inside a couple of sprints. One-week cycles became the norm.',
+    body: 'Took Figma off the critical path and put an AI-driven design system in its place, one that produces working code instead of static files. A four-person team went from sceptical to proficient inside a couple of sprints. One-week cycles became the norm.',
   },
   {
     year: '2017',
     company: "Peterson's",
     title: 'Distributed execution',
-    body: 'Design in Denver, engineering in Ukraine, no overlapping hours. We shipped a production app in 90 days — 4.6 stars, 10,000+ downloads, and featured by Apple straight away.',
+    body: 'Design in Denver, engineering in Ukraine, no overlapping hours. We shipped a production app in 90 days: 4.6 stars, 10,000+ downloads, and featured by Apple straight away.',
   },
 ];
 
@@ -153,7 +92,7 @@ const toolkit = [
 ---
 
 <BaseLayout
-  title="About — Adam Robertson"
+  title="About · Adam Robertson"
   description="How I lead, how I work, and where I've done it. Product design leader with technical roots, based in Colorado."
 >
   {/* Hero -------------------------------------------------------------- */}
@@ -173,8 +112,8 @@ const toolkit = [
       </h1>
 
       <p class="mt-10 max-w-2xl text-[clamp(1.0625rem,1.35vw,1.3rem)] leading-[1.55] text-white/90" data-anim="reveal">
-        The best design leaders I've worked with weren't the strongest individual contributors —
-        they made everyone around them better. That's the job I'm trying to do.
+        The best design leaders I've worked with weren't the strongest individual contributors.
+        They made everyone around them better. That's the job I'm trying to do.
       </p>
     </div>
   </section>
@@ -192,7 +131,7 @@ const toolkit = [
 
       <div class="max-w-2xl space-y-6 text-ink-dim" data-anim="reveal-batch">
         <p>
-          I came up doing both design and development — two disciplines that rarely sit in the same
+          I came up doing both design and development, two disciplines that rarely sit in the same
           person. That combination shaped how I lead: I know what it costs to build the thing, so I
           know which conversations are worth having.
         </p>
@@ -243,7 +182,7 @@ const toolkit = [
         inPractice.map((item) => (
           <article class="rounded-2xl border border-line bg-surface-lift/40 p-8">
             <p class="text-micro uppercase tracking-[0.14em] text-ink-faint">
-              {item.company} — {item.year}
+              {item.company} · {item.year}
             </p>
             <h3 class="mt-4 font-display text-lead font-normal text-ink">{item.title}</h3>
             <p class="mt-4 text-ink-dim">{item.body}</p>
@@ -260,7 +199,7 @@ const toolkit = [
     </h2>
     <p class="mt-6 max-w-2xl text-ink-dim" data-anim="reveal">
       Four phases, scaled to the size of the team and the problem. Not every project needs all of
-      it — but skipping a phase should be a decision, not an accident.
+      it, but skipping a phase should be a decision, not an accident.
     </p>
 
     <ol class="mt-16 grid gap-5 md:grid-cols-2 lg:grid-cols-4" data-anim="reveal-batch">
@@ -287,7 +226,7 @@ const toolkit = [
         Experience
       </h2>
       <a
-        href="mailto:hi@adam.build?subject=Resume%20request"
+        href="mailto:hi@adamrobertson.co?subject=Resume%20request"
         class="shrink-0 text-micro uppercase tracking-[0.14em] text-ink-dim transition-colors hover:text-accent"
       >
         Request a PDF →
@@ -343,10 +282,10 @@ const toolkit = [
 
     <div class="mt-16 inline-block" data-anim="magnetic" data-strength="0.4">
       <a
-        href="mailto:hi@adam.build"
+        href="mailto:hi@adamrobertson.co"
         class="inline-flex items-center gap-3 rounded-full border border-line px-9 py-4 text-micro uppercase tracking-[0.14em] text-ink transition-colors hover:border-accent hover:text-accent"
       >
-        hi@adam.build
+        hi@adamrobertson.co
         <span aria-hidden="true">→</span>
       </a>
     </div>

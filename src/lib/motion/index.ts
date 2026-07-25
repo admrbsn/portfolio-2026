@@ -11,6 +11,7 @@ import {
   magnetic,
   heroFade,
   storyLine,
+  jiggle,
   type Teardown,
 } from './effects';
 
@@ -28,6 +29,7 @@ const registry: Record<string, (el: HTMLElement) => Teardown> = {
   magnetic,
   'hero-fade': heroFade,
   'story-line': storyLine,
+  jiggle,
 };
 
 let teardowns: Teardown[] = [];

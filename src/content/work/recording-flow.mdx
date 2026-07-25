@@ -1,43 +1,79 @@
 ---
-title: 'Making the record button feel inevitable'
+title: 'Rebuilding the recording flow for reliability and nerve'
 client: 'Tribute'
 year: 2024
-role: ['Interaction design', 'Prototyping']
-summary: 'Rebuilding the capture flow around a single gesture, and the eleven prototypes it took to get there.'
+role: ['Product design', 'Interaction design', 'Frontend']
+summary: 'Overhauling the core video submission flow, lifting completion from 33% to 65%+ by fixing both the infrastructure and the fear of the record button.'
 cover: '../../assets/work/recording-flow.jpg'
-coverAlt: 'Placeholder cover artwork for the recording flow case study'
+coverAlt: 'Abstract teal-to-dark gradient cover for the recording flow case study'
 accent: 'oklch(0.82 0.17 176)'
 featured: true
 order: 2
 ---
 
 import PullQuote from '../../components/mdx/PullQuote.astro';
+import Stat from '../../components/mdx/Stat.astro';
 
-**Placeholder copy.** Structure is real, words are not.
+The recording flow is the core interaction on Tribute: it is where participants
+contribute the video messages that become the final product. Over twenty million
+submissions have passed through it. It was also the most fragile part of the
+platform, held back by a dated interface, an unreliable recorder built on Ziggeo
+and an aging CDN, poor mobile behavior, and no way to submit anything but video.
 
-The single highest-leverage screen in the product was the one where somebody
-pointed a camera at their own face and tried to be sincere. It was also the
-screen with the least design attention.
+## The problem, split in two
 
-## The problem with a countdown
+Aggregate data showed a 33% submission rate, but the average hid two different
+failures. Some people abandoned at the very first recording screen, before they
+had committed anything. Others started recording and then hit a technical failure
+mid-process. Treating those as one number would have led to one fix; separating
+them shaped the whole redesign.
 
-Every version of this flow had opened with a three-second countdown. It felt
-considerate. In testing it turned out to be the opposite — three seconds is
-exactly long enough to start second-guessing yourself.
+A PostHog funnel made it concrete: 79% of users moved past the initial screen, but
+only 42% completed submission, for an overall 33% conversion. Mobile dropped off
+harder at every stage, and long processing waits correlated with abandonment.
 
-<PullQuote>
-  The countdown was not preparing people. It was giving them time to panic.
+<PullQuote cite="Customer research, recording flow">
+  The friction was not only technical. For many people, recording your own face
+  and trying to be sincere is a genuinely vulnerable thing to do.
 </PullQuote>
 
-## Eleven prototypes
+## Designing for hesitation, not just uptime
 
-Placeholder narrative describing the prototype sequence, what each one tested,
-and which assumption it killed.
+Research surfaced real emotional resistance, especially among introverts,
+independent of any bug. Prototype testing in Maze validated the redesigned flow
+and pointed to one clear request: people wanted a visible progress indicator
+showing where they were and what was left. Adding it measurably reduced hesitation
+in later rounds. Rather than jumping to pixel-perfect mockups, we prototyped in
+Bolt.new to validate the flow logic before committing to visuals.
 
-1. Hold-to-record, released on lift
-2. Tap-to-start with an escape hatch
-3. Ambient pre-roll with no explicit start
+## Rebuilding the foundation
 
-## Where it landed
+The second objective was to remove the reliability problems at the source. The new
+flow runs on Vue and Tailwind with Pinia for state and FormKit for forms,
+VideoRecord-js for capture, Vimeo for resumable uploads, Backblaze and Bunny for
+photos, and Stripe for the gift-card integration. On iOS and Android, native HTML
+input fields replaced the custom recorder, which eliminated a whole class of
+platform-specific bugs.
 
-Placeholder closing section.
+Smaller touches carried a lot of the experience: selected Tribute themes appear as
+dynamic backdrops so recording feels connected to the celebration, inline
+checkmarks confirm each input, hovering record disables upload (and vice versa) to
+show they are two paths to the same outcome, a hidden notes field acts like a
+teleprompter to cut down retakes, and a confetti finish rewards completion.
+
+## Results
+
+<Stat
+  items={[
+    { value: '65%+', label: 'Submission rate (from 33%)' },
+    { value: '+88%', label: 'Continuing past first screen' },
+    { value: '72%', label: 'Successful video submissions' },
+  ]}
+/>
+
+The redesign only worked because it treated infrastructure reliability as a
+conversion feature in its own right. People who hit a failed upload or a long
+processing delay rarely came back, which made backend stability inseparable from
+trust. The one thing I would do differently is treat resumable background uploads
+as a day-one requirement rather than a stretch goal, given how many people record
+on unreliable mobile connections.

@@ -10,8 +10,12 @@
    */
   let dot = $state<HTMLDivElement | null>(null);
   let ring = $state<HTMLDivElement | null>(null);
+  let labelEl = $state<HTMLDivElement | null>(null);
   let enabled = $state(false);
   let hovering = $state(false);
+  // Text pulled from the hovered element's `data-cursor-label`, e.g. the case
+  // study links set "View case study". Null hides the tooltip.
+  let label = $state<string | null>(null);
 
   onMount(() => {
     const fine = window.matchMedia('(hover: hover) and (pointer: fine)');
@@ -35,8 +39,12 @@
       mx = e.clientX;
       my = e.clientY;
 
-      const target = (e.target as Element | null)?.closest('a, button, [data-cursor="grow"]');
+      const el = e.target as Element | null;
+      const target = el?.closest('a, button, [data-cursor="grow"]');
       hovering = Boolean(target);
+
+      const labelHost = el?.closest('[data-cursor-label]');
+      label = labelHost?.getAttribute('data-cursor-label') || null;
     }
 
     function loop() {
@@ -46,6 +54,9 @@
 
       if (dot) dot.style.transform = `translate3d(${mx}px, ${my}px, 0) translate(-50%, -50%)`;
       if (ring) ring.style.transform = `translate3d(${rx}px, ${ry}px, 0) translate(-50%, -50%)`;
+      // Tooltip tracks the dot exactly, offset to the lower-right so it clears
+      // the cursor. The inner pill handles its own show/scale transition.
+      if (labelEl) labelEl.style.transform = `translate3d(${mx}px, ${my}px, 0) translate(18px, 14px)`;
 
       raf = requestAnimationFrame(loop);
     }
@@ -67,6 +78,11 @@
   <div class="cursor-layer" aria-hidden="true">
     <div bind:this={ring} class="ring" class:grow={hovering}></div>
     <div bind:this={dot} class="dot"></div>
+  </div>
+  <!-- Kept out of the difference-blend layer above so the pill keeps its true
+       accent colour instead of inverting against the backdrop. -->
+  <div bind:this={labelEl} class="cursor-label" aria-hidden="true">
+    <span class="cursor-label__pill" class:show={label}>{label}</span>
   </div>
 {/if}
 
@@ -118,5 +134,41 @@
     width: 62px;
     height: 62px;
     background: rgba(255, 255, 255, 0.14);
+  }
+
+  /* Follows the cursor (positioned in the RAF loop); the inner pill animates
+     its own entrance so the JS transform stays purely positional. */
+  .cursor-label {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 61;
+    pointer-events: none;
+    will-change: transform;
+  }
+
+  .cursor-label__pill {
+    display: inline-block;
+    white-space: nowrap;
+    padding: 0.35rem 0.6rem;
+    border-radius: 9999px;
+    background: var(--color-accent);
+    color: var(--color-surface);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    box-shadow: 0 4px 16px rgb(0 0 0 / 0.28);
+    opacity: 0;
+    transform: scale(0.8);
+    transform-origin: left center;
+    transition:
+      opacity 180ms cubic-bezier(0.16, 1, 0.3, 1),
+      transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .cursor-label__pill.show {
+    opacity: 1;
+    transform: scale(1);
   }
 </style>

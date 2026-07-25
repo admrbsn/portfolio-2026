@@ -1,11 +1,11 @@
 ---
-title: 'Rebuilding Tribute from the ground up'
+title: 'Re-architecting Tribute into a creator-first platform'
 client: 'Tribute'
 year: 2025
 role: ['Product design', 'Design system', 'Frontend']
-summary: 'A full platform redesign that cut time-to-first-video from nine minutes to under two.'
+summary: 'A full re-architecture of a decade-old product, shipped in one-week cycles where the deliverable was working code, not static files.'
 cover: '../../assets/work/tribute-v3.jpg'
-coverAlt: 'Placeholder cover artwork for the Tribute V3 case study'
+coverAlt: 'Abstract amber-to-dark gradient cover for the Tribute V3 case study'
 accent: 'oklch(0.87 0.17 96)'
 featured: true
 order: 1
@@ -14,44 +14,75 @@ order: 1
 import PullQuote from '../../components/mdx/PullQuote.astro';
 import Stat from '../../components/mdx/Stat.astro';
 
-**Placeholder copy.** Everything below is scaffolding to prove the template —
-swap it for the real narrative.
-
-Tribute's group video product had grown by accretion over six years. Every new
-feature had bolted another step onto the invite flow, and the result was a
-product that tested well with people who already understood it and lost
-everyone else.
-
-<Stat
-  items={[
-    { value: '9m → 1m48s', label: 'Time to first video' },
-    { value: '+34%', label: 'Invite completion' },
-    { value: '212', label: 'Components retired' },
-  ]}
-/>
+After nearly a decade of incremental improvements, Tribute had grown into an
+emotionally meaningful product used by millions, but the architecture underneath
+had not kept pace. V3 was a full re-architecture, not a visual refresh: a rethink
+of how creators and participants experience the product, delivered in about three
+months by a team of four working one-week sprint cycles.
 
 ## Where it broke down
 
-Session replays showed the same drop-off in three places: choosing an occasion,
-inviting contributors, and the moment of first record. Each screen individually
-tested fine. The sequence did not.
+Three problems held the platform back. Nearly every major surface, from
+onboarding and publishing to invitations, editing and checkout, had been improved
+in isolation, so the experience was inconsistent and expensive to maintain. Users
+kept asking for more control over themes and personality that the product never
+gave them. And creators and participants were effectively using two different
+products, losing the shared context that made a tribute feel like one thing.
 
-<PullQuote cite="Head of Growth, Tribute">
-  We had been optimising the steps. Nobody had questioned whether the steps
-  needed to exist.
+<PullQuote cite="Research synthesis, Tribute V3">
+  The strongest experiences felt like one continuous space that subtly adapted
+  based on who you were and what you could do.
 </PullQuote>
+
+## Research and discovery
+
+I ran an intensive teardown of competing products, mapping journeys from creation
+through completion, with Partiful and Paperless Post as reference points. A Maze
+feature-ranking exercise confirmed that people expected structural features to
+stay unobtrusive while emotional expression came first: video messages led, and
+theme and visual customization ranked higher than we expected.
+
+An early false-door concept placed the product page itself as the creation
+experience. Testing showed people were unsure what to do next, so we pivoted to a
+modal-based start that preserved clarity while teasing the new experience.
 
 ## What changed
 
-The redesign collapsed the first three screens into one and deferred every
-decision that could be made later. Occasion selection became a default with an
-edit affordance rather than a blocking choice.
+Onboarding was rebuilt to feel expressive rather than like a homemade form,
+teasing customization early and building immediate confidence. Post-launch
+onboarding conversion reached 54%, more than doubling the historical baseline of
+roughly 15 to 25%.
 
-- Invite and record became parallel paths instead of sequential gates
-- The design system dropped from 340 components to 128
-- Every surface moved onto a single fluid type ramp
+Payment moved from the very end of the flow, where it caused late-stage
+abandonment and 16% accidental checkouts, to just after the draft stage, aligning
+it with the moment users actually felt committed while keeping the product free to
+start. Research also surfaced how much people loved emojis, which became the
+foundation for animated, occasion-based backgrounds: balloons, fireworks,
+graduation caps, seasonal themes. Creators and participants now share one
+continuous space, separated by permissions rather than by separate interfaces.
 
-## Outcome
+## Changing how the team builds
 
-Placeholder outcome text. Note the metrics above are illustrative and should be
-replaced with real figures before this goes anywhere near production.
+The bigger shift was in process. Instead of designing static files for handoff, I
+made functioning code the deliverable, using Figma only for targeted layout
+exploration and never as the source of truth. Combined with Lean UX and one-week
+sprints, decisions that used to take weeks landed in single sessions once working
+prototypes replaced mockups. AI tooling like Relume generated sitemaps and
+wireframes from plain-language descriptions, keeping continuity from sitemap to
+high fidelity.
+
+## Results
+
+<Stat
+  items={[
+    { value: '+29%', label: 'Tribute starts' },
+    { value: '+24%', label: 'Start to publish' },
+    { value: '+19%', label: 'Purchases' },
+  ]}
+/>
+
+CSAT rose 20% alongside those gains. Beyond the numbers, V3 left a modern,
+scalable foundation that makes iteration safer and experimentation cheaper. The
+lasting change was reframing the design system not as a Figma library but as a
+living system rooted in AI-assisted prototyping, where the deliverable is working
+code.
