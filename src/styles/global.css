@@ -7,6 +7,11 @@
 @import '@fontsource/vidaloka/400.css';
 /* Wordmark only — Google Sans (now published on Google Fonts). */
 @import '@fontsource-variable/google-sans';
+/* Arcade face for the Breakout CTA and the game's own chrome. Latin subset
+   only (~19KB) and self-hosted like the rest, so it costs one same-origin
+   font request that the browser only issues once the CTA renders — it is not
+   render-blocking and nothing above the fold uses it. */
+@import '@fontsource/jersey-20/latin-400.css';
 
 /* ---------------------------------------------------------------------------
    Design tokens. Tailwind v4 is CSS-first — this @theme block *is* the config,
@@ -27,6 +32,14 @@
 
   /* Wordmark (nav brand only). */
   --font-wordmark: 'Google Sans Variable', ui-sans-serif, system-ui, sans-serif;
+
+  /* Breakout only. A deliberate stylistic island — it appears nowhere in the
+     portfolio proper, and it is a display face: headings, HUD labels and
+     buttons, never a paragraph. Jersey 20 is a tall, condensed pixel face, so
+     it reads at far smaller sizes than a squat one like Press Start 2P — but
+     its glyphs occupy much less of the em, so every size using it needs to be
+     roughly 1.7x what an equivalent blocky pixel font would take. */
+  --font-arcade: 'Jersey 20', ui-monospace, monospace;
 
   /* Display font tuning. Set for Vidaloka — a high-contrast display serif with
      a large x-height and sturdy stems; gentle tracking, modest leading. Sizing
@@ -56,17 +69,17 @@
   --text-micro--line-height: 1.2;
   --text-micro--letter-spacing: 0.08em;
 
-  /* Colour. Dark is the only mode. The surface is a teal-tinted black rather
-     than a neutral one — that tint is what makes the greens read as part of the
-     same family instead of sitting on top of a grey page. */
+  /* Colour. Dark is the only mode. The surface is a near-neutral dark grey
+     (almost black) — colour comes from the accents and the hero wash, not the
+     page itself. Chroma is kept minimal so it never reads as a tinted page. */
   --color-ink: oklch(0.97 0.005 150);
   --color-ink-dim: oklch(0.72 0.012 160); /* ~7.6:1 on --color-surface */
   /* Used almost exclusively at 12px, where WCAG AA needs 4.5:1. Do not darken
      below L≈0.58. */
   --color-ink-faint: oklch(0.6 0.014 160);
-  --color-surface: oklch(0.16 0.022 190);
-  --color-surface-lift: oklch(0.21 0.03 185);
-  --color-line: oklch(0.32 0.035 180);
+  --color-surface: oklch(0.16 0.004 240);
+  --color-surface-lift: oklch(0.21 0.006 240);
+  --color-line: oklch(0.32 0.01 240);
 
   /* Neon green, biased toward teal to sit closer to the reference. Very high
      contrast on the teal-black surface, so it clears AA comfortably even as

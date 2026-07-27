@@ -34,23 +34,72 @@
     let rx = mx;
     let ry = my;
     let raf = 0;
+    let last = 0;
+
+    /**
+     * Ring catch-up per 60Hz frame. Scaled by dt below so it's display-agnostic.
+     *
+     * A plain lerp settles at a lag of `v * (1 - k) / k` px for a sustained
+     * velocity of v px/frame. At the old k=0.14 that is ~6x the per-frame
+     * speed — so an ordinary 800px/s mouse move parked the ring ~80px behind a
+     * dot sitting inside a 34px circle. Hence both the higher k and the cap.
+     */
+    const FOLLOW = 0.22;
+
+    /**
+     * Hardest the ring may ever trail the dot, in px.
+     *
+     * Ceiling comes from the CSS: the ring is 34px across (r=17) and the dot
+     * 6px (r=3), so beyond 14 the dot's edge crosses the stroke. 8 keeps it
+     * clearly inside while still reading as offset toward the direction of
+     * travel.
+     *
+     * Above ~140px/s the ring is towed at exactly this distance rather than
+     * eased — the geometry of a 34px ring leaves no room for a real trail at
+     * speed, and a towed ring reads as attached where a lagging one reads as
+     * broken. The spring is still visible where it matters: on stops and
+     * direction changes, when the gap falls back under the cap.
+     */
+    const MAX_LAG = 8;
 
     function onMove(e: PointerEvent) {
       mx = e.clientX;
       my = e.clientY;
 
-      const el = e.target as Element | null;
-      const target = el?.closest('a, button, [data-cursor="grow"]');
-      hovering = Boolean(target);
+      // Real pointermove always targets an Element, but the listener is on
+      // `window` — anything dispatched at the window itself lands here with a
+      // target that has no `closest`. Narrowing beats casting.
+      const el = e.target instanceof Element ? e.target : null;
+      hovering = Boolean(el?.closest('a, button, [data-cursor="grow"]'));
 
       const labelHost = el?.closest('[data-cursor-label]');
       label = labelHost?.getAttribute('data-cursor-label') || null;
     }
 
-    function loop() {
+    function loop(now: number) {
+      // A fixed per-frame lerp is really a per-*display* lerp: at 120Hz it
+      // converges twice as fast as at 60Hz, so the same flick trails half as
+      // far on a ProMotion screen. Scaling by dt pins the feel to wall time.
+      const dt = last ? Math.min((now - last) / 1000, 0.1) : 1 / 60;
+      last = now;
+
       // Dot tracks exactly; ring lags for the trailing-spring feel.
-      rx += (mx - rx) * 0.14;
-      ry += (my - ry) * 0.14;
+      const k = 1 - Math.pow(1 - FOLLOW, dt * 60);
+      rx += (mx - rx) * k;
+      ry += (my - ry) * k;
+
+      // Then drag the ring along if it has fallen too far behind, so the dot
+      // is always contained. Beyond MAX_LAG the ring stops easing and is
+      // simply towed — which is what makes a fast flick feel attached rather
+      // than sluggish.
+      const dx = mx - rx;
+      const dy = my - ry;
+      const dist = Math.hypot(dx, dy);
+      if (dist > MAX_LAG) {
+        const pull = (dist - MAX_LAG) / dist;
+        rx += dx * pull;
+        ry += dy * pull;
+      }
 
       if (dot) dot.style.transform = `translate3d(${mx}px, ${my}px, 0) translate(-50%, -50%)`;
       if (ring) ring.style.transform = `translate3d(${rx}px, ${ry}px, 0) translate(-50%, -50%)`;

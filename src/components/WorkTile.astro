@@ -1,0 +1,70 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  entry: CollectionEntry<'work'>;
+  /** Bento cell placement (col/row spans), applied at lg and up. */
+  cellClass?: string;
+  /** The large tile: bigger title and a visible summary. */
+  feature?: boolean;
+  /** Eager-load the tiles likely above the fold. */
+  eager?: boolean;
+}
+
+const { entry, cellClass = '', feature = false, eager = false } = Astro.props;
+const { title, client, summary, cover, coverAlt, accent } = entry.data;
+---
+
+{/* Full-bleed cover fills the bento cell; text sits over a scrim so the tile
+    works at any size or orientation. On small screens it falls back to a 4:3
+    box; from lg it stretches to fill its grid cell. */}
+<a
+  href={`/work/${entry.id}`}
+  class:list={[
+    'group relative block aspect-[4/3] overflow-hidden rounded-xl bg-surface-lift lg:aspect-auto lg:h-full',
+    cellClass,
+  ]}
+  style={accent ? `--card-accent: ${accent}` : undefined}
+  data-cursor="grow"
+  data-cursor-label="View case study"
+>
+  <Image
+    src={cover}
+    alt={coverAlt}
+    widths={[480, 800, 1200]}
+    sizes="(min-width: 1024px) 55vw, (min-width: 640px) 46vw, 92vw"
+    class="absolute inset-0 h-full w-full object-cover transition-transform duration-[900ms] ease-[var(--ease-out-expo)] group-hover:scale-[1.05]"
+    transition:name={`cover-${entry.id}`}
+    loading={eager ? 'eager' : 'lazy'}
+  />
+
+  {/* Legibility scrim. */}
+  <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent"></div>
+  {/* Accent wash on hover. */}
+  <div
+    class="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+    style="background: linear-gradient(to top, color-mix(in oklab, var(--card-accent, var(--color-accent)) 30%, transparent), transparent 60%)"
+  >
+  </div>
+
+  <div class="absolute inset-x-0 bottom-0 p-5 lg:p-6">
+    <p class="text-micro uppercase tracking-[0.14em] text-white/70">{client}</p>
+    <h3
+      class:list={[
+        'mt-1.5 font-display font-normal leading-[1.05] tracking-tight text-white',
+        feature ? 'text-[clamp(1.6rem,2.4vw,2.6rem)]' : 'text-[clamp(1.15rem,1.5vw,1.6rem)]',
+      ]}
+    >
+      {title}<span class="text-accent">.</span>
+    </h3>
+    <p
+      class:list={[
+        'mt-2 max-w-md text-white/80',
+        feature ? 'text-body' : 'text-sm',
+      ]}
+    >
+      {summary}
+    </p>
+  </div>
+</a>

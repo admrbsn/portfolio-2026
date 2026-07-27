@@ -2,8 +2,9 @@
 import { experience } from '../data/experience';
 
 // Home résumé. Editorial two-column layout: a sticky intro on the left, the
-// role list on the right. Rows stagger in on scroll (reveal-batch) and lift on
-// hover. The detailed version, with bullets, lives on /about.
+// role list on the right. Each role is an accordion — hover shows a "See more"
+// cursor tooltip, click expands its bullets (one open at a time). Bullets are
+// visible by default so no-JS visitors still get them; JS collapses them.
 ---
 
 <section class="px-gutter py-section" aria-labelledby="experience-heading">
@@ -37,20 +38,45 @@ import { experience } from '../data/experience';
       </a>
     </div>
 
-    {/* Right: role list. Divide-y draws the hairlines between rows only. */}
-    <ol class="divide-y divide-line" data-anim="reveal-batch">
+    {/* Right: role list / accordion. Divide-y draws the hairlines between rows. */}
+    <ol class="divide-y divide-line" data-anim="reveal-batch" data-exp-accordion>
       {
-        experience.map((job) => (
-          <li class="group py-7 md:py-9">
-            <div class="flex flex-col gap-2 md:flex-row md:items-baseline md:justify-between md:gap-8">
-              <div class="md:transition-transform md:duration-500 md:ease-[var(--ease-out-expo)] md:group-hover:translate-x-2">
-                <h3 class="font-display text-[clamp(1.375rem,2.4vw,2.15rem)] font-normal leading-[1.05] tracking-tight text-balance text-ink transition-colors duration-500 group-hover:text-accent">{job.role}<span class="text-accent">.</span></h3>
-                <p class="mt-2 text-micro uppercase tracking-[0.14em] text-ink-faint">{job.company}</p>
-              </div>
+        experience.map((job, i) => (
+          <li class="group">
+            <button
+              type="button"
+              id={`exp-trigger-${i}`}
+              data-accordion-trigger
+              data-cursor-label="See more"
+              aria-expanded="false"
+              aria-controls={`exp-panel-${i}`}
+              class="flex w-full flex-col gap-2 py-7 text-left md:flex-row md:items-baseline md:justify-between md:gap-8 md:py-9"
+            >
+              <span class="block md:transition-transform md:duration-500 md:ease-[var(--ease-out-expo)] md:group-hover:translate-x-2">
+                <span class="block font-display text-[clamp(1.375rem,2.4vw,2.15rem)] font-normal leading-[1.05] tracking-tight text-balance text-ink transition-colors duration-500 group-hover:text-accent">{job.role}<span class="text-accent">.</span></span>
+                <span class="mt-2 block text-micro uppercase tracking-[0.14em] text-ink-faint">
+                  {job.company}
+                </span>
+              </span>
 
-              <p class="shrink-0 text-micro uppercase tracking-[0.14em] text-ink-faint md:text-right">
+              <span class="shrink-0 text-micro uppercase tracking-[0.14em] text-ink-faint md:pt-1 md:text-right">
                 {job.period}
-              </p>
+              </span>
+            </button>
+
+            <div id={`exp-panel-${i}`} role="region" aria-labelledby={`exp-trigger-${i}`} class="exp-panel">
+              <div class="exp-panel__inner">
+                <ul class="max-w-xl space-y-2.5 pb-9 pt-1 md:pb-11">
+                  {job.points.map((point) => (
+                    <li class="flex gap-3 text-ink-dim">
+                      <span class="mt-2 shrink-0 text-[0.5rem] leading-none text-accent" aria-hidden="true">
+                        ◆
+                      </span>
+                      {point}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           </li>
         ))
@@ -58,3 +84,70 @@ import { experience } from '../data/experience';
     </ol>
   </div>
 </section>
+
+<style>
+  /* Accordion height via grid-template-rows 0fr → 1fr: smooth, no JS height
+     measuring. Default is OPEN so no-JS visitors still see every bullet; once JS
+     is confirmed (`html:not(.no-js)`, set before first paint) rows collapse and
+     animate. The inner wrapper's overflow clips content during the transition. */
+  .exp-panel {
+    display: grid;
+    grid-template-rows: 1fr;
+  }
+  .exp-panel__inner {
+    overflow: hidden;
+  }
+
+  :global(html:not(.no-js)) .exp-panel {
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 460ms var(--ease-out-expo);
+  }
+  :global(html:not(.no-js)) .exp-panel[data-open] {
+    grid-template-rows: 1fr;
+  }
+  :global(html:not(.no-js)) .exp-panel__inner {
+    opacity: 0;
+    transition: opacity 320ms ease;
+  }
+  :global(html:not(.no-js)) .exp-panel[data-open] .exp-panel__inner {
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :global(html:not(.no-js)) .exp-panel,
+    :global(html:not(.no-js)) .exp-panel__inner {
+      transition: none;
+    }
+  }
+</style>
+
+<script is:inline>
+  // Delegated on `document` and guarded so it binds exactly once and keeps
+  // working across ClientRouter navigations (the résumé is home-only and gets
+  // swapped in). Exclusive: opening one row closes any other in the same list.
+  if (!window.__expAccordionBound) {
+    window.__expAccordionBound = true;
+    document.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-accordion-trigger]');
+      if (!btn) return;
+      const list = btn.closest('[data-exp-accordion]');
+      if (!list) return;
+
+      const willOpen = btn.getAttribute('aria-expanded') !== 'true';
+
+      list.querySelectorAll('[data-accordion-trigger]').forEach((b) => {
+        b.setAttribute('aria-expanded', 'false');
+        b.setAttribute('data-cursor-label', 'See more');
+        const panel = document.getElementById(b.getAttribute('aria-controls'));
+        if (panel) panel.removeAttribute('data-open');
+      });
+
+      if (willOpen) {
+        btn.setAttribute('aria-expanded', 'true');
+        btn.setAttribute('data-cursor-label', 'See less');
+        const panel = document.getElementById(btn.getAttribute('aria-controls'));
+        if (panel) panel.setAttribute('data-open', '');
+      }
+    });
+  }
+</script>

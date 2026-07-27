@@ -46,11 +46,17 @@ const socials: {
   <p class="text-micro uppercase tracking-[0.2em] text-ink-faint">Message me</p>
 
   {/* Click-to-copy. Real text underneath, so screen readers read the address;
-      the label doubles as an aria-live region announcing "Copied". */}
+      the label doubles as an aria-live region announcing "Copied".
+
+      Deliberately NOT `uppercase`, unlike every other label in this footer.
+      The rest are chrome, where caps is a typographic device; this one is a
+      literal string a visitor is meant to read as an address and retype. Caps
+      makes it look like a heading rather than an email — and implies a casing
+      that isn't the one on the clipboard. */}
   <button
     type="button"
     data-copy={email}
-    class="group mx-auto mt-8 block font-display text-[clamp(2.25rem,7vw,5rem)] uppercase leading-none text-ink transition-colors hover:text-accent"
+    class="group mx-auto mt-8 block font-display text-[clamp(2.25rem,7vw,5rem)] leading-none text-ink transition-colors hover:text-accent"
     aria-describedby="copy-hint"
   >
     {email}

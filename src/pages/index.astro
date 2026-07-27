@@ -11,7 +11,7 @@ import type { TegakiGlyphData } from 'tegaki';
 import signatureGlyphData from '../assets/fonts/reenie-beanie/glyphData.json';
 import signatureTtf from '../assets/fonts/reenie-beanie/reenie-beanie.ttf?url';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import WorkCard from '../components/WorkCard.astro';
+import WorkTile from '../components/WorkTile.astro';
 import NoiseGradient from '../components/NoiseGradient.astro';
 import Leadership from '../components/Leadership.astro';
 import Experience from '../components/Experience.astro';
@@ -31,9 +31,21 @@ const signatureFont = createBundle({
   descender: -250,
 });
 
-const featured = (await getCollection('work', ({ data }) => !data.draft && data.featured)).sort(
+// All published case studies, laid out in a mixed-size bento on the home page
+// (no separate work index). Sorted by manual order, ties break on year.
+const work = (await getCollection('work', ({ data }) => !data.draft)).sort(
   (a, b) => a.data.order - b.data.order || b.data.year - a.data.year,
 );
+
+// Bento cell placements, applied in order to `work`. Designed to tile a 3-col
+// grid with no gaps: one large tile, two portraits, two wide tiles.
+const workCells = [
+  'lg:col-span-2 lg:row-span-2', // feature — large
+  'lg:row-span-2', // portrait
+  'lg:row-span-2', // portrait
+  'lg:col-span-2', // wide
+  'lg:col-span-2', // wide
+];
 
 /*
  * Hero stats. `20×` is the Tribute growth figure; the second is a suggested
@@ -219,20 +231,19 @@ const story = [
     </div>
   </section>
 
-  {/* Featured work ---------------------------------------------------- */}
-  <section class="px-gutter py-section">
-    <div class="mb-16 flex items-end justify-between gap-6">
-      <h2 class="font-display text-title font-normal text-ink" data-anim="reveal-heading">Selected work</h2>
-      <a
-        href="/work"
-        class="shrink-0 text-micro uppercase tracking-[0.14em] text-ink-dim transition-colors hover:text-accent"
-      >
-        All projects →
-      </a>
-    </div>
+  {/* Selected work ---------------------------------------------------- */}
+  <section id="work" class="scroll-mt-28 px-gutter py-section">
+    <h2 class="font-display text-title font-normal text-ink" data-anim="reveal-heading">Selected work</h2>
 
-    <div class="grid gap-x-10 gap-y-20 lg:grid-cols-2" data-anim="reveal-batch">
-      {featured.map((entry, i) => <WorkCard entry={entry} index={i} />)}
+    <div
+      class="mt-16 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:[grid-auto-rows:clamp(11rem,14vw,13rem)]"
+      data-anim="reveal-batch"
+    >
+      {
+        work.map((entry, i) => (
+          <WorkTile entry={entry} cellClass={workCells[i]} feature={i === 0} eager={i < 3} />
+        ))
+      }
     </div>
   </section>
 
@@ -241,21 +252,4 @@ const story = [
 
   {/* Experience / résumé ---------------------------------------------- */}
   <Experience />
-
-  {/* Contact ---------------------------------------------------------- */}
-  <section class="px-gutter py-section text-center">
-    <h2 class="font-display text-display font-normal text-ink" data-anim="reveal-heading">
-      Let's make <span class="text-accent">something</span>.
-    </h2>
-
-    <div class="mt-16 inline-block" data-anim="magnetic" data-strength="0.4">
-      <a
-        href="mailto:hi@adamrobertson.co"
-        class="inline-flex items-center gap-3 rounded-full border border-line px-9 py-4 text-micro uppercase tracking-[0.14em] text-ink transition-colors hover:border-accent hover:text-accent"
-      >
-        hi@adamrobertson.co
-        <span aria-hidden="true">→</span>
-      </a>
-    </div>
-  </section>
 </BaseLayout>
