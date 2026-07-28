@@ -1,7 +1,12 @@
 ---
+import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import NoiseGradient from '../components/NoiseGradient.astro';
 import { experience } from '../data/experience';
+import MomentTribute from '../components/MomentTribute.astro';
+import MomentPetersons from '../components/MomentPetersons.astro';
+import overlook from '../assets/about/overlook.webp';
+
 
 /*
  * About / How I lead. Content carried over from adamrobertson.co — the
@@ -9,26 +14,53 @@ import { experience } from '../data/experience';
  * which doubles as the resume.
  */
 
+/*
+ * One icon per principle, in the order supplied. Stored as path arrays because
+ * the compass is a two-path glyph; everything inherits `currentColor` and a
+ * shared stroke width from the <svg> wrapper.
+ *
+ * The last is a flexed arm. It ships at stroke-width 2; the shared <svg>
+ * wrapper overrides that to 1.6 so it sits at the same weight as the rest.
+ */
+const principleIcons = [
+  [
+    'M18 15.8369C19.4559 16.5683 20.7041 17.742 21.6152 19.2096C21.7956 19.5003 21.8858 19.6456 21.917 19.8468C21.9804 20.2558 21.7008 20.7585 21.3199 20.9204C21.1325 21 20.9216 21 20.5 21M16 11.5322C17.4817 10.7959 18.5 9.26686 18.5 7.5C18.5 5.73314 17.4817 4.20411 16 3.46776M14 7.5C14 9.98528 11.9852 12 9.49996 12C7.01468 12 4.99996 9.98528 4.99996 7.5C4.99996 5.01472 7.01468 3 9.49996 3C11.9852 3 14 5.01472 14 7.5ZM2.55919 18.9383C4.1535 16.5446 6.66933 15 9.49996 15C12.3306 15 14.8464 16.5446 16.4407 18.9383C16.79 19.4628 16.9646 19.725 16.9445 20.0599C16.9289 20.3207 16.7579 20.64 16.5495 20.7976C16.2819 21 15.9138 21 15.1776 21H3.82232C3.08613 21 2.71804 21 2.4504 20.7976C2.24201 20.64 2.07105 20.3207 2.05539 20.0599C2.03529 19.725 2.20992 19.4628 2.55919 18.9383Z',
+  ],
+  [
+    'M12 4V15.2C12 16.8802 12 17.7202 12.327 18.362C12.6146 18.9265 13.0735 19.3854 13.638 19.673C14.2798 20 15.1198 20 16.8 20H17M17 20C17 21.1046 17.8954 22 19 22C20.1046 22 21 21.1046 21 20C21 18.8954 20.1046 18 19 18C17.8954 18 17 18.8954 17 20ZM7 4L17 4M7 4C7 5.10457 6.10457 6 5 6C3.89543 6 3 5.10457 3 4C3 2.89543 3.89543 2 5 2C6.10457 2 7 2.89543 7 4ZM17 4C17 5.10457 17.8954 6 19 6C20.1046 6 21 5.10457 21 4C21 2.89543 20.1046 2 19 2C17.8954 2 17 2.89543 17 4ZM12 12H17M17 12C17 13.1046 17.8954 14 19 14C20.1046 14 21 13.1046 21 12C21 10.8954 20.1046 10 19 10C17.8954 10 17 10.8954 17 12Z',
+  ],
+  [
+    'M12 14.9998L9 11.9998M12 14.9998C13.3968 14.4685 14.7369 13.7985 16 12.9998M12 14.9998V19.9998C12 19.9998 15.03 19.4498 16 17.9998C17.08 16.3798 16 12.9998 16 12.9998M9 11.9998C9.53214 10.6192 10.2022 9.29582 11 8.04976C12.1652 6.18675 13.7876 4.65281 15.713 3.59385C17.6384 2.53489 19.8027 1.98613 22 1.99976C22 4.71976 21.22 9.49976 16 12.9998M9 11.9998H4C4 11.9998 4.55 8.96976 6 7.99976C7.62 6.91976 11 7.99976 11 7.99976M4.5 16.4998C3 17.7598 2.5 21.4998 2.5 21.4998C2.5 21.4998 6.24 20.9998 7.5 19.4998C8.21 18.6598 8.2 17.3698 7.41 16.5898C7.02131 16.2188 6.50929 16.0044 5.97223 15.9878C5.43516 15.9712 4.91088 16.1535 4.5 16.4998Z',
+  ],
+  [
+    'M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z',
+    'M14.7221 8.26596C15.2107 8.10312 15.4549 8.02169 15.6174 8.07962C15.7587 8.13003 15.87 8.24127 15.9204 8.38263C15.9783 8.54507 15.8969 8.78935 15.734 9.27789L14.2465 13.7405C14.2001 13.8797 14.1769 13.9492 14.1374 14.007C14.1024 14.0582 14.0582 14.1024 14.007 14.1374C13.9492 14.1769 13.8797 14.2001 13.7405 14.2465L9.27789 15.734C8.78935 15.8969 8.54507 15.9783 8.38263 15.9204C8.24127 15.87 8.13003 15.7587 8.07962 15.6174C8.02169 15.4549 8.10312 15.2107 8.26596 14.7221L9.75351 10.2595C9.79989 10.1203 9.82308 10.0508 9.8626 9.99299C9.8976 9.94182 9.94182 9.8976 9.99299 9.8626C10.0508 9.82308 10.1203 9.79989 10.2595 9.75351L14.7221 8.26596Z',
+  ],
+  [
+    'M22 7.99992V11.9999M10.25 5.49991H6.8C5.11984 5.49991 4.27976 5.49991 3.63803 5.82689C3.07354 6.11451 2.6146 6.57345 2.32698 7.13794C2 7.77968 2 8.61976 2 10.2999L2 11.4999C2 12.4318 2 12.8977 2.15224 13.2653C2.35523 13.7553 2.74458 14.1447 3.23463 14.3477C3.60218 14.4999 4.06812 14.4999 5 14.4999V18.7499C5 18.9821 5 19.0982 5.00963 19.1959C5.10316 20.1455 5.85441 20.8968 6.80397 20.9903C6.90175 20.9999 7.01783 20.9999 7.25 20.9999C7.48217 20.9999 7.59826 20.9999 7.69604 20.9903C8.64559 20.8968 9.39685 20.1455 9.49037 19.1959C9.5 19.0982 9.5 18.9821 9.5 18.7499V14.4999H10.25C12.0164 14.4999 14.1772 15.4468 15.8443 16.3556C16.8168 16.8857 17.3031 17.1508 17.6216 17.1118C17.9169 17.0756 18.1402 16.943 18.3133 16.701C18.5 16.4401 18.5 15.9179 18.5 14.8736V5.1262C18.5 4.08191 18.5 3.55976 18.3133 3.2988C18.1402 3.05681 17.9169 2.92421 17.6216 2.88804C17.3031 2.84903 16.8168 3.11411 15.8443 3.64427C14.1772 4.55302 12.0164 5.49991 10.25 5.49991Z',
+  ],
+];
+
 const principles = [
   {
     title: 'Stay close to the work',
-    body: 'I stay in the tools and in the execution. Feedback only lands when it comes from someone who understands what it took to make the thing, and decisions only stick when the people doing the work were part of them.',
+    body: "I don't manage from a distance. I'm in Figma, in the code, in the weeds with the team. That proximity is what makes feedback land and decisions stick.",
   },
   {
-    title: 'Challenge process before pixels',
-    body: "When output is off, the workflow is usually the reason. I go after the root cause rather than critiquing a design in isolation. The artefact is a symptom, not the problem.",
+    title: 'Challenge the process before the pixels',
+    body: "Most design failures are process failures. If the work isn't good, I look at how we're working before I look at what we shipped.",
   },
   {
     title: 'Make AI a team sport',
-    body: 'I experiment alongside the team rather than mandating tools from above. Adoption that comes from people finding their own wins holds; adoption by decree does not.',
+    body: "I don't hand down tools. I experiment alongside the team, share what's working, and build shared fluency together. Adoption sticks when it feels like an upgrade, not a mandate.",
   },
   {
     title: 'Lead with compassion',
-    body: 'Real human connection over performance theatre. Knowing what someone is actually dealing with matters more than a rating on a form.',
+    body: "Skip the performance reviews and box-checking. Have real human connections and conversations instead. AI has data-ized enough of our lives — let's not let it muck with our relationships with employees. At the end of the day, 99% of people want to be successful at their jobs and happy. Lean into that.",
   },
   {
     title: 'Lead with intent',
-    body: 'Directness and clarity over false comfort. Being straight with someone is a form of respect, and vagueness just moves the discomfort onto them.',
+    body: "Be intentional. Ambiguity is dishonest. If a designer presents something and the layout or typography isn't working, don't say “it's okay” — call it out, respectfully. “It's okay” creates uncertainty and isn't fair to them. This applies everywhere: work, life, relationships. Clarity is a gift.",
   },
 ];
 
@@ -36,25 +68,25 @@ const process = [
   {
     phase: 'Research',
     title: 'Establishing why',
-    body: 'Finding the purpose that every later decision gets measured against: user research, mental models, storyboards.',
+    body: 'The Research Phase is where we identify the purpose for all the decisions we will eventually make. At this point, I determine goals and outcomes and challenge assumptions, using user research, mental models, and storyboards to help define how users think. The primary goal is to first figure out what users want and why they want it — this forms the basis for all our future design decisions.',
     tools: 'PlaybookUX, Userbrain, Dovetail, Maze',
   },
   {
     phase: 'Ideate',
     title: 'Explore and expand options',
-    body: 'Collaborative divergence before convergence. Design sprints, How Might We, Crazy 8s, and spicy debates to get more than one real option on the table.',
+    body: 'In Ideation, we brainstorm and collaborate to explore possibilities through various exercises. Ideation may need to be streamlined to meet the needs of a startup project, but it is critical for more complex, larger initiatives. Design sprints, either with fellow designers or stakeholders, are central to this stage. We use techniques such as How Might We, Crazy 8s, and Spicy Debates to generate multiple possible solutions. These exercises take up significant time, but they give us numerous ways to innovate and force us to rethink how we traditionally design.',
     tools: 'Mural, Miro',
   },
   {
     phase: 'Make',
     title: 'Realizing our vision',
-    body: 'Turning ideas into something tangible enough to react to. My favourite part of the process.',
+    body: 'In the Make Stage, we transform our ideas into tangible products — my favourite part of the design process. Based on our findings from the Research Phase, we begin forming hypotheses and developing our products. Whether we are working in Figma or rapidly prototyping using modern tools, this is where the product takes shape and comes alive. As a designer, I can express my creativity at this stage while also making meaningful contributions to the end product.',
     tools: 'Figma, Bolt, v0',
   },
   {
     phase: 'Check',
     title: 'Ongoing improvement',
-    body: "Validating assumptions against real use and real data. It doesn't stop at launch. That's where the measuring starts.",
+    body: "The Check Phase is the core of my design process — it's where we validate our assumptions and continuously refine the work through user testing and data analysis. This continues long after the design is complete. Occasionally we discover that our data-backed assumptions were wrong, or that users reacted badly to some part of the product. That is exactly why the Check Phase matters: it hands us real-world opportunities for growth. Whether we are taking a 25% conversion rate to 50% or fine-tuning flows on user feedback, this is where we measure whether the design actually served anyone.",
     tools: 'PostHog, GA4',
   },
 ];
@@ -63,31 +95,106 @@ const inPractice = [
   {
     year: '2025',
     company: 'Tribute',
-    title: 'Process transformation',
-    body: 'Took Figma off the critical path and put an AI-driven design system in its place, one that produces working code instead of static files. A four-person team went from sceptical to proficient inside a couple of sprints. One-week cycles became the norm.',
+    kicker: 'Process & team transformation',
+    title: 'Rethinking what a design system actually is',
+    paras: [
+      "Most design systems live in Figma. Ours used to. When we began Tribute's full platform replatform, I made a call that changed how my entire team works: we were cutting Figma out of the critical path and building a design system rooted in AI and rapid prototyping, where the deliverable wasn't a static file. It was functioning code.",
+      "The team of four was skeptical at first. That's a fair reaction when you're asking designers to change the most fundamental part of their workflow. But I stayed close to the work, experimented alongside them, and compressed our sprint cycles down to one week by combining Lean UX and traditional Agile across product, design, and engineering simultaneously.",
+      'Within a few sprints, something shifted. The feedback loops got tighter. Stakeholders were reacting to real, working product instead of mockups. Decisions that used to take weeks were getting made in days. The reluctance disappeared because the results were undeniable.',
+    ],
+    outcome:
+      'Team of 4 went from skeptical to thriving. One-week sprint cycles became the new normal. The system now ships production-ready components, not handoffs.',
   },
   {
-    year: '2017',
+    year: '2020',
     company: "Peterson's",
-    title: 'Distributed execution',
-    body: 'Design in Denver, engineering in Ukraine, no overlapping hours. We shipped a production app in 90 days: 4.6 stars, 10,000+ downloads, and featured by Apple straight away.',
+    kicker: 'Cross-timezone execution',
+    // Trimmed to sit on one line beside its 43-character sibling. "In 90 days"
+    // was the part to lose: the graphic's TIMELINE card and the outcome line
+    // below both already carry it.
+    title: 'A 4.6-star app built across two continents',
+    paras: [
+      "When Peterson's decided to build a test prep app, the timeline was aggressive and the team was distributed. I was leading design and frontend in Denver while our engineering team was based in Ukraine. Asynchronous by necessity, high-stakes by design.",
+      "What could have been a coordination nightmare became one of the most efficient projects I've ever run. We established clear async rituals, kept design decisions documented and visible, and used the timezone gap to our advantage. By the time Denver woke up, Kyiv had already pushed code. By the time Kyiv signed off, we had new designs waiting.",
+      'I worked directly with the CEO and CTO throughout, which kept decisions fast and alignment tight. There was no middle layer to slow things down. When something needed to change, it changed the same day.',
+    ],
+    outcome:
+      'Shipped in under 3 months. 4.6-star App Store rating, 10,000+ downloads, and featured by Apple in its first week.',
   },
 ];
 
+/*
+ * The full résumé skill set, in the résumé's own four groupings.
+ *
+ * Deliberately longer than the homepage's Capabilities index, which is a
+ * curated ~46-item summary. This is the about page — the deep version — so it
+ * carries everything, including the things a recruiter's search actually hits.
+ */
 const toolkit = [
-  'Figma',
-  'Webflow',
-  'Tailwind',
-  'Vue',
-  'Nuxt',
-  'Astro',
-  'TypeScript',
-  'Ionic',
-  'WordPress',
-  'Sass',
-  'PostHog',
-  'GA4',
-  'Google Tag Manager',
+  {
+    name: 'Product & design leadership',
+    items: [
+      'Product design & strategy',
+      'Cross-functional leadership',
+      'Executive communication',
+      'Design mentorship',
+      'Roadmap planning',
+      'Design systems & design tokens',
+      'Design sprints',
+      'Lean UX',
+      'Agile / Scrum',
+      'Jobs to be done (JTBD)',
+      'User journey mapping',
+      'Qualitative research',
+      'UX research & experimentation',
+      'Usability testing',
+      'Accessibility',
+      'Early-stage startup experience',
+    ],
+  },
+  {
+    name: 'Frontend & systems',
+    items: [
+      'Frontend architecture',
+      'TypeScript',
+      'JavaScript (Vue, React)',
+      'HTML, CSS / SCSS',
+      'Tailwind, DaisyUI, Shadcn',
+      'iOS & responsive design',
+      'REST APIs',
+      'Git / GitHub',
+      'Performance optimization',
+      'Design documentation',
+      'LLM-powered product design',
+    ],
+  },
+  {
+    name: 'Analytics & growth',
+    items: [
+      'Funnel analysis',
+      'Cohort analysis',
+      'Conversion optimization',
+      'Growth design',
+      'Product analytics & A/B testing',
+      'PostHog (events, HogQL)',
+      'Google Analytics 4',
+      'User activation & retention',
+    ],
+  },
+  {
+    name: 'Tools & platforms',
+    items: [
+      'Figma',
+      'Framer',
+      'Webflow',
+      'Wordpress',
+      'Headless CMS',
+      'Maze (testing, surveys)',
+      'Relume (sitemaps, flows)',
+      'Rapid prototyping',
+      'AI-native workflows (Claude Code, Cursor, V0, Lovable)',
+    ],
+  },
 ];
 ---
 
@@ -95,35 +202,59 @@ const toolkit = [
   title="About · Adam Robertson"
   description="How I lead, how I work, and where I've done it. Product design leader with technical roots, based in Colorado."
 >
+  <div class="page-rails">
   {/* Hero -------------------------------------------------------------- */}
-  <section class="relative flex min-h-[72svh] flex-col overflow-hidden px-gutter pb-[10vh] pt-40">
-    <NoiseGradient />
+  {/*
+    Two-column hero rather than a full-bleed statement. The h1 used to run at
+    `--text-display` (up to 8.25rem) across three lines, which ate the viewport
+    and left the lead paragraph looking like a footnote. Sized down and set
+    beside its lead, the two read as one thought — and the emphasis lands on the
+    phrase that carries the argument rather than on sheer scale.
+  */}
+  {/* No `data-blueprint` here: the hero's caption sits at the same height as
+      the nav's own "NAVBAR" label and the two collide. */}
+  <section class="relative flex min-h-[62svh] flex-col overflow-hidden px-shell pb-[5vh] pt-36">
+    <NoiseGradient intensity="soft" />
 
-    <div class="relative z-10 my-auto">
-      <p class="text-micro uppercase tracking-[0.14em]" data-anim="reveal">
-        <span class="accent-gradient">About</span>
-      </p>
+    <div class="relative z-10 my-auto w-full">
+      <div class="grid gap-x-16 gap-y-10 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] lg:items-end">
+        <h1
+          class="font-display text-[clamp(2.5rem,5.4vw,4.75rem)] font-normal leading-[1.05] tracking-[-0.02em] text-balance text-ink"
+          data-anim="reveal-heading"
+        >
+          {/* Solid accent, not `.accent-gradient`. That helper clips a gradient
+              to the text box, so across a phrase this long the ramp restarts on
+              every line and reads as a rainbow rather than one emphasis. */}
+          I build teams that ship things
+          <span class="text-accent">no one could build alone</span>.
+        </h1>
 
-      <h1
-        class="mt-6 max-w-5xl font-display text-display font-normal text-ink"
-        data-anim="reveal-heading"
-      >
-        I build teams that ship things no one could build alone<span class="accent-gradient">.</span>
-      </h1>
-
-      <p class="mt-10 max-w-2xl text-[clamp(1.0625rem,1.35vw,1.3rem)] leading-[1.55] text-white/90" data-anim="reveal">
-        The best design leaders I've worked with weren't the strongest individual contributors.
-        They made everyone around them better. That's the job I'm trying to do.
-      </p>
+        <p
+          class="max-w-xl text-[clamp(1rem,1.15vw,1.125rem)] leading-[1.6] text-white/70"
+          data-anim="reveal"
+        >
+          Twenty years in, the most important thing I've learned is that the best design leaders
+          aren't the best designers in the room. They're the ones who make the room better. I've
+          done that by staying close to the work, staying honest about what's broken, and being
+          willing to change how we work when the old way stops serving us.
+        </p>
+      </div>
     </div>
   </section>
 
   {/* Point of view ------------------------------------------------------ */}
-  <section class="px-gutter py-section" aria-labelledby="pov">
+  <section
+    class="relative border-t border-line px-shell py-section"
+    aria-labelledby="pov"
+    data-blueprint="Point of view"
+  >
     <div class="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[minmax(0,18rem)_1fr] lg:gap-20">
+      {/* Matched to the home résumé's sticky intro heading rather than
+          `text-title` — this is a column label beside body copy, not a section
+          banner, and at title scale it overpowered the prose it introduces. */}
       <h2
         id="pov"
-        class="font-display text-title font-normal text-ink lg:sticky lg:top-32 lg:self-start"
+        class="font-display text-[clamp(1.75rem,3vw,2.75rem)] font-normal leading-[1.05] text-ink lg:sticky lg:top-32 lg:self-start"
         data-anim="reveal-heading"
       >
         Point of view
@@ -131,88 +262,227 @@ const toolkit = [
 
       <div class="max-w-2xl space-y-6 text-ink-dim" data-anim="reveal-batch">
         <p>
-          I came up doing both design and development, two disciplines that rarely sit in the same
-          person. That combination shaped how I lead: I know what it costs to build the thing, so I
-          know which conversations are worth having.
+          I came up as a maker. Designer and developer, two disciplines that rarely share a brain.
+          That background shaped everything about how I lead, because I've never been able to
+          separate how something looks from how it gets built.
         </p>
         <p>
-          At some point it became obvious that I could have more impact improving how a team thinks
-          than by executing faster myself. That's the job. Not executing the vision, but building
-          the conditions where great work is inevitable.
+          The shift toward leadership happened gradually, then all at once. I realized I could have
+          more impact by improving how a team thinks than by improving a single design.
+          <span class="text-ink">That's the job.</span> Not executing the vision, but building the
+          conditions where great work is inevitable.
         </p>
-        <p class="text-ink">
-          Two things underpin all of it: <span class="accent-gradient font-medium">compassion</span>
-          and <span class="accent-gradient font-medium">intent</span>.
+        <p>
+          AI has made that more interesting than ever. The question isn't which tools to adopt. It's
+          how to help a team evolve its thinking so the tools actually make the work better.
         </p>
+        <p class="text-[clamp(1.125rem,1.5vw,1.375rem)] leading-[1.5] text-ink">
+          When people ask what matters most, I point to two things:
+          <span class="accent-gradient font-medium">compassion</span> and
+          <span class="accent-gradient font-medium">intent</span>.
+        </p>
+
+        {/* First visual on the page, and it arrives early on purpose — the run
+            from hero to principles was otherwise 1,500px of unbroken prose.
+            Runs the full width of the text column: at 2.36:1 a portrait-sized
+            crop would leave the subject too small to read. */}
+        <Image
+          src={overlook}
+          alt="Looking out across a mountain range from a high ridgeline"
+          widths={[672, 1344, 1584]}
+          sizes="(min-width: 1024px) 42rem, 92vw"
+          class="!mt-12 w-full"
+        />
       </div>
     </div>
   </section>
 
   {/* Principles --------------------------------------------------------- */}
-  <section class="px-gutter py-section" aria-labelledby="principles">
+  <section
+    class="relative border-t border-line px-shell py-section"
+    aria-labelledby="principles"
+    data-blueprint="Operating principles"
+    data-dead="bottom"
+  >
     <h2 id="principles" class="font-display text-title font-normal text-ink" data-anim="reveal-heading">
       How I lead
     </h2>
 
-    <ul class="mt-16 grid gap-5 md:grid-cols-2 lg:grid-cols-3" data-anim="reveal-batch">
+    {/*
+      Ruled grid rather than floating cards, pulled out to the page rails with
+      `-mx-shell-pad` so its outer verticals land on the same lines that run the
+      length of the page.
+
+      Six columns, five items — spans of 2/2/2/3/3 so both rows fill exactly and
+      nothing holds an empty cell. It also puts the two longest principles
+      (compassion, intent) in the wider cells, where their extra copy wants to
+      be.
+
+      `data-rule` marks the cells that open a new column mid-row; the CSS hangs
+      the divider and its two intersection squares off that one attribute, so
+      the squares stay correct whatever the spans are changed to.
+    */}
+    <ul class="principles -mx-shell-pad mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6" data-anim="reveal-batch">
       {
-        principles.map((p) => (
-          <li class="rounded-2xl border border-line bg-surface-lift/40 p-7">
-            <h3 class="flex items-start gap-3 text-lead font-medium leading-tight text-ink">
-              <span class="accent-gradient mt-2 shrink-0 text-xs leading-none" aria-hidden="true">
-                ◆
-              </span>
+        principles.map((p, i) => (
+          <li
+            class:list={[
+              'principle px-shell-pad py-10',
+              i < 3 ? 'lg:col-span-2' : 'lg:col-span-3',
+              i >= 3 && 'lg:border-t lg:border-line',
+            ]}
+            data-rule={i === 1 || i === 2 || i === 4 ? '' : undefined}
+          >
+            {(i === 1 || i === 2 || i === 4) && (
+              <>
+                <span class="principle__sq principle__sq--top" aria-hidden="true" />
+                <span class="principle__sq principle__sq--bottom" aria-hidden="true" />
+              </>
+            )}
+            <span class="principle__icon" aria-hidden="true">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                {principleIcons[i].map((d) => (
+                  <path d={d} />
+                ))}
+              </svg>
+            </span>
+            <h3 class="mt-5 text-[1.0625rem] font-semibold leading-snug tracking-[-0.01em] text-ink">
               {p.title}
             </h3>
-            <p class="mt-4 text-ink-dim">{p.body}</p>
+            <p class="mt-2.5 max-w-prose text-sm leading-relaxed text-ink-dim">{p.body}</p>
           </li>
         ))
       }
+
+      <span class="principles__corner principles__corner--tl" aria-hidden="true" />
+      <span class="principles__corner principles__corner--tr" aria-hidden="true" />
+      <span class="principles__corner principles__corner--bl" aria-hidden="true" />
+      <span class="principles__corner principles__corner--br" aria-hidden="true" />
     </ul>
   </section>
 
   {/* In practice -------------------------------------------------------- */}
-  <section class="px-gutter py-section" aria-labelledby="in-practice">
+  <section
+    class="relative border-t border-line px-shell py-section"
+    aria-labelledby="in-practice"
+    data-blueprint="Receipts"
+    data-dead="bottom"
+  >
     <h2 id="in-practice" class="font-display text-title font-normal text-ink" data-anim="reveal-heading">
       In practice
     </h2>
 
-    <div class="mt-16 grid gap-5 lg:grid-cols-2" data-anim="reveal-batch">
+    {/*
+      Same ruled treatment as the principles grid: rail-to-rail, square
+      corners, a divider between the two columns and squares where it meets the
+      horizontal rules. No card backgrounds — the rules do the containing.
+    */}
+    <div class="moments -mx-shell-pad mt-16 grid grid-cols-1 lg:grid-cols-2" data-anim="reveal-batch">
       {
-        inPractice.map((item) => (
-          <article class="rounded-2xl border border-line bg-surface-lift/40 p-8">
-            <p class="text-micro uppercase tracking-[0.14em] text-ink-faint">
-              {item.company} · {item.year}
+        inPractice.map((item, i) => (
+          <article
+            class:list={['moment-cell flex flex-col px-cell pb-12 pt-10', i === 1 && 'lg:border-l lg:border-line']}
+            data-rule={i === 1 ? '' : undefined}
+          >
+            {i === 1 && (
+              <>
+                <span class="principle__sq principle__sq--top" aria-hidden="true" />
+                <span class="principle__sq principle__sq--bottom" aria-hidden="true" />
+              </>
+            )}
+
+            {/* Both are rebuilt in code rather than shipped as exports, so they
+                carry our own tokens and their numbers stay real text. */}
+            <div class="border border-line">
+              {i === 0 ? <MomentTribute /> : <MomentPetersons />}
+            </div>
+
+            <p class="mt-8 text-micro uppercase tracking-[0.14em] text-ink-faint">
+              {item.company} · {item.year} · {item.kicker}
             </p>
-            <h3 class="mt-4 font-display text-lead font-normal text-ink">{item.title}</h3>
-            <p class="mt-4 text-ink-dim">{item.body}</p>
+            {/* Sans, like every other card heading on the page — `font-display`
+                is for section banners, not cards.
+
+                Sized in `cqw`, not `vw`: both titles are written to sit on one
+                line, and only a container unit tracks the cell as the grid goes
+                two-up. A viewport unit holds its size while the cell halves,
+                which is what put the Peterson's title on two lines. */}
+            <h3 class="mt-4 text-[clamp(1.125rem,4.2cqw,1.625rem)] font-medium leading-snug tracking-[-0.01em] text-ink">
+              {item.title}
+            </h3>
+            <div class="mt-5 flex-1 space-y-4 text-ink-dim">
+              {item.paras.map((p) => (
+                <p>{p}</p>
+              ))}
+            </div>
+            {/* Pulled back out to the cell edges so its rule meets the grid's
+                verticals, then re-padded inside — the same break-out pairing
+                the grid itself uses, one token up. */}
+            <p class="-mx-cell mt-8 border-t border-line px-cell pt-6 text-[clamp(1.0625rem,1.25vw,1.1875rem)] leading-[1.55] text-ink">
+              {item.outcome}
+            </p>
           </article>
         ))
       }
+
+      <span class="principles__corner principles__corner--tl" aria-hidden="true" />
+      <span class="principles__corner principles__corner--tr" aria-hidden="true" />
+      <span class="principles__corner principles__corner--bl" aria-hidden="true" />
+      <span class="principles__corner principles__corner--br" aria-hidden="true" />
     </div>
   </section>
 
   {/* Process ------------------------------------------------------------ */}
-  <section class="px-gutter py-section" aria-labelledby="process">
+  <section
+    class="relative border-t border-line px-shell py-section"
+    aria-labelledby="process"
+    data-blueprint="How the work happens"
+  >
     <h2 id="process" class="font-display text-title font-normal text-ink" data-anim="reveal-heading">
       How I work
     </h2>
-    <p class="mt-6 max-w-2xl text-ink-dim" data-anim="reveal">
-      Four phases, scaled to the size of the team and the problem. Not every project needs all of
-      it, but skipping a phase should be a decision, not an accident.
-    </p>
+    <div class="mt-6 max-w-2xl space-y-5 text-ink-dim" data-anim="reveal">
+      <p>
+        I take a pragmatic, adaptable approach to design informed by design thinking and Lean UX. I
+        don't believe in a single “right” process — effective design depends on the problem, the
+        team, and the constraints.
+      </p>
+      <p>
+        For small teams, I favour a fast Think, Make, Check loop that prioritises speed and
+        collaboration. In larger organisations, I'm comfortable working within more structured
+        processes that support deeper research, validation, and alignment, always with the goal of
+        shipping meaningful work efficiently.
+      </p>
+      <p class="text-[clamp(1.125rem,1.5vw,1.375rem)] leading-[1.5] text-ink">
+        And it's not one-size-fits-all.
+      </p>
+    </div>
 
-    <ol class="mt-16 grid gap-5 md:grid-cols-2 lg:grid-cols-4" data-anim="reveal-batch">
+    {/* Two columns, not four. The phase descriptions carry their full original
+        length now, and four of those in a row reads as four narrow gutters of
+        text rather than four steps. */}
+    <ol class="mt-16 grid gap-5 md:grid-cols-2" data-anim="reveal-batch">
       {
         process.map((step, i) => (
-          <li class="rounded-2xl border border-line bg-surface-lift/40 p-7">
-            <p class="font-display text-stat text-ink">
+          <li class="flex flex-col rounded-2xl border border-line bg-surface-lift/40 p-10 lg:p-12">
+            <p class="font-display text-stat leading-none text-ink">
               <span class="accent-gradient">{String(i + 1).padStart(2, '0')}</span>
             </p>
             <h3 class="mt-5 text-micro uppercase tracking-[0.14em] text-ink-faint">{step.phase}</h3>
-            <p class="mt-2 text-lead font-medium leading-tight text-ink">{step.title}</p>
+            <p class="mt-2 text-[clamp(1.125rem,1.5vw,1.375rem)] font-medium leading-snug text-ink">
+              {step.title}
+            </p>
             <p class="mt-4 text-ink-dim">{step.body}</p>
-            <p class="mt-5 text-micro uppercase tracking-[0.14em] text-ink-faint">{step.tools}</p>
+            <p class="mt-auto pt-6 text-micro uppercase tracking-[0.14em] text-ink-faint">
+              {step.tools}
+            </p>
           </li>
         ))
       }
@@ -220,7 +490,11 @@ const toolkit = [
   </section>
 
   {/* Experience --------------------------------------------------------- */}
-  <section class="px-gutter py-section" aria-labelledby="experience">
+  <section
+    class="relative border-t border-line px-shell py-section"
+    aria-labelledby="experience"
+    data-blueprint="The long version"
+  >
     <div class="flex items-end justify-between gap-6">
       <h2 id="experience" class="font-display text-title font-normal text-ink" data-anim="reveal-heading">
         Experience
@@ -233,12 +507,28 @@ const toolkit = [
       </a>
     </div>
 
-    <ol class="mt-16 border-t border-line" data-anim="reveal-batch">
+    {/*
+      The rules hang off the role column, not the row: they start where the
+      title starts (the date column reads as a margin note beside them) and the
+      list's right edge is pulled out to the page rail so they terminate on the
+      vertical, rather than stopping short inside the shell padding.
+    */}
+    <ol class="-mr-shell-pad mt-16" data-anim="reveal-batch">
       {
-        experience.map((job) => (
-          <li class="grid gap-4 border-b border-line py-8 md:grid-cols-[minmax(0,12rem)_1fr] md:gap-10">
-            <p class="text-micro uppercase tracking-[0.14em] text-ink-faint md:pt-1">{job.period}</p>
-            <div>
+        experience.map((job, i) => (
+          <li class="grid gap-4 md:grid-cols-[minmax(0,12rem)_1fr] md:gap-10">
+            <p class="pt-8 text-micro uppercase tracking-[0.14em] text-ink-faint md:pt-9">
+              {job.period}
+            </p>
+            {/* No rule under the last role — it would close a list that the
+                section's own boundary already closes. */}
+            <div
+              class:list={[
+                'py-8',
+                i === 0 && 'border-t border-line',
+                i < experience.length - 1 && 'border-b border-line',
+              ]}
+            >
               <h3 class="text-lead font-medium leading-tight text-ink">{job.role}</h3>
               <p class="mt-1 text-ink-dim">{job.company}</p>
               <ul class="mt-4 space-y-2">
@@ -259,35 +549,204 @@ const toolkit = [
   </section>
 
   {/* Toolkit ------------------------------------------------------------ */}
-  <section class="px-gutter py-section" aria-labelledby="toolkit">
+  {/*
+    At `lg` the four groups are one row, and the section's bottom padding moves
+    onto the columns so their dividers run the full height down to the page's
+    closing bar rather than stopping at whichever list happens to be longest.
+    Below `lg` it is a 2x2, where column padding would blow out the row gap, so
+    the section keeps it.
+  */}
+  <section
+    class="relative border-t border-line px-shell pb-section pt-section lg:pb-0"
+    aria-labelledby="toolkit"
+    data-blueprint="What I reach for"
+  >
     <h2 id="toolkit" class="font-display text-title font-normal text-ink" data-anim="reveal-heading">
       Toolkit
     </h2>
-    <ul class="mt-12 flex flex-wrap gap-3" data-anim="reveal-batch">
+    {/* Grouped like the homepage's Capabilities index — same ruled-column
+        vocabulary, but carrying the whole résumé rather than a summary. */}
+    <div
+      class="-mx-shell-pad mt-14 grid grid-cols-1 gap-y-12 border-t border-line sm:grid-cols-2 lg:grid-cols-4 lg:gap-y-0"
+      data-anim="reveal-batch"
+    >
       {
-        toolkit.map((tool) => (
-          <li class="rounded-full border border-line px-5 py-2 text-micro uppercase tracking-[0.14em] text-ink-dim">
-            {tool}
-          </li>
+        toolkit.map((group, i) => (
+          <div
+            class:list={[
+              'px-shell-pad pt-6 lg:pb-section',
+              i % 2 === 1 && 'sm:border-l sm:border-line',
+              i === 2 && 'lg:border-l lg:border-line',
+            ]}
+          >
+            <h3 class="text-micro uppercase tracking-[0.14em] text-ink-faint">{group.name}</h3>
+            <ul class="mt-5 space-y-2.5 text-ink">
+              {group.items.map((item) => (
+                <li>
+                  <span class="toolkit__item">{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         ))
       }
-    </ul>
+    </div>
   </section>
 
   {/* Contact ------------------------------------------------------------ */}
-  <section class="px-gutter py-section text-center">
-    <h2 class="font-display text-display font-normal text-ink" data-anim="reveal-heading">
-      Let's make <span class="accent-gradient">something</span>.
-    </h2>
-
-    <div class="mt-16 inline-block" data-anim="magnetic" data-strength="0.4">
-      <a
-        href="mailto:hi@adamrobertson.co"
-        class="inline-flex items-center gap-3 rounded-full border border-line px-9 py-4 text-micro uppercase tracking-[0.14em] text-ink transition-colors hover:border-accent hover:text-accent"
-      >
-        hi@adamrobertson.co
-        <span aria-hidden="true">→</span>
-      </a>
-    </div>
-  </section>
+  </div>
 </BaseLayout>
+
+<style>
+  /*
+    Ruled principles grid.
+
+    Squares mark where lines meet: the four outer corners of the block, and the
+    top and bottom of every internal vertical divider. They are real elements
+    rather than pseudo-elements because each needs both a surface fill (to punch
+    through the rule it sits on) and a 1px border — a single pseudo-element
+    cannot carry two bordered boxes.
+
+    `--sq` is the side length; every placement offsets by half of it so the
+    square sits centred on the line rather than beside it.
+  */
+  .principles,
+  .moments {
+    --sq: 7px;
+    position: relative;
+    border-top: 1px solid var(--color-line);
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  .principle,
+  .moment-cell {
+    position: relative;
+  }
+
+  /*
+    Toolkit hover. The target is a span rather than the <li>, so the hit area is
+    the width of the words — on an <li> it would span the whole column and fire
+    with the pointer nowhere near the text.
+
+    The rule marker is absolutely positioned and rides along with the item's
+    translate, so it slides into the space the item just vacated instead of
+    reflowing the row.
+  */
+  .toolkit__item {
+    position: relative;
+    display: inline-block;
+    transition:
+      transform var(--dur-fast) var(--ease-out-expo),
+      color var(--dur-fast) ease;
+  }
+
+  .toolkit__item::before {
+    content: '';
+    position: absolute;
+    top: 0.68em;
+    left: -0.9rem;
+    width: 0.4rem;
+    height: 1px;
+    background: currentColor;
+    opacity: 0;
+    transform: scaleX(0);
+    transform-origin: right center;
+    transition:
+      opacity var(--dur-fast) ease,
+      transform var(--dur-fast) var(--ease-out-expo);
+  }
+
+  .toolkit__item:hover {
+    color: var(--color-accent);
+    transform: translateX(0.55rem);
+  }
+
+  .toolkit__item:hover::before {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .toolkit__item,
+    .toolkit__item::before {
+      transition-property: opacity, color;
+    }
+    .toolkit__item:hover {
+      transform: none;
+    }
+  }
+
+  /* The moments grid reuses the principles' rule and square treatment; the
+     container query context lets <MomentTribute> scale its type to the cell. */
+  .moment-cell {
+    container-type: inline-size;
+  }
+
+  .principles__corner,
+  .principle__sq {
+    position: absolute;
+    width: var(--sq);
+    height: var(--sq);
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    pointer-events: none;
+  }
+
+  .principles__corner--tl,
+  .principles__corner--tr {
+    top: calc(var(--sq) / -2 - 1px);
+  }
+  .principles__corner--bl,
+  .principles__corner--br {
+    bottom: calc(var(--sq) / -2 - 1px);
+  }
+  .principles__corner--tl,
+  .principles__corner--bl {
+    left: calc(var(--sq) / -2);
+  }
+  .principles__corner--tr,
+  .principles__corner--br {
+    right: calc(var(--sq) / -2);
+  }
+
+  /* Internal dividers and their intersection squares only exist once the grid
+     actually has columns. */
+  .principle__sq {
+    display: none;
+  }
+
+  @media (min-width: 64rem) {
+    .principle[data-rule]::before,
+    .moment-cell[data-rule]::before {
+      content: '';
+      position: absolute;
+      inset-block: 0;
+      left: 0;
+      width: 1px;
+      background: var(--color-line);
+    }
+
+    .principle__sq {
+      display: block;
+      left: calc(var(--sq) / -2);
+    }
+    .principle__sq--top {
+      top: calc(var(--sq) / -2 - 1px);
+    }
+    .principle__sq--bottom {
+      bottom: calc(var(--sq) / -2 - 1px);
+    }
+  }
+
+  .principle__icon {
+    display: block;
+    width: 1.5rem;
+    height: 1.5rem;
+    color: var(--color-ink);
+  }
+
+  .principle__icon svg {
+    width: 100%;
+    height: 100%;
+  }
+</style>

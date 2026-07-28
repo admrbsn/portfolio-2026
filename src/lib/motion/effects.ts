@@ -311,15 +311,15 @@ export function jiggle(el: HTMLElement): Teardown {
   // Paused so the ScrollTrigger drives it; restarted so re-entries replay.
   const shake = gsap
     .timeline({ paused: true })
-    .to(el, { rotation: -8, scaleX: 1.07, scaleY: 0.93, duration: 0.14, ease: 'power2.out' })
-    .to(el, { rotation: 7, y: -6, scaleX: 0.97, scaleY: 1.05, duration: 0.16, ease: 'sine.inOut' })
-    .to(el, { rotation: -5, y: 0, scaleX: 1.02, scaleY: 0.99, duration: 0.14, ease: 'sine.inOut' })
+    .to(el, { rotation: -4, scaleX: 1.035, scaleY: 0.965, duration: 0.16, ease: 'power2.out' })
+    .to(el, { rotation: 3.2, y: -3, scaleX: 0.985, scaleY: 1.025, duration: 0.18, ease: 'sine.inOut' })
+    .to(el, { rotation: -1.8, y: 0, scaleX: 1.01, scaleY: 0.995, duration: 0.16, ease: 'sine.inOut' })
     .to(el, {
       rotation: 0,
       scaleX: 1,
       scaleY: 1,
-      duration: 1.2,
-      ease: 'elastic.out(1, 0.3)',
+      duration: 1.1,
+      ease: 'elastic.out(1, 0.45)',
     });
 
   const st = ScrollTrigger.create({
@@ -336,3 +336,127 @@ export function jiggle(el: HTMLElement): Teardown {
   };
 }
 
+
+/* -------------------------------------------------------------------------
+   Moment card reveal. Shared by both leadership-moment graphics.
+
+   Composed of four optional parts, each opted into by an attribute, so one
+   effect covers a card that types and a card that counts:
+
+     [data-type-pop]     scatter-popped background chrome
+     [data-type-rise]    staggered rise for the foreground stack
+     [data-type-target]  typed out character by character
+     [data-count]        counted up to `data-count`, honouring `data-decimals`
+     [data-ring]         stroke-dashoffset drawn to `data-ring` (0-1)
+
+   The text is authored in the markup and cleared here rather than typed into
+   an empty node — so with JS off, or under reduced motion where `initMotion`
+   bails before any effect runs, the full string is simply there. Animating
+   *from* real content is the only version that degrades safely.
+
+   `data-typed` flips to 'done' when the run finishes; the caret's CSS blink
+   hangs off that, so it only starts once there is something to sit after.
+   ------------------------------------------------------------------------- */
+export function momentReveal(el: HTMLElement): Teardown {
+  const target = el.querySelector<HTMLElement>('[data-type-target]');
+  const rise = [...el.querySelectorAll<HTMLElement>('[data-type-rise]')];
+  const pop = [...el.querySelectorAll<HTMLElement>('[data-type-pop]')];
+  const counters = [...el.querySelectorAll<HTMLElement>('[data-count]')];
+  const rings = [...el.querySelectorAll<SVGGeometryElement>('[data-ring]')];
+
+  const full = target?.textContent ?? '';
+  const state = { chars: 0 };
+
+  gsap.set(rise, { opacity: 0, y: 14 });
+  gsap.set(pop, { opacity: 0, scale: 0.55, y: 10 });
+  if (target) target.textContent = '';
+  // Counters start at zero rather than their final value, so the run-up reads
+  // as counting even on a card that scrolls into view instantly.
+  counters.forEach((n) => {
+    n.textContent = (0).toFixed(Number(n.dataset.decimals ?? 0));
+  });
+
+  const tl = gsap.timeline({
+    scrollTrigger: { trigger: el, start: 'top 80%', once: true },
+  });
+
+  // Background nodes pop first and in a scattered order — `from: 'random'` is
+  // what keeps it from reading as a wipe across the card. `back.out` gives the
+  // slight overshoot that makes it a pop rather than a fade.
+  tl.to(pop, {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    duration: 0.65,
+    ease: 'back.out(2.6)',
+    stagger: { each: 0.07, from: 'random' },
+  });
+
+  tl.to(rise, { opacity: 1, y: 0, duration: 0.7, ease: 'expo.out', stagger: 0.12 }, '-=0.35');
+
+  if (target) {
+    tl.to(
+      state,
+      {
+        chars: full.length,
+        // Roughly 22 characters a second — fast enough not to stall the
+        // section, slow enough to read as typing rather than a paint.
+        duration: full.length / 22,
+        ease: 'none',
+        onUpdate: () => {
+          target.textContent = full.slice(0, Math.round(state.chars));
+        },
+        onComplete: () => {
+          target.textContent = full;
+          el.dataset.typed = 'done';
+        },
+      },
+      '-=0.25',
+    );
+  }
+
+  // Rings draw from empty. `pathLength="1"` on the circle normalises the maths
+  // so `data-ring` is a plain 0-1 fraction rather than a computed circumference.
+  rings.forEach((ring) => {
+    const to = Number(ring.dataset.ring ?? 1);
+    tl.fromTo(
+      ring,
+      { strokeDashoffset: 1 },
+      { strokeDashoffset: 1 - to, duration: 1.1, ease: 'expo.out' },
+      '-=0.9',
+    );
+  });
+
+  counters.forEach((node) => {
+    const to = Number(node.dataset.count ?? 0);
+    const decimals = Number(node.dataset.decimals ?? 0);
+    const value = { n: 0 };
+    tl.to(
+      value,
+      {
+        n: to,
+        duration: 1.1,
+        ease: 'expo.out',
+        onUpdate: () => {
+          node.textContent = value.n.toFixed(decimals);
+        },
+        onComplete: () => {
+          node.textContent = to.toFixed(decimals);
+          el.dataset.typed = 'done';
+        },
+      },
+      '<',
+    );
+  });
+
+  return () => {
+    tl.scrollTrigger?.kill();
+    tl.kill();
+    if (target) target.textContent = full;
+    counters.forEach((n) => {
+      n.textContent = Number(n.dataset.count ?? 0).toFixed(Number(n.dataset.decimals ?? 0));
+    });
+    delete el.dataset.typed;
+    gsap.set([...rise, ...pop, ...rings], { clearProps: 'all' });
+  };
+}

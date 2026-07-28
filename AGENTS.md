@@ -40,16 +40,60 @@ Tailwind v4 is CSS-first. **There is no `tailwind.config.js`** — the `@theme`
 block in `src/styles/global.css` is the config. Every token there becomes a
 utility (`--color-ink` → `text-ink`, `--text-display` → `text-display`).
 
-**Type pairing**: Instrument Sans for all UI and body copy, Instrument Serif for
-display (`--text-display`, `--text-stat`, the wordmark). Instrument Serif ships a
-single weight — set it at `font-normal`, never `font-bold`. Its descenders are
-long, so `--text-display` needs `line-height: 1`; tightening it crowds the line
-below.
+**Type pairing**: **Google Sans** for all UI, body copy and the wordmark;
+**Vidaloka** for display (`--text-display`, `--text-title`, `--text-stat`,
+headings). Two families, no third.
+
+Vidaloka ships a **single weight** — set it at `font-normal`, never
+`font-bold`. Where a heading needs more heft, thicken it with the text-stroke
+helper rather than reaching for a bolder cut that does not exist. Its
+descenders are long, so `--text-display` needs a line-height near 1; tightening
+further crowds the line below.
+
+Google Sans runs a little wider than a neutral grotesque at the same size. After
+any type-size change, check the tight cells first — the at-a-glance grid, the
+persona traits, the funnel step captions — since those wrap before anything
+else does.
+
+`--font-wordmark` resolves to `var(--font-sans)` and is kept as its own token
+deliberately: the brand mark should be changeable without dragging every
+paragraph on the site along with it.
+
+Jersey 20 (`--font-arcade`) is Breakout's alone and appears nowhere in the
+portfolio proper — see the Breakout section for why it is nonetheless eagerly
+loaded.
 
 `--color-ink-faint` is contrast-tuned: it is used almost entirely at 12px, where
 WCAG AA requires 4.5:1. It sits at 4.9:1 on `--color-surface`. Do not darken it
-below `L=0.58`. `--color-status` (availability green, 11.2:1) is kept separate
-from `--color-accent` so the brand colour can change independently.
+below `L=0.58`. `--color-status` (availability green, 12.6:1) is kept as its own
+token so the signal can be retuned independently, but it is deliberately in
+`--color-accent`'s family — the dot and the brand mark share a nav, and two
+different greens there read as a mistake.
+
+**Every accent stop must be inside sRGB.** `--color-accent` was
+`oklch(0.84 0.19 168)`, whose red channel resolves to **-0.065** — the browser
+clamps it to zero and paints `#00f0b2`, the most saturated green-cyan the
+display can make, not the colour written down. That is what made the green read
+electric-mint against a hero wash whose own teal tops out at C 0.12. At these
+lightnesses the green-cyan hues fall out of gamut somewhere around C 0.15, so
+the whole accent family is held at **C 0.14-0.15**.
+
+Hue took two passes. Fixing the clipping (H 168 → 174) removed the electric
+edge but still read minty, because **mint is a light blue-green — the fix for it
+is hue, not chroma.** `--color-accent` is now **H 138**, a yellow-green that
+leans toward `<NoiseGradient>`'s khaki highlight (H 100) rather than its teal
+blob (H 178). That direction was chosen by rendering candidates at H 138/150/162
+against the live hero rather than reasoning about it.
+
+`--color-accent-warm` (H 108) is only 30° off the accent as a result. That is
+tight but it is the entire range the gradients have — **don't push the accent
+warmer without moving the warm token too**, or both ramps flatten into one
+colour.
+
+Before changing any of them, check the value converts without a negative
+channel. Chroma that "looks more vibrant" past the gamut edge is not more
+vibrant — it is clipped, and it clips inconsistently across hues, which is
+exactly how a palette drifts out of family.
 
 **There is one accent palette, site-wide.** Case studies used to carry a
 per-entry `accent` hue in frontmatter (Tribute teal, Peterson's green, V3
@@ -69,6 +113,20 @@ over real text:
   flat colour, so this one starts warmer and finishes inside the box. Used by
   `<Stat>` and the case study metrics band.
 
+`[data-dead="top"|"bottom"]` hatches a section's vertical padding — the empty
+band a ruled layout leaves between the end of a grid and the next section
+boundary. It's a drafting convention: the band reads as deliberately empty
+rather than as a gap nobody filled. Painted as `::after` (`[data-blueprint]`
+already owns `::before` on the same sections), inset to `--spacing-gutter` so it
+runs rail to rail, and `--spacing-section` tall so it always fills the padding
+exactly. The rails belong to `.page-rails`' background, so they paint over the
+hatch and the frame stays continuous.
+
+It is used on the two ruled grids — the principles and the leadership moments —
+and deliberately nowhere else. Hatching a band above a heading (the `top`
+variant was tried on "How I work") reads as a lid on the section rather than as
+slack left under a grid, so the effect only earns its place trailing a grid.
+
 The nav deliberately has **no `mix-blend-mode`**. Difference blending kept a
 monochrome bar legible over any backdrop, but it inverts the green availability
 dot to magenta and the accent dot in the wordmark to blue; the scroll-triggered
@@ -84,6 +142,45 @@ wired inline:
 <div data-anim="reveal-batch">…</div>
 <section data-anim="pin">…</section>
 ```
+
+### Leadership-moment graphics
+
+The two illustrations in the "In practice" section of `/about` —
+`MomentTribute.astro` and `MomentPetersons.astro` — are **built in code, not
+shipped as image exports**. That is what lets them carry `--color-surface` /
+`--color-line` / `--color-accent`, keep their numbers as selectable text, and
+animate. Don't replace either with a flat asset.
+
+Both drive one effect, `data-anim="moment-reveal"`, which is a kit of four
+optional parts, each opted into by an attribute on a descendant:
+
+| attribute | behaviour |
+| --- | --- |
+| `data-type-pop` | scatter-pops in, random stagger — the background chrome |
+| `data-type-rise` | staggered rise — the foreground stack |
+| `data-type-target` | typed out character by character |
+| `data-count` | counted up to its value, honouring `data-decimals` |
+| `data-ring` | `stroke-dashoffset` drawn to a 0-1 fraction |
+
+Tribute uses pop + rise + type; Peterson's uses pop + rise + count + ring. Adding
+a third card means picking from the same set, not writing a new effect.
+
+Two things to keep in mind when editing them:
+
+- **`data-ring` requires `pathLength="1"` on the SVG element**, which normalises
+  dash maths to a 0-1 fraction. It also rules out a visible dasharray — any
+  pattern fine enough to read as dashes turns the draw into marching ants, which
+  is why Peterson's flight path is a solid line where the original art was
+  dashed.
+- **Transform ownership is split by nesting.** GSAP animates `scale`/`y` on the
+  popped element, so any CSS idle drift must live on a *parent* — see
+  `.moment__node` (CSS drift) wrapping `.moment__node-box` (GSAP). Put both on
+  one element and they overwrite each other.
+
+Every size in these components is container-relative but **clamped at both
+ends** (`clamp(0.5rem, 1.1cqw, 0.68rem)`). The cells are `container-type:
+inline-size`, and unfloored `cqw` drops the small labels to ~3px in a
+single-column cell.
 
 ### Hash navigation
 

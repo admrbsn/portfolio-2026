@@ -7,11 +7,11 @@ import { experience } from '../data/experience';
 // visible by default so no-JS visitors still get them; JS collapses them.
 ---
 
-<section class="px-gutter py-section" aria-labelledby="experience-heading">
+<section class="relative px-shell py-section" aria-labelledby="experience-heading" data-blueprint="War Stories">
   <div class="grid gap-12 lg:grid-cols-[minmax(0,19rem)_1fr] lg:gap-20">
     {/* Left: sticky intro. Adapts the reference's testimonial column into a
         first-person framing; drop a real quote in here if one lands. */}
-    <div class="lg:sticky lg:top-32 lg:self-start" data-anim="reveal">
+    <div class="lg:sticky lg:top-32 lg:self-start lg:text-right" data-anim="reveal">
       <p class="text-micro uppercase tracking-[0.14em] text-ink-faint">Experience</p>
 
       <h2

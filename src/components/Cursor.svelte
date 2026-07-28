@@ -62,6 +62,13 @@
      */
     const MAX_LAG = 8;
 
+    // Resolve the grow/label state from whatever element sits under the cursor.
+    function evalHover(el: Element | null) {
+      hovering = Boolean(el?.closest('a, button, [data-cursor="grow"]'));
+      const labelHost = el?.closest('[data-cursor-label]');
+      label = labelHost?.getAttribute('data-cursor-label') || null;
+    }
+
     function onMove(e: PointerEvent) {
       mx = e.clientX;
       my = e.clientY;
@@ -69,11 +76,15 @@
       // Real pointermove always targets an Element, but the listener is on
       // `window` — anything dispatched at the window itself lands here with a
       // target that has no `closest`. Narrowing beats casting.
-      const el = e.target instanceof Element ? e.target : null;
-      hovering = Boolean(el?.closest('a, button, [data-cursor="grow"]'));
+      evalHover(e.target instanceof Element ? e.target : null);
+    }
 
-      const labelHost = el?.closest('[data-cursor-label]');
-      label = labelHost?.getAttribute('data-cursor-label') || null;
+    // Scrolling moves content under a stationary cursor, so the pointer target
+    // changes with no pointer event. Re-resolve from the last cursor position;
+    // without this the grow/tooltip state sticks after scrolling off a link.
+    // (`elementFromPoint` ignores the cursor layer — it's `pointer-events: none`.)
+    function onScroll() {
+      evalHover(document.elementFromPoint(mx, my));
     }
 
     function loop(now: number) {
@@ -111,10 +122,12 @@
     }
 
     window.addEventListener('pointermove', onMove, { passive: true });
+    window.addEventListener('scroll', onScroll, { passive: true });
     raf = requestAnimationFrame(loop);
 
     return () => {
       window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('scroll', onScroll);
       cancelAnimationFrame(raf);
       // Give the real cursor back if this island ever goes away, so the page
       // can never be left with no cursor at all.
@@ -128,8 +141,8 @@
     <div bind:this={ring} class="ring" class:grow={hovering}></div>
     <div bind:this={dot} class="dot"></div>
   </div>
-  <!-- Kept out of the difference-blend layer above so the pill keeps its true
-       accent colour instead of inverting against the backdrop. -->
+  <!-- Its own layer, separate from the dot/ring, so the pill keeps its accent
+       colour and drop-shadow independent of them. -->
   <div bind:this={labelEl} class="cursor-label" aria-hidden="true">
     <span class="cursor-label__pill" class:show={label}>{label}</span>
   </div>
@@ -149,9 +162,10 @@
     inset: 0;
     z-index: 60;
     pointer-events: none;
-    /* Inverts against whatever is underneath, so it stays visible on both the
-       dark surface and full-bleed imagery. */
-    mix-blend-mode: difference;
+    /* A plain white cursor (no blend mode, so it never inverts to pink over the
+       green accents). A soft dark drop-shadow traces the dot/ring shapes so it
+       still reads on light full-bleed imagery. */
+    filter: drop-shadow(0 0 1.5px rgb(0 0 0 / 0.55));
   }
 
   .dot,

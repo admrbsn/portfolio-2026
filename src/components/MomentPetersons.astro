@@ -1,0 +1,324 @@
+---
+/**
+ * The Peterson's leadership-moment graphic, rebuilt in code.
+ *
+ * The original export was cream-on-charcoal and sat oddly against a dark page
+ * once the Tribute card next to it was rebuilt in our own tokens. This carries
+ * the same surface / line / accent set, keeps its numbers as real text, and
+ * shares the `moment-reveal` effect so the two cards animate as a pair.
+ *
+ * The headline is deliberately absent: the original baked "A 4.6-star app,
+ * built across two continents in 90 days" into the image, but that is the
+ * card's own <h3> directly beneath. Repeating it would say the same sentence
+ * twice.
+ */
+
+const stats = [
+  { label: 'Timeline', value: '90', unit: 'days', sub: 'Design · Build · Ship' },
+  { label: 'App Store rating', value: '4.6', unit: '★★★★★', sub: "Peterson's Test Prep · iOS" },
+  { label: 'Team span', value: 'Denver → Kyiv', unit: '', sub: 'Design & FE · Engineering & QA' },
+];
+
+/* 4.6 of 5, as a 0-1 fraction for the ring's dash offset. */
+const RATING_FRACTION = 4.6 / 5;
+---
+
+<div
+  class="pmoment"
+  data-anim="moment-reveal"
+  role="img"
+  aria-label="Peterson's test prep app: a 90-day timeline, a 4.6 App Store rating, and a team spanning Denver to Kyiv"
+>
+  {/* Globe — the distance the project was run across. */}
+  <div class="pmoment__globe" data-type-rise aria-hidden="true">
+    <svg viewBox="0 0 200 200" fill="none">
+      <circle cx="100" cy="100" r="78" stroke="var(--color-line)" stroke-width="1" />
+      {/* Latitudes as flattened ellipses; longitudes as ellipses narrowing to a line. */}
+      {[0, 26, 52].map((dy) => (
+        <>
+          <ellipse cx="100" cy={100 - dy} rx={Math.sqrt(Math.max(78 * 78 - dy * dy, 0))} ry="9" stroke="var(--color-line)" stroke-width="1" />
+          {dy > 0 && (
+            <ellipse cx="100" cy={100 + dy} rx={Math.sqrt(Math.max(78 * 78 - dy * dy, 0))} ry="9" stroke="var(--color-line)" stroke-width="1" />
+          )}
+        </>
+      ))}
+      {[16, 40, 66].map((rx) => (
+        <ellipse cx="100" cy="100" rx={rx} ry="78" stroke="var(--color-line)" stroke-width="1" />
+      ))}
+      <line x1="100" y1="22" x2="100" y2="178" stroke="var(--color-line)" stroke-width="1" />
+
+      {/*
+        Denver → Kyiv, drawn on scroll. `pathLength="1"` normalises the dash
+        maths to a 0-1 fraction — which is also why this is a solid line rather
+        than the original's dashes: any dasharray small enough to read as dashes
+        would turn the draw into marching ants.
+      */}
+      <path
+        d="M46 88 Q100 52 152 82"
+        stroke="var(--color-accent)"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        pathLength="1"
+        stroke-dasharray="1"
+        data-ring="1"
+      />
+      <circle cx="46" cy="88" r="4" fill="var(--color-accent)" />
+      <circle cx="152" cy="82" r="4" fill="var(--color-ink)" />
+      {/* Labels sit below their dots, clear of the arc overhead. */}
+      <text x="46" y="105" class="pmoment__pin">Denver</text>
+      <text x="152" y="99" class="pmoment__pin">Kyiv</text>
+    </svg>
+  </div>
+
+  {/* Phone — the 4.6 itself. */}
+  <div class="pmoment__phone" data-type-rise aria-hidden="true">
+    <div class="pmoment__screen">
+      <div class="pmoment__appbar">Test Prep</div>
+
+      <div class="pmoment__gauge">
+        <svg viewBox="0 0 100 100" fill="none">
+          <circle cx="50" cy="50" r="40" stroke="color-mix(in oklab, var(--color-ink) 12%, transparent)" stroke-width="7" />
+          <circle
+            cx="50"
+            cy="50"
+            r="40"
+            stroke="var(--color-accent)"
+            stroke-width="7"
+            stroke-linecap="round"
+            pathLength="1"
+            stroke-dasharray="1"
+            transform="rotate(-90 50 50)"
+            data-ring={RATING_FRACTION}
+          />
+        </svg>
+        <span class="pmoment__gauge-value">
+          <span data-count="4.6" data-decimals="1">4.6</span>
+        </span>
+        <span class="pmoment__gauge-label">App Store</span>
+      </div>
+
+      <div class="pmoment__stars">★★★★★</div>
+    </div>
+  </div>
+
+  {/* Stat cards — the pop targets, matching the Tribute card's chrome. */}
+  <ul class="pmoment__stats">
+    {
+      stats.map((s) => (
+        <li class="pmoment__stat" data-type-pop>
+          <span class="pmoment__stat-label">{s.label}</span>
+          <span class="pmoment__stat-value">
+            {s.label === 'Timeline' ? (
+              <>
+                <span data-count="90">90</span>
+                <span class="pmoment__stat-unit">{s.unit}</span>
+              </>
+            ) : s.label === 'App Store rating' ? (
+              <>
+                <span data-count="4.6" data-decimals="1">4.6</span>
+                <span class="pmoment__stat-stars">{s.unit}</span>
+              </>
+            ) : (
+              <span class="pmoment__stat-span">{s.value}</span>
+            )}
+          </span>
+          <span class="pmoment__stat-sub">{s.sub}</span>
+        </li>
+      ))
+    }
+  </ul>
+</div>
+
+<style>
+  /*
+    Every size is container-relative so the graphic scales with its cell, but
+    clamped at both ends: unfloored `cqw` drops the stat labels to ~3px in a
+    single-column cell, which is how the Tribute card next door is built too.
+  */
+  .pmoment {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 0.85fr 1.15fr;
+    align-items: center;
+    gap: clamp(0.75rem, 4cqw, 1.75rem);
+    aspect-ratio: 16 / 10;
+    padding: clamp(1rem, 5cqw, 2.25rem);
+    overflow: hidden;
+    background:
+      radial-gradient(110% 90% at 50% 0%, color-mix(in oklab, var(--color-accent) 6%, transparent), transparent 60%),
+      var(--color-surface);
+  }
+
+  /* Globe -------------------------------------------------------------- */
+
+  .pmoment__globe svg {
+    width: 100%;
+    height: auto;
+  }
+
+  /* Sized in viewBox units, so it scales with the globe rather than fighting
+     it. The surface-coloured stroke under the fill knocks the grid lines out
+     from behind the text. */
+  .pmoment__pin {
+    fill: var(--color-ink);
+    font-size: 12px;
+    font-family: var(--font-sans);
+    text-anchor: middle;
+    paint-order: stroke;
+    stroke: var(--color-surface);
+    stroke-width: 4px;
+    stroke-linejoin: round;
+  }
+
+  /* Phone -------------------------------------------------------------- */
+
+  .pmoment__phone {
+    justify-self: center;
+    width: clamp(4.75rem, 16cqw, 7.5rem);
+    padding: clamp(2px, 0.5cqw, 4px);
+    border: 1px solid color-mix(in oklab, var(--color-ink) 18%, transparent);
+    border-radius: clamp(6px, 1.4cqw, 12px);
+    background: color-mix(in oklab, var(--color-surface-lift) 90%, transparent);
+    box-shadow: 0 12px 30px -14px oklch(0 0 0 / 0.7);
+  }
+
+  .pmoment__screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: clamp(0.4rem, 2cqw, 0.9rem);
+    padding-bottom: clamp(0.5rem, 2.5cqw, 1.1rem);
+    border-radius: clamp(4px, 1cqw, 9px);
+    background: var(--color-surface);
+  }
+
+  .pmoment__appbar {
+    width: 100%;
+    padding: clamp(0.25rem, 1.2cqw, 0.55rem) 0;
+    border-radius: clamp(4px, 1cqw, 9px) clamp(4px, 1cqw, 9px) 0 0;
+    background: color-mix(in oklab, var(--color-accent) 82%, black);
+    color: var(--color-surface);
+    text-align: center;
+    font-size: clamp(0.5rem, 1.5cqw, 0.8rem);
+    font-weight: 600;
+  }
+
+  .pmoment__gauge {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 78%;
+    aspect-ratio: 1;
+  }
+
+  .pmoment__gauge svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .pmoment__gauge-value {
+    font-size: clamp(0.95rem, 3.4cqw, 1.6rem);
+    font-weight: 600;
+    line-height: 1;
+    color: var(--color-ink);
+  }
+
+  .pmoment__gauge-label {
+    position: absolute;
+    bottom: 26%;
+    font-size: clamp(0.4rem, 1.1cqw, 0.6rem);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-ink-faint);
+  }
+
+  .pmoment__stars {
+    font-size: clamp(0.5rem, 1.5cqw, 0.8rem);
+    letter-spacing: 0.1em;
+    color: var(--color-accent);
+  }
+
+  /* Stat cards --------------------------------------------------------- */
+
+  .pmoment__stats {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(0.4rem, 2cqw, 1rem);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* Same chrome as the Tribute card's nodes, so the pair reads as a set. */
+  .pmoment__stat {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(1px, 0.4cqw, 4px);
+    margin: 0;
+    padding: clamp(0.4rem, 2cqw, 0.9rem) clamp(0.5rem, 2.4cqw, 1.1rem);
+    border: 1px solid color-mix(in oklab, var(--color-ink) 16%, transparent);
+    border-radius: 0.5rem;
+    background: color-mix(in oklab, var(--color-surface-lift) 85%, transparent);
+    box-shadow: 0 8px 24px -12px oklch(0 0 0 / 0.6);
+  }
+
+  .pmoment__stat-label {
+    font-size: clamp(0.5rem, 1.1cqw, 0.68rem);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-ink-faint);
+  }
+
+  .pmoment__stat-value {
+    display: flex;
+    align-items: baseline;
+    gap: clamp(0.2rem, 0.6cqw, 0.4rem);
+    font-size: clamp(0.95rem, 3.4cqw, 1.6rem);
+    font-weight: 600;
+    line-height: 1.05;
+    color: var(--color-ink);
+  }
+
+  .pmoment__stat-unit {
+    font-size: clamp(0.5rem, 1.6cqw, 0.85rem);
+    font-weight: 400;
+    color: var(--color-ink-dim);
+  }
+
+  .pmoment__stat-stars {
+    font-size: clamp(0.5rem, 1.5cqw, 0.8rem);
+    letter-spacing: 0.08em;
+    color: var(--color-accent);
+  }
+
+  .pmoment__stat-span {
+    font-size: clamp(0.7rem, 2.4cqw, 1.2rem);
+  }
+
+  .pmoment__stat-sub {
+    font-size: clamp(0.45rem, 1.1cqw, 0.68rem);
+    color: var(--color-ink-faint);
+  }
+
+  /*
+    In a single-column cell the globe becomes an unreadable smudge, and 16:10
+    no longer leaves height for three stacked cards at their floor sizes — so
+    the globe goes and the frame gets taller.
+  */
+  @container (max-width: 30rem) {
+    .pmoment {
+      grid-template-columns: 0.85fr 1.15fr;
+      aspect-ratio: 4 / 3;
+    }
+    .pmoment__globe {
+      display: none;
+    }
+    /* At this phone size the caption crowds the figure, and the stat card
+       beside it already says "App Store rating". */
+    .pmoment__gauge-label {
+      display: none;
+    }
+  }
+</style>

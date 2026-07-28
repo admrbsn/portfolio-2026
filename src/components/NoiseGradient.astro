@@ -8,14 +8,20 @@
 //   teal   — the brand: neon yellow highlight falling into emerald (default)
 //   violet — the previous electric-violet/royal-blue wash, kept for comparison
 
+// `intensity` scales the same wash down for the shorter interior heroes:
+//   full — the homepage, where the wash is the page's opening statement
+//   soft — /about, where it is a corner accent behind a headline that has to
+//          stay the loudest thing in frame
+
 interface Props {
   variant?: 'violet' | 'teal';
+  intensity?: 'full' | 'soft';
 }
 
-const { variant = 'teal' } = Astro.props;
+const { variant = 'teal', intensity = 'full' } = Astro.props;
 ---
 
-<div class:list={['noise-gradient', variant]} aria-hidden="true">
+<div class:list={['noise-gradient', variant, intensity]} aria-hidden="true">
   <div class="tint"></div>
   <div class="blob blob-a"></div>
   <div class="blob blob-b"></div>
@@ -112,6 +118,65 @@ const { variant = 'teal' } = Astro.props;
     top: -2%;
   }
 
+  /* Soft ------------------------------------------------------------------
+     The interior heroes are around half the homepage's height, so the same
+     blobs fill far more of the frame and the wash starts competing with the
+     headline instead of sitting behind it.
+
+     Three moves, all reductions:
+
+     1. A diagonal mask so the colour is a top-right corner wash and has
+        genuinely faded out by the time it reaches the headline in the lower
+        left. Composited with the existing bottom fade (`intersect`, with the
+        `-webkit-` `source-in` alongside for Safari) rather than replacing it —
+        without the bottom fade the grain still ends on a hard seam along the
+        right edge, where the diagonal is at full opacity.
+     2. Smaller blobs, pushed further off the corner.
+     3. Less alpha, and a tint that does not start ramping until past halfway. */
+  .soft {
+    -webkit-mask-image:
+      linear-gradient(to bottom left, #000 0%, #000 22%, transparent 68%),
+      linear-gradient(to bottom, #000 0%, #000 78%, transparent 100%);
+    mask-image:
+      linear-gradient(to bottom left, #000 0%, #000 22%, transparent 68%),
+      linear-gradient(to bottom, #000 0%, #000 78%, transparent 100%);
+    -webkit-mask-composite: source-in;
+    mask-composite: intersect;
+  }
+
+  .soft.teal {
+    --blob-a: oklch(0.76 0.11 100 / 0.44);
+    --blob-b: oklch(0.62 0.12 178 / 0.34);
+    --tint: linear-gradient(
+      115deg,
+      transparent 0%,
+      transparent 46%,
+      oklch(0.28 0.06 186 / 0.26) 78%,
+      oklch(0.37 0.09 180 / 0.3) 100%
+    );
+  }
+
+  .soft .blob-a {
+    width: 44vw;
+    height: 36vw;
+    right: -16vw;
+    top: -20vw;
+  }
+
+  .soft .blob-b {
+    width: 38vw;
+    height: 34vw;
+    right: -12vw;
+    top: -6%;
+  }
+
+  .soft.teal .blob-b {
+    width: 54vw;
+    height: 40vw;
+    right: -14vw;
+    top: -2%;
+  }
+
   /* Film grain. Inline SVG fractal noise, desaturated, tiled small and blended
      so it reads as an obvious texture over the blobs and the dark base. */
   .grain {
@@ -145,6 +210,28 @@ const { variant = 'teal' } = Astro.props;
       width: 140vw;
       height: 120vw;
       right: -28vw;
+      top: -4%;
+    }
+
+    /* The scale-up above exists so the wash still reads when text fills a
+       narrow frame; soft still wants to be the quieter of the two, so it takes
+       the same treatment at about three-quarters the reach. */
+    .soft .blob-a {
+      width: 98vw;
+      height: 84vw;
+      right: -32vw;
+      top: -44vw;
+    }
+    .soft .blob-b {
+      width: 86vw;
+      height: 76vw;
+      right: -26vw;
+      top: -12%;
+    }
+    .soft.teal .blob-b {
+      width: 105vw;
+      height: 92vw;
+      right: -22vw;
       top: -4%;
     }
   }

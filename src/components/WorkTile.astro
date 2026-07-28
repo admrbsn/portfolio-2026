@@ -16,60 +16,58 @@ const { entry, cellClass = '', feature = false, eager = false } = Astro.props;
 const { title, client, summary, cover, coverAlt } = entry.data;
 ---
 
-{/* Full-bleed cover fills the bento cell; text sits over a scrim so the tile
-    works at any size or orientation. On small screens it falls back to a 4:3
-    box; from lg it stretches to fill its grid cell.
+{/*
+  Cover on top, text beneath it on the page surface — not overlaid.
 
-    The cover deliberately carries no `transition:name`. It used to morph into
-    the case study's full-bleed hero image; that hero is now text-first and the
-    cover sits below the meta block, roughly a viewport down. A shared-element
-    morph to a target that far off-screen animates the tile downward and out of
-    frame, which reads as a glitch — a plain cross-fade is better. */}
+  The image holds a fixed aspect ratio and the caption flows beneath it, so a
+  tile's height follows from its column span rather than from a fixed row. The
+  image wrapper carries the rounding and `overflow-hidden` rather than the
+  anchor — the anchor now contains text that must not be clipped.
+
+  No scrim any more: nothing sits on the image, so nothing needs darkening
+  underneath it.
+
+  The cover deliberately carries no `transition:name`. It used to morph into
+  the case study's full-bleed hero image; that hero is now text-first and the
+  cover does not render on the case study at all, so an unpaired name would
+  animate the tile out on its own.
+*/}
 <a
   href={`/work/${entry.id}`}
-  class:list={[
-    'group relative block aspect-[4/3] overflow-hidden rounded-xl bg-surface-lift lg:aspect-auto lg:h-full',
-    cellClass,
-  ]}
+  class:list={['group block', cellClass]}
   data-cursor="grow"
   data-cursor-label="View case study"
 >
-  <Image
-    src={cover}
-    alt={coverAlt}
-    widths={[480, 800, 1200]}
-    sizes="(min-width: 1024px) 55vw, (min-width: 640px) 46vw, 92vw"
-    class="absolute inset-0 h-full w-full object-cover transition-transform duration-[900ms] ease-[var(--ease-out-expo)] group-hover:scale-[1.05]"
-    loading={eager ? 'eager' : 'lazy'}
-  />
+  <div class="relative aspect-[4/3] overflow-hidden rounded-xl bg-surface-lift lg:aspect-[16/10]">
+    <Image
+      src={cover}
+      alt={coverAlt}
+      widths={[480, 800, 1200]}
+      sizes="(min-width: 1024px) 55vw, (min-width: 640px) 46vw, 92vw"
+      class="absolute inset-0 h-full w-full object-cover transition-transform duration-[900ms] ease-[var(--ease-out-expo)] group-hover:scale-[1.05]"
+      loading={eager ? 'eager' : 'lazy'}
+    />
 
-  {/* Legibility scrim. */}
-  <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent"></div>
-  {/* Accent wash on hover — the brand green falling into the warm yellow, the
-      same ramp the headline gradients use. Was a per-case hue via
-      --card-accent; that token is gone. */}
-  <div
-    class="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-    style="background: linear-gradient(to top, color-mix(in oklab, var(--color-accent) 34%, transparent), color-mix(in oklab, var(--color-accent-warm) 14%, transparent) 45%, transparent 70%)"
-  >
+    {/* Accent wash on hover — the brand green falling into the warm yellow, the
+        same ramp the headline gradients use. */}
+    <div
+      class="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+      style="background: linear-gradient(to top, color-mix(in oklab, var(--color-accent) 34%, transparent), color-mix(in oklab, var(--color-accent-warm) 14%, transparent) 45%, transparent 70%)"
+    >
+    </div>
   </div>
 
-  <div class="absolute inset-x-0 bottom-0 p-5 lg:p-6">
-    <p class="text-micro uppercase tracking-[0.14em] text-white/70">{client}</p>
+  <div class="mt-5">
+    <p class="text-micro uppercase tracking-[0.14em] text-ink-faint">{client}</p>
     <h3
       class:list={[
-        'mt-1.5 font-display font-normal leading-[1.05] tracking-tight text-white',
-        feature ? 'text-[clamp(1.6rem,2.4vw,2.6rem)]' : 'text-[clamp(1.15rem,1.5vw,1.6rem)]',
+        'mt-1.5 font-display font-normal leading-[1.05] tracking-tight text-ink transition-colors duration-500 group-hover:text-accent',
+        feature ? 'text-[clamp(1.5rem,2.2vw,2.25rem)]' : 'text-[clamp(1.1rem,1.4vw,1.5rem)]',
       ]}
     >
       {title}<span class="text-accent">.</span>
     </h3>
-    <p
-      class:list={[
-        'mt-2 max-w-md text-white/80',
-        feature ? 'text-body' : 'text-sm',
-      ]}
-    >
+    <p class:list={['mt-2 max-w-lg text-ink-dim', feature ? 'text-body' : 'text-sm']}>
       {summary}
     </p>
   </div>

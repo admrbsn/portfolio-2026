@@ -20,7 +20,9 @@ const availableForWork = true;
   data-nav
   data-nav-state="visible"
   data-nav-scrim="off"
-  class="site-nav fixed inset-x-0 top-0 z-40 grid grid-cols-[1fr_auto] items-center gap-4 px-gutter py-5 sm:grid-cols-[1fr_auto_1fr]"
+  data-blueprint="Navbar"
+  style="--bp-top: 0.4rem"
+  class="site-nav fixed inset-x-0 top-0 z-40 grid grid-cols-[1fr_auto] items-center gap-4 px-shell py-5 sm:grid-cols-[1fr_auto_1fr]"
 >
   {/* Wordmark */}
   <a
@@ -63,6 +65,20 @@ const availableForWork = true;
 
 <style>
   .site-nav {
+    /* Part of the blueprint frame: a persistent bottom rule and its own vertical
+       rails at the gutter, drawn as a background (border-box origin) so they hold
+       even when the scroll scrim's background-colour covers the page rails
+       behind. Content is padded to `px-shell`, inside the rails. */
+    border-bottom: 1px solid var(--color-line);
+    background-image:
+      linear-gradient(var(--color-line), var(--color-line)),
+      linear-gradient(var(--color-line), var(--color-line));
+    background-repeat: no-repeat;
+    background-size: 1px 100%;
+    background-position:
+      left var(--spacing-gutter) top,
+      right var(--spacing-gutter) top;
+    background-origin: border-box;
     transition:
       transform 500ms var(--ease-out-expo),
       background-color 350ms ease,
@@ -75,10 +91,12 @@ const availableForWork = true;
     the accent dot in the wordmark to blue. Explicit colours + the scrim below
     are the trade for keeping those two colour moments intact.
   */
+  /* Opaque enough that body copy passing underneath becomes an indistinct
+     wash rather than something you can still read. At 72% the page was legible
+     through the bar; the blur alone does not hide high-contrast text. */
   .site-nav[data-nav-scrim='on'] {
-    background-color: color-mix(in oklab, var(--color-surface) 72%, transparent);
-    backdrop-filter: blur(14px);
-    border-bottom: 1px solid var(--color-line);
+    background-color: color-mix(in oklab, var(--color-surface) 90%, transparent);
+    backdrop-filter: blur(18px) saturate(120%);
   }
 
   .site-nav[data-nav-state='hidden'] {

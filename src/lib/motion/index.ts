@@ -12,6 +12,7 @@ import {
   heroFade,
   storyLine,
   jiggle,
+  momentReveal,
   type Teardown,
 } from './effects';
 
@@ -30,6 +31,7 @@ const registry: Record<string, (el: HTMLElement) => Teardown> = {
   'hero-fade': heroFade,
   'story-line': storyLine,
   jiggle,
+  'moment-reveal': momentReveal,
 };
 
 let teardowns: Teardown[] = [];

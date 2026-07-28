@@ -42,7 +42,7 @@ const socials: {
 ];
 ---
 
-<footer class="border-t border-line px-gutter py-28 text-center">
+<footer class="relative border-t border-line px-gutter py-28 text-center" data-blueprint="Footer">
   <p class="text-micro uppercase tracking-[0.2em] text-ink-faint">Message me</p>
 
   {/* Click-to-copy. Real text underneath, so screen readers read the address;
@@ -53,9 +53,12 @@ const socials: {
       literal string a visitor is meant to read as an address and retype. Caps
       makes it look like a heading rather than an email — and implies a casing
       that isn't the one on the clipboard. */}
+  {/* `data-cursor-label` is read by <Cursor>; the visible hint below stays as
+      the non-JS / touch fallback and as the aria-live target. */}
   <button
     type="button"
     data-copy={email}
+    data-cursor-label="Click to copy"
     class="group mx-auto mt-8 block font-display text-[clamp(2.25rem,7vw,5rem)] leading-none text-ink transition-colors hover:text-accent"
     aria-describedby="copy-hint"
   >
@@ -79,6 +82,7 @@ const socials: {
             href={s.href}
             target="_blank"
             rel="noopener noreferrer"
+            data-cursor-label="Visit"
             class="inline-flex items-center gap-2 text-micro uppercase tracking-[0.14em] text-ink-dim transition-colors hover:text-ink"
           >
             <svg

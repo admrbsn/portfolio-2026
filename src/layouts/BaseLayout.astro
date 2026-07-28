@@ -2,6 +2,7 @@
 import { ClientRouter } from 'astro:transitions';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
+import BreakoutCTA from '../components/BreakoutCTA.astro';
 import Cursor from '../components/Cursor.svelte';
 import '../styles/global.css';
 
@@ -10,7 +11,7 @@ import '../styles/global.css';
 // worth ~0.1 of CLS on its own. Importing with ?url gives the hashed, Astro-
 // served path so the <link> below points at the real built asset.
 import vidalokaWoff2 from '@fontsource/vidaloka/files/vidaloka-latin-400-normal.woff2?url';
-import geistWoff2 from '@fontsource-variable/geist/files/geist-latin-wght-normal.woff2?url';
+import sansWoff2 from '@fontsource-variable/google-sans/files/google-sans-latin-wght-normal.woff2?url';
 
 interface Props {
   title: string;
@@ -33,7 +34,7 @@ const ogUrl = new URL(ogImage, Astro.site);
     <link rel="canonical" href={canonical} />
 
     <link rel="preload" href={vidalokaWoff2} as="font" type="font/woff2" crossorigin />
-    <link rel="preload" href={geistWoff2} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={sansWoff2} as="font" type="font/woff2" crossorigin />
 
     <title>{title}</title>
     <meta name="description" content={description} />
@@ -104,6 +105,8 @@ const ogUrl = new URL(ogImage, Astro.site);
     <main id="main">
       <slot />
     </main>
+
+    <BreakoutCTA transition:persist />
 
     <Footer transition:persist />
 

@@ -173,14 +173,25 @@ const textureRows =
         {/* No trailing accent dot here. It is the wordmark's device and reads
             as punctuation on a sentence-like title; after "Tribute.co" it also
             stutters into a second full stop. */}
+        {/*
+          Its own scale, not `--text-display`. That token is the homepage hero's
+          (up to 8.25rem) and it pushed these 32–42 character titles onto three
+          lines. Sized so the longest of them ("Launching a new product on three
+          platforms") breaks at two, with `text-balance` splitting them evenly
+          rather than leaving an orphan.
+        */}
         <h1
-          class="mt-6 max-w-5xl font-display text-display font-normal text-ink"
+          class="mt-6 max-w-6xl font-display text-[clamp(2.5rem,5.6vw,5rem)] font-normal leading-[1.02] tracking-[-0.02em] text-balance text-ink"
           data-anim="reveal-heading"
         >
           {title}
         </h1>
 
-        <p class="mt-10 max-w-3xl text-lead text-ink-dim" data-anim="reveal">{summary}</p>
+        {/* White-with-alpha rather than `--color-ink-dim`. That token sits at
+            hue 160 with a little chroma — invisible at body size, but at
+            `--text-lead` it reads as a faint green cast. Matches how the
+            homepage hero handles its own lead. */}
+        <p class="mt-10 max-w-3xl text-lead text-white/70" data-anim="reveal">{summary}</p>
       </div>
     </section>
 
@@ -223,13 +234,44 @@ const textureRows =
     */}
     {
       impact.length > 0 && (
-        <section class="border-b border-line bg-surface-lift px-gutter py-14">
+        <section class="border-b border-line px-gutter pt-16">
           <h2 class="text-micro uppercase tracking-[0.14em] text-ink-faint">Impact</h2>
-          <dl class="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3" data-anim="reveal-batch">
-            {impact.map((item) => (
-              <div>
-                <dt class="text-lg font-medium leading-snug text-ink">{item.label}</dt>
-                <dd class="mt-2 max-w-prose text-ink-dim">{item.detail}</dd>
+
+          {/*
+            Ruled like the homepage's Capabilities grid: a top rule, vertical
+            dividers between columns, and cell padding deep enough that those
+            dividers run down to the section's own bottom border — one
+            connected grid rather than three floating blocks.
+
+            `-mx-6` against the cells' `px-6` keeps the first column's text on
+            the same rail as the at-a-glance grid above, so the rules sit
+            between columns without insetting the copy.
+          */}
+          <dl
+            class="-mx-6 mt-10 grid grid-cols-1 border-t border-line sm:grid-cols-2 lg:grid-cols-3"
+            data-anim="reveal-batch"
+          >
+            {impact.map((item, i) => (
+              <div
+                class:list={[
+                  'px-6 pt-8 pb-10 lg:pb-16',
+                  // At sm the grid is two-up, so only the second item sits in a
+                  // right-hand column. At lg the third joins it. Both rules
+                  // persist upward from their own breakpoint.
+                  i === 1 && 'sm:border-l sm:border-line',
+                  i === 2 && 'lg:border-l lg:border-line',
+                ]}
+              >
+                {/* Numbered like the About page's process list — the index is
+                    what separates this band from the at-a-glance grid above,
+                    which otherwise shares its label-over-value shape. */}
+                <span class="accent-gradient block text-micro tracking-[0.14em]">
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <dt class="mt-3 text-[clamp(1.125rem,1.5vw,1.375rem)] font-medium leading-[1.25] tracking-[-0.01em] text-balance text-ink">
+                  {item.label}
+                </dt>
+                <dd class="mt-3 text-sm leading-relaxed text-ink-dim">{item.detail}</dd>
               </div>
             ))}
           </dl>

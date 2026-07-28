@@ -15,6 +15,7 @@ import WorkTile from '../components/WorkTile.astro';
 import NoiseGradient from '../components/NoiseGradient.astro';
 import Leadership from '../components/Leadership.astro';
 import Experience from '../components/Experience.astro';
+import Dribbble from '../components/Dribbble.astro';
 
 // Metrics come straight from the generated bundle.ts. createBundle assembles the
 // runtime bundle from these parts, which is the supported path when the prebuilt
@@ -37,69 +38,102 @@ const work = (await getCollection('work', ({ data }) => !data.draft)).sort(
   (a, b) => a.data.order - b.data.order || b.data.year - a.data.year,
 );
 
-// Bento cell placements, applied in order to `work`. Designed to tile a 3-col
-// grid with no gaps: one large tile, two portraits, two wide tiles.
+// Bento cell placements, applied in order to `work`. Tiles a 5-col grid with no
+// gaps: a 3-wide feature, a 2-wide tile beside it, then a 2-wide tile on the
+// bottom-left with the two wide (3-col) tiles stacked to its right.
+/*
+ * Two up, then three up, on a six-column grid.
+ *
+ * This replaced a row-spanning bento that worked when the cover filled the
+ * whole cell and the text sat over it. With the text moved beneath the image,
+ * a tile has to share its cell — and in fixed-height rows the single-row tiles
+ * were left with 96px of image at a 7.85:1 crop. Column spans vary the width;
+ * the image's aspect ratio then sets the height, so every cover is croppped
+ * the same way and the captions line up.
+ */
 const workCells = [
-  'lg:col-span-2 lg:row-span-2', // feature — large
-  'lg:row-span-2', // portrait
-  'lg:row-span-2', // portrait
-  'lg:col-span-2', // wide
-  'lg:col-span-2', // wide
+  'lg:col-span-3', // Tribute V3 — feature
+  'lg:col-span-3', // Recording Flow
+  'lg:col-span-2', // Tribute.co
+  'lg:col-span-2', // Greetings
+  'lg:col-span-2', // Peterson's
 ];
 
 /*
  * Hero stats. `20×` is the Tribute growth figure; the second is a suggested
- * placeholder — swap the value/label for a real metric before shipping.
+ * placeholder — swap the figures/labels for a real metric before shipping.
+ * `op` picks the inline icon (× or →); `opWord` is its screen-reader spoken form.
  */
 const stats = [
-  { value: '20×', label: 'Growth at Tribute' },
-  { value: '0→1', label: 'Products shipped' },
+  { num: '20', op: 'times', opWord: 'times', tail: '', label: 'Growth at Tribute' },
+  { num: '0', op: 'arrow', opWord: 'to', tail: '1', label: 'Products shipped' },
 ];
 
-// Full skill set from the resume, scrolling in the marquee strip.
+// Résumé skill set, grouped into a scannable capabilities index (one column
+// per cluster) — the breadth without the fast-moving ticker.
 const capabilities = [
-  'AI-native workflows',
-  'Product strategy',
-  'Design systems',
-  'Figma',
-  'Frontend architecture',
-  'Cross-functional leadership',
-  'TypeScript',
-  'UX research',
-  'Tailwind',
-  'Accessibility',
-  'Design sprints',
-  'A/B testing',
-  'LLM-powered design',
-  'Usability testing',
-  'Conversion optimization',
-  'Vue',
-  'PostHog',
-  'Design mentorship',
-  'React',
-  'Webflow',
-  'JavaScript',
-  'Claude Code',
-  'Roadmap planning',
-  'Cursor',
-  'Qualitative research',
-  'Design tokens',
-  'Lean UX',
-  'User journey mapping',
-  'Growth design',
-  'JTBD',
-  'Agile / Scrum',
-  'GA4',
-  'Rapid prototyping',
-  'iOS & responsive',
-  'Git',
-  'Framer',
-  'HTML',
-  'CSS / SCSS',
-  'Performance optimization',
-  'REST APIs',
-  'Early-stage startups',
-  'User activation & retention',
+  {
+    name: 'Design',
+    items: [
+      'Product strategy',
+      'Design systems',
+      'Design tokens',
+      'Design sprints',
+      'Rapid prototyping',
+      'Accessibility',
+      'iOS & responsive',
+      'Figma',
+      'Framer',
+      'Webflow',
+      'Design mentorship',
+    ],
+  },
+  {
+    name: 'Engineering',
+    items: [
+      'Frontend architecture',
+      'TypeScript',
+      'JavaScript',
+      'React',
+      'Vue',
+      'Tailwind',
+      'HTML',
+      'CSS / SCSS',
+      'Git',
+      'REST APIs',
+      'Performance optimization',
+    ],
+  },
+  {
+    name: 'Research & growth',
+    items: [
+      'UX research',
+      'Qualitative research',
+      'Usability testing',
+      'A/B testing',
+      'Conversion optimization',
+      'Growth design',
+      'User journey mapping',
+      'JTBD',
+      'User activation & retention',
+      'Lean UX',
+      'PostHog',
+      'GA4',
+    ],
+  },
+  {
+    name: 'AI & leadership',
+    items: [
+      'AI-native workflows',
+      'LLM-powered design',
+      'Claude Code',
+      'Cursor',
+      'Cross-functional leadership',
+      'Roadmap planning',
+      'Agile / Scrum',
+      'Early-stage startups',
+    ],
+  },
 ];
 
 /*
@@ -121,13 +155,20 @@ const story = [
   title="Adam Robertson · Product designer & developer"
   description="Product designer and developer in Colorado. Head of Product Design, building interfaces where the details carry the weight."
 >
+  {/* Blueprint frame: faint vertical rails at the gutter + border-t between
+      sections segment the page into a subtle grid. */}
+  <div class="page-rails">
   {/* Hero -------------------------------------------------------------
       `mt-auto` on the inner wrapper rather than `justify-end` on the section:
       with justify-end, content taller than the container overflows past the
       *top* padding and collides with the fixed nav. mt-auto collapses to 0
       instead, so tall content flows down and short content still sits at the
       bottom of the viewport. */}
-  <section class="relative flex min-h-svh flex-col overflow-hidden px-gutter pb-[10vh] pt-32">
+  <section
+    class="relative flex min-h-svh flex-col overflow-hidden px-shell pb-[10vh] pt-32"
+    data-blueprint="The Hook"
+    style="--bp-top: 6rem"
+  >
     {/* Defaults to the teal brand wash; variant="violet" restores the old one. */}
     <NoiseGradient />
     {/* `my-auto` centres the block in the leftover space. Like mt-auto it
@@ -146,7 +187,42 @@ const story = [
           {
             stats.map((stat) => (
               <div>
-                <dd class="font-display text-stat text-ink">{stat.value}</dd>
+                <dd class="flex items-center font-display text-stat text-ink">
+                  {stat.num}
+                  {stat.op === 'times' ? (
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      aria-hidden="true"
+                      class="mx-[0.04em] h-[0.56em] w-[0.56em]"
+                    >
+                      <path
+                        d="M18 6L6 18M6 6L18 18"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                  ) : (
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      aria-hidden="true"
+                      class="mx-[0.1em] h-[0.62em] w-[0.62em]"
+                    >
+                      <path
+                        d="M4 12H20M20 12L14 6M20 12L14 18"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                  )}
+                  <span class="sr-only">{stat.opWord}</span>
+                  {stat.tail && <span>{stat.tail}</span>}
+                </dd>
                 <dt class="mt-3 text-micro uppercase tracking-[0.14em] text-ink-faint">
                   {stat.label}
                 </dt>
@@ -172,7 +248,11 @@ const story = [
       effects.ts): it fades and rises in as it enters, holds full through the
       centre, then dims — so the eye follows one beat at a time. The hero above
       fades out on scroll to hand off the viewport. */}
-  <section class="px-gutter pb-[22vh] pt-[20vh]" aria-label="How I found design">
+  <section
+    class="relative border-t border-line px-shell pb-[22vh] pt-[20vh]"
+    aria-label="How I found design"
+    data-blueprint="Story Quest"
+  >
     <div class="mx-auto flex max-w-2xl flex-col items-center gap-[24vh] text-center">
       {
         story.map((line) => (
@@ -210,33 +290,62 @@ const story = [
     </div>
   </section>
 
-  {/* Marquee ---------------------------------------------------------- */}
-  <section class="overflow-hidden border-y border-line py-6" data-anim="marquee" data-speed="34">
-    <div class="marquee-track">
-      {/* Duplicated so the -50% translate lands on an identical frame. */}
+  {/* Capabilities ----------------------------------------------------- */}
+  <section
+    class="relative border-t border-line px-shell pt-section pb-section lg:pb-0"
+    aria-labelledby="capabilities"
+    data-blueprint="My toolbelt"
+  >
+    <h2
+      id="capabilities"
+      class="font-display text-title font-normal text-ink"
+      data-anim="reveal-heading"
+    >
+      Capabilities
+    </h2>
+    <p class="mt-6 max-w-xl text-ink-dim" data-anim="reveal">
+      The full range I bring across a product, from first research to the frontend that ships it.
+    </p>
+
+    {/* The grid pulls back out to the page rails (-mx-shell-pad) and carries the
+        lines: a top rule rail-to-rail, per-column border-l dividers, and (at lg)
+        pb-section so those dividers run all the way down to the next section's
+        rule — one connected grid. Text stays padded (px-shell-pad) off the lines. */}
+    <div
+      class="-mx-shell-pad mt-16 grid grid-cols-1 gap-y-12 border-t border-line sm:grid-cols-2 lg:grid-cols-4 lg:gap-y-0"
+      data-anim="reveal-batch"
+    >
       {
-        [0, 1].map((copy) => (
-          <ul class="flex shrink-0" aria-hidden={copy === 1 ? 'true' : undefined}>
-            {capabilities.map((c) => (
-              <li class="flex items-center whitespace-nowrap px-8 text-micro uppercase tracking-[0.14em] text-ink-dim">
-                <span class="mr-8 text-accent" aria-hidden="true">
-                  ✳
-                </span>
-                {c}
-              </li>
-            ))}
-          </ul>
+        capabilities.map((group, i) => (
+          <div
+            class:list={[
+              'px-shell-pad pt-6 lg:pb-section',
+              i % 2 === 1 && 'sm:border-l sm:border-line',
+              i === 2 && 'lg:border-l lg:border-line',
+            ]}
+          >
+            <h3 class="text-micro uppercase tracking-[0.14em] text-ink-faint">{group.name}</h3>
+            <ul class="mt-5 space-y-2.5 text-ink">
+              {group.items.map((item) => (
+                <li>{item}</li>
+              ))}
+            </ul>
+          </div>
         ))
       }
     </div>
   </section>
 
   {/* Selected work ---------------------------------------------------- */}
-  <section id="work" class="scroll-mt-28 px-gutter py-section">
+  <section
+    id="work"
+    class="relative scroll-mt-28 border-t border-line px-shell py-section"
+    data-blueprint="Greatest Hits"
+  >
     <h2 class="font-display text-title font-normal text-ink" data-anim="reveal-heading">Selected work</h2>
 
     <div
-      class="mt-16 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 lg:[grid-auto-rows:clamp(11rem,14vw,13rem)]"
+      class="mt-16 grid grid-cols-1 items-start gap-x-4 gap-y-10 sm:grid-cols-2 lg:grid-cols-6"
       data-anim="reveal-batch"
     >
       {
@@ -248,8 +357,18 @@ const story = [
   </section>
 
   {/* Leadership ------------------------------------------------------- */}
-  <Leadership />
+  <div class="border-t border-line">
+    <Leadership />
+  </div>
 
   {/* Experience / résumé ---------------------------------------------- */}
-  <Experience />
+  <div class="border-t border-line">
+    <Experience />
+  </div>
+
+  {/* Dribbble grid ---------------------------------------------------- */}
+  <div class="border-t border-line">
+    <Dribbble />
+  </div>
+  </div>
 </BaseLayout>
