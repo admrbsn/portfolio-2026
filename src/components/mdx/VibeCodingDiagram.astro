@@ -1,0 +1,347 @@
+---
+/**
+ * The V3 workflow change, as a diagram: the old Figma-as-source-of-truth
+ * handoff against the prompt-and-production-components loop that replaced it,
+ * plus the one-week sprint cycle that carried it.
+ *
+ * Restyled from the old site's light-mode version onto the dark tokens; the
+ * original's bespoke Martian Grotesk face is dropped in favour of --font-sans,
+ * so the diagram stays inside the two-family type pairing.
+ */
+
+const oldWay = [
+  { title: 'Figma as source of truth', sub: 'Static specs only' },
+  { title: 'Handoff to engineers', sub: 'Specs lose fidelity' },
+  { title: 'React to mockups', sub: 'Weeks to decide' },
+  { title: 'Weeks of revision', sub: 'Momentum lost' },
+];
+
+const newWay = [
+  { title: 'Constrained prompt', sub: 'No vague asks' },
+  { title: 'Production components only', sub: 'No static specs' },
+  { title: 'One-week sprint cycles', sub: 'Lean UX + Agile' },
+  { title: 'Working code delivered', sub: 'Decisions in days, not weeks' },
+];
+
+const cycle = [
+  {
+    title: 'Sprint Kickoff',
+    desc: 'Define focus area and ownership',
+    path: 'M12 7v5l3 2',
+    circle: true,
+    emphasis: true,
+  },
+  {
+    title: 'Design & Prototype',
+    desc: 'Build with Lovable, Bolt, V0',
+    path: 'M12 20h9 M16.5 3.5l2.121 2.121a2.5 2.5 0 0 1 0 3.536L8.5 17.143 4 18l.857-4.5 11.121-10.986a2.5 2.5 0 0 1 3.536 0z',
+  },
+  {
+    title: 'Weekly Share-Out',
+    desc: 'Team review and alignment',
+    path: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2 M23 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75',
+    extraCircle: 'M9 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z',
+  },
+  {
+    title: 'Iteration',
+    desc: 'Refinement from feedback',
+    path: 'M21 12a9 9 0 1 1-2.64-6.36 M21 3v6h-6',
+  },
+  {
+    title: 'Integration',
+    desc: 'CTO + Adam merge to production',
+    path: 'M16 18l6-6-6-6 M8 6l-6 6 6 6',
+  },
+  {
+    title: 'Ship',
+    desc: 'Live product, next sprint',
+    path: 'M20 6 9 17l-5-5',
+    emphasis: true,
+  },
+];
+---
+
+<div
+  class="vcd my-16"
+  role="group"
+  aria-label="Diagram comparing the old and new design workflow, and the one-week sprint cycle"
+>
+  <div class="vcd__compare">
+    <div class="vcd__col">
+      <p class="vcd__col-head vcd__col-head--old">The old way</p>
+      <ol class="vcd__steps">
+        {
+          oldWay.map((step, i) => (
+            <li class="vcd__step">
+              <span class="vcd__step-n">{i + 1}</span>
+              <span class="vcd__step-title">{step.title}</span>
+              <span class="vcd__step-sub">{step.sub}</span>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+
+    <div class="vcd__arrow" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M5 12h14m-4-4l4 4-4 4"></path>
+      </svg>
+    </div>
+
+    <div class="vcd__col">
+      <p class="vcd__col-head vcd__col-head--new">The new way</p>
+      <ol class="vcd__steps">
+        {
+          newWay.map((step, i) => (
+            <li class="vcd__step vcd__step--new">
+              <span class="vcd__step-n">{i + 1}</span>
+              <span class="vcd__step-title">{step.title}</span>
+              <span class="vcd__step-sub">{step.sub}</span>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </div>
+
+  <div class="vcd__cycle">
+    <p class="vcd__cycle-head">One-week sprint cycle</p>
+
+    {/* Six cards do not fit any sensible column count on a phone, so the row
+        scrolls rather than reflowing into an unreadable stack. */}
+    <ol class="vcd__cycle-row">
+      {
+        cycle.map((item) => (
+          <li class={`vcd__card${item.emphasis ? ' vcd__card--emphasis' : ''}`}>
+            <span class="vcd__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                {item.circle && <circle cx="12" cy="12" r="9" />}
+                {item.extraCircle && <path d={item.extraCircle} />}
+                <path d={item.path} />
+              </svg>
+            </span>
+            <span class="vcd__card-title">{item.title}</span>
+            <span class="vcd__card-desc">{item.desc}</span>
+          </li>
+        ))
+      }
+    </ol>
+
+    <p class="vcd__repeat">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M17 1l4 4-4 4"></path>
+        <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+        <path d="M7 23l-4-4 4-4"></path>
+        <path d="M21 15v2a4 4 0 0 1-4 4H3"></path>
+      </svg>
+      Repeat weekly
+    </p>
+  </div>
+</div>
+
+<style>
+  .vcd {
+    font-family: var(--font-sans);
+    color: var(--color-ink-dim);
+  }
+
+  .vcd ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Comparison ------------------------------------------------------- */
+
+  .vcd__compare {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  @media (min-width: 40rem) {
+    .vcd__compare {
+      grid-template-columns: 1fr 3rem 1fr;
+      gap: 0;
+      align-items: start;
+    }
+  }
+
+  .vcd__col-head {
+    margin: 0 0 1rem;
+    text-align: center;
+    font-size: var(--text-micro);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-ink-faint);
+  }
+
+  .vcd__col-head--new {
+    color: var(--color-accent);
+  }
+
+  .vcd__steps {
+    display: grid;
+    gap: 0.5rem;
+  }
+
+  .vcd__step {
+    display: grid;
+    grid-template-columns: 1.5rem 1fr;
+    grid-template-areas:
+      'n title'
+      '. sub';
+    gap: 0 0.75rem;
+    align-items: baseline;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--color-line);
+    background: color-mix(in oklab, var(--color-surface-lift) 55%, transparent);
+  }
+
+  .vcd__step--new {
+    border-color: color-mix(in oklab, var(--color-accent) 35%, transparent);
+  }
+
+  .vcd__step-n {
+    grid-area: n;
+    display: grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 999px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    font-size: 0.6875rem;
+    color: var(--color-ink-faint);
+  }
+
+  .vcd__step--new .vcd__step-n {
+    color: var(--color-accent);
+    border-color: color-mix(in oklab, var(--color-accent) 40%, transparent);
+  }
+
+  .vcd__step-title {
+    grid-area: title;
+    color: var(--color-ink);
+    font-size: 0.9375rem;
+    line-height: 1.3;
+  }
+
+  .vcd__step-sub {
+    grid-area: sub;
+    margin-top: 0.2rem;
+    font-size: var(--text-micro);
+    color: var(--color-ink-faint);
+  }
+
+  .vcd__arrow {
+    display: grid;
+    place-items: center;
+    color: var(--color-ink-faint);
+    /* Points down when the columns stack, right when they sit side by side. */
+    transform: rotate(90deg);
+  }
+
+  .vcd__arrow svg {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  @media (min-width: 40rem) {
+    .vcd__arrow {
+      transform: none;
+      align-self: center;
+    }
+  }
+
+  /* Sprint cycle ------------------------------------------------------ */
+
+  .vcd__cycle {
+    margin-top: 2.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--color-line);
+  }
+
+  .vcd__cycle-head {
+    margin: 0 0 1.25rem;
+    font-size: var(--text-micro);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-ink-faint);
+  }
+
+  .vcd__cycle-row {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(11rem, 1fr);
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding-bottom: 0.75rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-line) transparent;
+  }
+
+  .vcd__card {
+    display: grid;
+    gap: 0.5rem;
+    align-content: start;
+    padding: 0.875rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--color-line);
+    background: color-mix(in oklab, var(--color-surface-lift) 55%, transparent);
+  }
+
+  .vcd__card--emphasis {
+    border-color: color-mix(in oklab, var(--color-accent) 40%, transparent);
+  }
+
+  .vcd__icon {
+    display: grid;
+    place-items: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 0.375rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    color: var(--color-ink-faint);
+  }
+
+  .vcd__card--emphasis .vcd__icon {
+    color: var(--color-accent);
+    border-color: color-mix(in oklab, var(--color-accent) 40%, transparent);
+  }
+
+  .vcd__icon svg {
+    width: 0.95rem;
+    height: 0.95rem;
+  }
+
+  .vcd__card-title {
+    color: var(--color-ink);
+    font-size: 0.9375rem;
+    line-height: 1.25;
+  }
+
+  .vcd__card-desc {
+    font-size: var(--text-micro);
+    line-height: 1.4;
+    color: var(--color-ink-faint);
+  }
+
+  .vcd__repeat {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 1rem 0 0;
+    font-size: var(--text-micro);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-ink-faint);
+  }
+
+  .vcd__repeat svg {
+    width: 0.9rem;
+    height: 0.9rem;
+  }
+</style>

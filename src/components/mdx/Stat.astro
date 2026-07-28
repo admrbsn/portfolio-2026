@@ -16,7 +16,7 @@ const { items } = Astro.props;
           any value longer than a few characters ("9m → 1m48s" wraps mid-arrow).
           This clamp tops out where the widest realistic stat still fits.
         */}
-        <dd class="mt-2 text-[clamp(1.5rem,2.6vw,2.5rem)] font-medium leading-[1.1] tracking-tight text-balance text-accent">
+        <dd class="stat-gradient mt-2 font-display text-[clamp(1.5rem,2.6vw,2.5rem)] font-normal leading-[1.1] tracking-tight text-balance">
           {item.value}
         </dd>
       </div>

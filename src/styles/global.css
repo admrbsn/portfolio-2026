@@ -79,7 +79,11 @@
   --color-ink-faint: oklch(0.6 0.014 160);
   --color-surface: oklch(0.16 0.004 240);
   --color-surface-lift: oklch(0.21 0.006 240);
-  --color-line: oklch(0.32 0.01 240);
+  /* Semi-transparent white rather than an opaque grey: hairlines then read the
+     same everywhere. An opaque line flips from light (on the dark surface) to
+     dark (over the bright hero wash); a white-with-alpha line always lightens,
+     so the frame stays consistent over any backdrop. */
+  --color-line: oklch(1 0 0 / 0.14);
 
   /* Neon green, biased toward teal to sit closer to the reference. Very high
      contrast on the teal-black surface, so it clears AA comfortably even as
@@ -102,7 +106,13 @@
 
   /* Layout */
   --spacing-gutter: clamp(1.25rem, 4vw, 4rem);
-  --spacing-section: clamp(6rem, 14vw, 14rem);
+  --spacing-section: clamp(4rem, 10vw, 10rem);
+  /* Content inset for the framed (blueprint) pages: the gutter — where the
+     vertical rails sit — plus breathing room, so text never touches a rail.
+     `shell-pad` is that breathing room on its own, so grids can pull back out
+     to the rails (-mx-shell-pad) while their text stays padded (px-shell-pad). */
+  --spacing-shell-pad: clamp(0.875rem, 2vw, 2rem);
+  --spacing-shell: calc(var(--spacing-gutter) + var(--spacing-shell-pad));
 }
 
 /* ---------------------------------------------------------------------------
@@ -166,6 +176,26 @@
     -webkit-text-fill-color: transparent;
     color: transparent;
   }
+
+  /* The same green→yellow idea, retuned for stat figures.
+
+     `.accent-gradient` is built for long runs of text — a full headline — so
+     its 120deg ramp only reaches the warm end after a good deal of width. A
+     stat is four or five glyphs, which lands entirely inside the green and
+     reads as flat colour. This starts warmer and finishes the ramp inside the
+     box, so the yellow is actually visible at "98%". */
+  .stat-gradient {
+    background-image: linear-gradient(
+      110deg,
+      var(--color-accent) 0%,
+      oklch(0.86 0.18 140) 45%,
+      var(--color-accent-warm) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
 }
 
 /* ---------------------------------------------------------------------------
@@ -189,25 +219,9 @@
     opacity: 0;
   }
 
-  /* Story lines carry a soft halo that rises and falls with the line's active
-     state — `--glow` (0→1) is driven by the same scrubbed timeline as the
-     opacity, so the glow arrives and leaves exactly with the text. Defaults to
-     0, so no-JS and reduced-motion simply get no glow. */
-  /* A wide, low-intensity bloom in the brand green — big enough to light the
-     area behind the line so the text pops, but soft enough not to read as a
-     heavy neon outline. A faint white core adds a little lift.
-
-     Deliberately STATIC. Animating these radii per frame was costing ~34ms a
-     frame with 250ms stalls: text-shadow paints on the CPU, so a 160px blur
-     across six lines repaints constantly. Baked at full strength, the line's
-     own opacity animation fades it instead — opacity composites on the GPU, so
-     it paints once. Same look, ~8ms frames. */
+  /* No glow behind story lines — the dimming as they enter and exit carries the
+     focus on its own. `will-change` keeps the opacity/transform on the GPU. */
   [data-anim='story-line'] {
-    text-shadow:
-      0 0 14px rgb(255 255 255 / 0.13),
-      0 0 38px oklch(0.78 0.18 168 / 0.3),
-      0 0 72px oklch(0.7 0.16 178 / 0.26),
-      0 0 118px oklch(0.62 0.14 186 / 0.22);
     will-change: opacity, transform;
   }
 
@@ -231,6 +245,40 @@
   .signature-canvas {
     color: var(--color-ink);
     font-size: clamp(1.9rem, 5vw, 3.5rem);
+  }
+
+  /* Blueprint annotations: a barely-there all-caps tag in each region's
+     top-left, like a wireframe label. `[data-blueprint]` must be positioned
+     (the sections carry `relative`; the nav is already fixed). Decorative. */
+  [data-blueprint]::before {
+    content: attr(data-blueprint);
+    position: absolute;
+    top: var(--bp-top, 0.85rem);
+    left: var(--spacing-gutter);
+    margin-left: 0.6rem;
+    font-size: 0.625rem;
+    line-height: 1;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-ink);
+    opacity: 0.2;
+    pointer-events: none;
+    z-index: 30;
+  }
+
+  /* Blueprint frame: two faint vertical rails at the gutter, drawn as
+     backgrounds so they sit behind all content. Contained sections sit flush
+     inside them; full-bleed sections (hero, Dribbble) paint over them. Paired
+     with `border-t` between sections to complete the grid. */
+  .page-rails {
+    background-image:
+      linear-gradient(var(--color-line), var(--color-line)),
+      linear-gradient(var(--color-line), var(--color-line));
+    background-repeat: no-repeat;
+    background-size: 1px 100%;
+    background-position:
+      left var(--spacing-gutter) top,
+      right var(--spacing-gutter) top;
   }
 }
 

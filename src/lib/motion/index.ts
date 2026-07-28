@@ -1,5 +1,5 @@
 import { gsap, ScrollTrigger, prefersReducedMotion } from './gsap';
-import { initSmoothScroll, resetScroll } from './lenis';
+import { initSmoothScroll, resetScroll, scrollToHash } from './lenis';
 import { initNav } from './nav';
 import {
   revealHeading,
@@ -62,6 +62,7 @@ export async function initMotion() {
     started = true;
   }
 
+
   // Line-based SplitText must wait for the webfont, otherwise lines are broken
   // against fallback metrics and visibly re-flow when the real font arrives.
   try {
@@ -88,6 +89,32 @@ export async function initMotion() {
   // Pinning and image loading both change document height. One refresh after
   // wiring keeps every trigger's start/end honest.
   ScrollTrigger.refresh();
+}
+
+/**
+ * Re-resolve the URL's anchor once layout has settled.
+ *
+ * The jump taken at swap time is only ever approximate: it runs before the
+ * webfont lands and before any effect claims its space, so a target far down
+ * the page (`/#work`) is measured against a document that then grows underneath
+ * it — the reader ends up short of the section by however much the content
+ * above expanded.
+ *
+ * Only corrects when the scroll position is still where that first jump left
+ * it. If the reader has started scrolling, yanking them to an anchor they are
+ * no longer interested in is worse than landing slightly off.
+ */
+async function settleHash(hash: string, scrollYAtStart: number) {
+  if (!hash) return;
+
+  try {
+    await document.fonts.ready;
+  } catch {
+    /* Font Loading API unavailable — the measurement below is still better
+       than the one taken at swap time. */
+  }
+
+  if (Math.abs(window.scrollY - scrollYAtStart) < 4) scrollToHash(hash);
 }
 
 /**
@@ -123,16 +150,30 @@ export function bindMotionLifecycle() {
   }
 
   document.addEventListener('astro:page-load', () => {
-    void initMotion();
+    // Captured before init so the correction can tell "still where we put it"
+    // from "the reader has moved". Runs in reduced motion too, where initMotion
+    // returns early — the anchor still has to land in the right place.
+    const hash = window.location.hash;
+    const scrollYAtStart = window.scrollY;
+
+    void initMotion().then(() => settleHash(hash, scrollYAtStart));
   });
 
   document.addEventListener('astro:before-swap', () => {
     destroyMotion();
   });
 
-  // Lenis keeps its own scroll position across swaps; without this a
-  // navigation lands mid-page instead of at the top.
+  /*
+    Lenis keeps its own scroll position across swaps; without this a navigation
+    lands mid-page instead of at the top.
+
+    The hash check is what makes `/#work` work at all. Lenis owns the scroll
+    position, so the browser performs no anchor jump of its own on a
+    client-side navigation — resetting unconditionally would land the reader at
+    the top of the homepage with `#work` sitting in the URL, looking like the
+    link is broken.
+  */
   document.addEventListener('astro:after-swap', () => {
-    resetScroll();
+    if (!scrollToHash(window.location.hash)) resetScroll();
   });
 }

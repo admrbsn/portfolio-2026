@@ -48,6 +48,33 @@ export function resetScroll() {
   lenis?.scrollTo(0, { immediate: true });
 }
 
+/**
+ * Jump to the element a URL hash points at. Returns false when there is no
+ * hash or nothing matches, so the caller can fall back to resetting to the top.
+ *
+ * This exists because Lenis owns the scroll position: on a client-side
+ * navigation to `/#work` the browser does not perform its own anchor jump, and
+ * `resetScroll()` would otherwise drag the page straight back to zero. Under
+ * reduced motion Lenis is never created, so fall through to the native path.
+ */
+export function scrollToHash(hash: string, immediate = true): boolean {
+  if (!hash || hash.length < 2) return false;
+
+  let target: HTMLElement | null = null;
+  try {
+    target = document.querySelector<HTMLElement>(hash);
+  } catch {
+    // A hash that isn't a valid selector (e.g. `#3-things`) — not our problem.
+    return false;
+  }
+  if (!target) return false;
+
+  if (lenis) lenis.scrollTo(target, { immediate });
+  else target.scrollIntoView({ behavior: immediate ? 'auto' : 'smooth' });
+
+  return true;
+}
+
 export function destroySmoothScroll() {
   if (!lenis) return;
   gsap.ticker.remove(tick);

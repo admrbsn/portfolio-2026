@@ -1,79 +1,209 @@
 ---
-title: 'Tribute Recording Flow Redesign'
-client: 'Tribute'
+title: 'Doubling submissions on a core flow'
+client: 'Tribute Recording Flow'
 year: 2024
-role: ['Product design', 'Interaction design', 'Frontend']
-summary: "Rebuilding Tribute's core recording experience to power over 5 million video memories."
-cover: '../../assets/work/recording-flow.jpg'
-coverAlt: 'Abstract teal-to-dark gradient cover for the recording flow case study'
-accent: 'oklch(0.82 0.17 176)'
+role: ['Head of Product Design']
+scope: 'Recording flow redesign (web and mobile), technical infrastructure overhaul'
+team: 'Design, frontend, backend engineering'
+timeline: '~4–6 months'
+skills:
+  - 'Funnel analysis'
+  - 'PostHog'
+  - 'Cohort analysis'
+  - 'Conversion optimization'
+  - 'Growth design'
+  - 'User journey mapping'
+  - 'Qualitative research'
+  - 'Usability testing'
+  - 'Maze'
+  - 'Rapid prototyping'
+  - 'Product analytics & A/B testing'
+  - 'Frontend architecture'
+  - 'JavaScript (Vue)'
+  - 'Tailwind'
+  - 'REST APIs'
+  - 'iOS and responsive design'
+  - 'Performance optimization'
+  - 'Roadmap planning'
+summary: "The interaction twenty million submissions pass through — rebuilt from 33% completion to 66.58%, by treating infrastructure as a conversion problem."
+impact:
+  - label: 'Submission rate 33% → 66.58%'
+    detail: 'Against a target of 65%. Path and funnel analysis separated people who never started from people who hit a technical failure — those needed different fixes.'
+  - label: 'Killed the Ziggeo and CDN dependency'
+    detail: 'Most reliability complaints traced to the video layer, not the interface. Users who hit a failed upload did not come back.'
+  - label: 'The barrier was emotional, not just technical'
+    detail: 'Surveys found users — introverts especially — hesitate to record themselves. Photo uploads shipped as a complement, never a replacement.'
+cover: '../../assets/work/recording-flow/hero.webp'
+coverAlt: 'Angled collage of the redesigned Tribute recording flow across desktop and mobile'
 featured: true
 order: 2
+metrics:
+  - value: '66.58%'
+    description: 'Submission Rate'
+    label: '(up from 33%)'
+  - value: '88%'
+    description: 'Users Continue'
+    label: 'Beyond First Screen'
+  - value: '72%'
+    description: 'Successful'
+    label: 'Video Submissions'
 ---
 
-import PullQuote from '../../components/mdx/PullQuote.astro';
-import Stat from '../../components/mdx/Stat.astro';
+import Figure from '../../components/mdx/Figure.astro';
+import RecordFunnel from '../../components/mdx/RecordFunnel.astro';
+import recordingFlowchart from '../../assets/work/recording-flow/recording-flowchart.webp';
+import progressSteps from '../../assets/work/recording-flow/recording-flow-gallery-2.webp';
+import recorderControls from '../../assets/work/recording-flow/recording-flow-gallery-6.webp';
+import participantNotes from '../../assets/work/recording-flow/recording-flow-gallery-13.webp';
 
-The recording flow is the core interaction on Tribute: it is where participants
-contribute the video messages that become the final product. Over twenty million
-submissions have passed through it. It was also the most fragile part of the
-platform, held back by a dated interface, an unreliable recorder built on Ziggeo
-and an aging CDN, poor mobile behavior, and no way to submit anything but video.
+## Background & Challenges
 
-## The problem, split in two
+Imagine the joyous tears of a grandmother as she watches a heartfelt video tribute compiled by her family from loving messages, celebrating her 80th birthday. This deeply personal moment, made possible through our platform, highlights the core mission of Tribute: to facilitate meaningful connections that transcend distance and time. Video submissions represent the most essential element of the Tribute experience, with over twenty million submissions received so far. The video submission process, or the "recording flow," represents more than just another feature of the Tribute platform; it is the fundamental interaction that defines the platform's essence.
 
-Aggregate data showed a 33% submission rate, but the average hid two different
-failures. Some people abandoned at the very first recording screen, before they
-had committed anything. Others started recording and then hit a technical failure
-mid-process. Treating those as one number would have led to one fix; separating
-them shaped the whole redesign.
+However, the current recording flow has significant problems:
 
-A PostHog funnel made it concrete: 79% of users moved past the initial screen, but
-only 42% completed submission, for an overall 33% conversion. Mobile dropped off
-harder at every stage, and long processing waits correlated with abandonment.
+- The user interface and the flow feel very dated
+- The technical reliability of the recording flow is weak due to its reliance on the older CDN integration and Ziggeo
+- The conversion rates are low — approximately 40% of users who begin the recording process ultimately submit a video
+- Bugs are frustrating users
+- The mobile experience is very subpar
+- Currently, the only option is to record videos, and there is no option to upload videos
 
-<PullQuote cite="Customer research, recording flow">
-  The friction was not only technical. For many people, recording your own face
-  and trying to be sincere is a genuinely vulnerable thing to do.
-</PullQuote>
+These problems are resulting in considerable friction for users and affecting our performance metrics.
 
-## Designing for hesitation, not just uptime
+## Project Objectives
 
-Research surfaced real emotional resistance, especially among introverts,
-independent of any bug. Prototype testing in Maze validated the redesigned flow
-and pointed to one clear request: people wanted a visible progress indicator
-showing where they were and what was left. Adding it measurably reduced hesitation
-in later rounds. Rather than jumping to pixel-perfect mockups, we prototyped in
-Bolt.new to validate the flow logic before committing to visuals.
+Using the SMART framework, I established specific objectives for the redesign:
 
-## Rebuilding the foundation
+1. **Increase the submission rates** from 40% to at least 65% for users who begin the recording process and submit a video.
+2. **Improve the technical reliability** of the recording flow by removing the problematic dependency on Ziggeo and the older CDN integration.
+3. **Add new features**, including photo uploads and gift card integration — plus a stretch goal of a resumable upload feature that works throughout the UI, allowing users to upload in the background while navigating the app, and to retry failed uploads themselves.
 
-The second objective was to remove the reliability problems at the source. The new
-flow runs on Vue and Tailwind with Pinia for state and FormKit for forms,
-VideoRecord-js for capture, Vimeo for resumable uploads, Backblaze and Bunny for
-photos, and Stripe for the gift-card integration. On iOS and Android, native HTML
-input fields replaced the custom recorder, which eliminated a whole class of
-platform-specific bugs.
+Having measurable targets for the project kept it focused and provided a means to assess its success. Additionally, it ensured we tackled both the technical issues and the new features users had requested.
 
-Smaller touches carried a lot of the experience: selected Tribute themes appear as
-dynamic backdrops so recording feels connected to the celebration, inline
-checkmarks confirm each input, hovering record disables upload (and vice versa) to
-show they are two paths to the same outcome, a hidden notes field acts like a
-teleprompter to cut down retakes, and a confetti finish rewards completion.
+## User Research & Analysis
 
-## Results
+### The value of using user path analysis
 
-<Stat
-  items={[
-    { value: '65%+', label: 'Submission rate (from 33%)' },
-    { value: '+88%', label: 'Continuing past first screen' },
-    { value: '72%', label: 'Successful video submissions' },
-  ]}
+Throughout the redesign process, user path analysis was incredibly valuable, as it enabled me to see how users navigated our app and identify exactly where friction occurred. When I mapped out each step of the recording flow, I was able to see not only where users were abandoning it, but also the context of those abandonments.
+
+This type of analysis provided information that would not have been available solely from aggregate conversion rates. For example, I was able to distinguish between users who abandoned the recording flow immediately after viewing the recording interface and those who began the recording process but experienced technical issues along the way.
+
+<Figure src={recordingFlowchart} alt="Flow chart of the recording user journey, mapping each step and its drop-off points." caption="Recording User Flow" />
+
+### Funnel analysis using PostHog
+
+Once I analyzed the data using PostHog's funnel tools, the picture became very clear:
+
+1. All users intended to record a video (the entry point of our funnel).
+2. 79% of users continued beyond the first video record screen.
+3. However, only 42% of those users successfully completed the video submission process.
+
+Therefore, my overall submission rate was approximately 33% from beginning to end — fairly low for a core feature.
+
+Using PostHog, I further analyzed the data by device type and found that mobile users were experiencing even greater difficulty than desktop users. I also measured the time spent at each step and noted that users who eventually gave up were spending a great deal of time waiting for video processing — a clear indication that something was amiss.
+
+The same funnel after the rebuild looks like this:
+
+<RecordFunnel />
+
+Two things worth reading off it. The overall rate is **66.58%**, which clears the 65% target the project was set. And the step-to-step numbers say something the headline figure hides: of the people who get as far as handing over their details, **80.30% finish**. The upload — the step we spent most of the rebuild on — is no longer where the flow loses people.
+
+The loss is at the front. 4,404 view the record flow and never begin it, which is the emotional hesitation the research turned up rather than anything technical. That is the next problem, and it is a different kind of problem.
+
+### Establishing reasonable conversion targets
+
+My target of increasing the overall submission rate from 33% to at least 65% may seem ambitious, given that it is for a core feature. However, my research provided important context on the challenges of recording video for users.
+
+My customer surveys indicated that many of our users, particularly those who consider themselves introverted, become hesitant when asked to record themselves on video. The act of recording creates a sense of vulnerability and pressure, leading some users to hesitate.
+
+As a result, the redesign required addressing three distinct challenges:
+
+1. **Create a feeling of familiarity and reduced intimidation** when recording video by improving the UI, providing additional clarity and ensuring that the technical aspects are reliable.
+2. **Add alternative options** to the video submission process (e.g. photo uploads), while maintaining the focus on video as the primary method of submission.
+3. **Strike a balance between these two methods** to ensure that we do not inadvertently discourage users from submitting video content, which is what makes a Tribute unique.
+
+To address emotional barriers and guide users through the recording process, we designed the photo upload as a complementary feature rather than emphasizing it as a primary alternative to video submission. This way, we maintained the focus on video submission while offering users alternatives to complete the recording flow.
+
+### Testing our prototype with Maze
+
+To test our prototype, I used Maze, a result-oriented usability testing tool. The test results were very promising, with high success and satisfaction rates across the redesigned recording flow.
+
+Although the testing confirmed my primary design decisions, it also yielded one critical piece of feedback: users wanted a clearer, labeled progress bar to help them understand where they were and what came next.
+
+This insight helped us improve the user interface, giving users a better understanding of their place in the process and minimizing uncertainty.
+
+<Figure
+  src={progressSteps}
+  alt="Desktop and mobile views of the recording flow's first step, showing a five-step labelled progress bar and an inline checkmark on a completed field."
+  caption="The labelled progress bar users asked for, plus inline validation — both fixes for uncertainty rather than usability"
 />
 
-The redesign only worked because it treated infrastructure reliability as a
-conversion feature in its own right. People who hit a failed upload or a long
-processing delay rarely came back, which made backend stability inseparable from
-trust. The one thing I would do differently is treat resumable background uploads
-as a day-one requirement rather than a stretch goal, given how many people record
-on unreliable mobile connections.
+## Solution Design
+
+Based on my research, I developed a detailed flow chart that identified:
+
+- The problem areas of the current process
+- Areas where conversion rates were low
+- All the new features we desired to implement
+
+Instead of spending a lot of time creating pixel-perfect mockups in Figma, we used Bolt.new for rapid prototyping, which enabled us to iterate and validate quickly. This approach allowed us to prioritize flow logic over pixel precision, ensuring we focused on functionality and the user journey rather than getting caught up in visual details. While Figma is powerful for detailed design work, the rapid iteration enabled by Bolt.new let us test and refine our ideas more effectively, demonstrating the intentional trade-offs in our tooling choices.
+
+## Technical Implementation
+
+For the new recording flow, we implemented a modern technology stack:
+
+- Vue.js and Tailwind CSS for the front-end
+- Pinia for managing application state
+- FormKit for handling forms
+- VideoRecord-js for capturing video
+- Custom dropzone/upload implementation
+- Vimeo for direct resumable uploads
+- Backblaze and Bunny for uploading photos
+- Stripe for integrating e-commerce
+
+One of the best decisions we made was the way we approached mobile. While our desktop experience used a customized recording interface, the mobile experience used native HTML input fields to capture video on both iOS and Android devices. This was a massive improvement because it leveraged the OS's capabilities rather than fighting against them. Why rebuild what the OS already does so well?
+
+## Additional Design Improvements
+
+While we improved the technical foundation of the recording flow, we also made thoughtfully designed improvements to the user experience that addressed the needs of the users:
+
+### Providing context
+
+We dynamically placed placeholders behind the core flow to enable users to select the Tribute theme (birthday, graduation, congratulations, etc.) that they are celebrating. This helped create a contextual experience for the user that tied the selected theme throughout the entire process.
+
+### Providing instant feedback
+
+To provide instant feedback and reactively apply checkmarks for real-time validation, we followed best practices for form development. This instantaneous feedback to users helped alleviate their uncertainty and confusion.
+
+### Creating clear and intuitive interface controls
+
+One subtle but impactful enhancement: hovering over record disables the upload button, and vice versa. Research showed users were confused about whether they had to record *and* upload as separate steps. This one decision removed the confusion and made the path forward obvious.
+
+<Figure
+  src={recorderControls}
+  alt="Desktop recorder showing Upload, Camera and Mic controls with a countdown overlay reading 'Get ready!'"
+  caption="Record and upload presented as two routes to the same outcome, never two required steps"
+/>
+
+### Including a participant notes functionality
+
+We added a notes field that stays hidden from everyone but the person recording. It solved a common issue from our research: users were recording take after take because they forgot what they wanted to say once the camera was on.
+
+<Figure
+  src={participantNotes}
+  alt="Recorder with the participant notes field open, reading 'Add some notes to help you along (only visible to you)…'"
+  caption="A teleprompter in everything but name — the cheapest fix we shipped, and one of the most effective"
+/>
+
+### Adding moments of delight
+
+We included a pulsating effect on the buttons and a confetti Lottie animation on the confirmation page to celebrate the successful completion of the submission process. These small moments of delight reinforced the positive emotions associated with completing the submission process and added a bit of personality to the experience.
+
+---
+
+## Reflection
+
+The recording flow is deceptively simple on the surface — record a video, submit it. But the combination of technical fragility, emotional hesitation, and cross-platform inconsistency made it one of the harder problems we tackled at Tribute. The biggest lesson was that conversion wasn't just a UX problem. The technical layer (Ziggeo, the CDN) was actively undermining trust. Users who hit a processing delay or a failed upload didn't come back for a second try. Fixing the infrastructure was as much a conversion play as any design change we made.
+
+If I were starting this again, I'd push harder on resumable uploads from day one rather than treating it as a stretch goal. For a product where the average user is recording on a phone over mobile data, upload resilience is table stakes.

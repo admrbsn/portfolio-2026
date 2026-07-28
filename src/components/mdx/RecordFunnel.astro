@@ -1,0 +1,325 @@
+---
+/**
+ * The post-redesign record-flow funnel, rebuilt from PostHog in the portfolio's
+ * own tokens.
+ *
+ * Built rather than screenshotted or generated because the bar heights have to
+ * be proportionally honest — a funnel whose geometry lies is worse than no
+ * funnel. Heights are derived from `pct` directly, so the drawing cannot drift
+ * from the number printed beneath it.
+ *
+ * Numbers are a real 30-day window: 25,773 people entered the flow, 17,159
+ * finished. The "before" figures quoted in the body (79% → 42%, 33% overall)
+ * came from a differently-shaped funnel on the old flow, so they are stated in
+ * prose rather than drawn here as a second series — the steps are not
+ * like-for-like and overlaying them would imply a comparison the data does not
+ * support.
+ */
+
+const steps = [
+  {
+    n: 1,
+    name: 'Record: Viewed',
+    persons: '25,773',
+    pct: 100,
+    pctLabel: null,
+    dropped: null,
+    droppedPct: null,
+    median: null,
+  },
+  {
+    n: 2,
+    name: 'Record: Collect Personal Info',
+    persons: '21,369',
+    pct: 82.91,
+    pctLabel: '82.91%',
+    // Conversion from the immediately preceding step. At step 2 this equals the
+    // absolute figure, because the preceding step is the 100% baseline.
+    relative: '82.91%',
+    dropped: '4,404',
+    droppedPct: '17.09%',
+    median: '16s',
+  },
+  {
+    n: 3,
+    name: 'Record: Upload Completed',
+    persons: '17,159',
+    pct: 66.58,
+    pctLabel: '66.58%',
+    relative: '80.30%',
+    dropped: '4,210',
+    droppedPct: '33.42%',
+    median: '1m 56s',
+  },
+];
+
+const gridlines = [100, 80, 60, 40, 20, 0];
+---
+
+<figure class="funnel my-14" data-anim="reveal">
+  <div class="funnel__summary">
+    <p>
+      Total conversion rate <strong>66.58%</strong>
+    </p>
+    <p>
+      Median time to convert <strong>2m 19s</strong>
+    </p>
+    <p class="funnel__range">Last 30 days</p>
+  </div>
+
+  <div class="funnel__plot">
+    <div class="funnel__axis" aria-hidden="true">
+      {gridlines.map((g) => <span>{g}%</span>)}
+    </div>
+
+    <ol class="funnel__bars">
+      {
+        steps.map((s) => (
+          <li class="funnel__step">
+            <div class="funnel__track">
+              {/*
+                The bar is sized straight from the same number that prints in
+                the caption below it, so the two cannot disagree. The hatched
+                remainder above it is everyone lost by this point.
+              */}
+              <div class="funnel__bar" style={`height:${s.pct}%`}>
+                <span class="funnel__bar-value">{s.pctLabel ?? '100%'}</span>
+              </div>
+            </div>
+
+            <div class="funnel__meta">
+              <p class="funnel__name">
+                <span class="funnel__n">{s.n}</span>
+                {s.name}
+              </p>
+              <p class="funnel__persons">
+                {s.persons} persons{s.pctLabel && <span> ({s.pctLabel} of entrants)</span>}
+              </p>
+              {s.relative && <p class="funnel__relative">{s.relative} from previous step</p>}
+              {s.dropped && (
+                <p class="funnel__dropped">
+                  {s.dropped} dropped here ({s.droppedPct} lost overall)
+                </p>
+              )}
+              {s.median && <p class="funnel__median">median {s.median}</p>}
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+
+  <figcaption>
+    The record flow after the rebuild. 25,773 people entered it in thirty days and 17,159
+    finished — against a target of 65%
+  </figcaption>
+</figure>
+
+<style>
+  /*
+    List reset, over-specified for the same reason as <PersonaCards>: the prose
+    column styles every `ol`/`li` as body copy, and `.case-body[data-astro-cid]
+    ol` at (0,2,1) beats a plain scoped `.funnel__bars[data-astro-cid]` at
+    (0,2,0). Left alone it puts decimal markers at the foot of every bar and
+    knocks the y-axis out of alignment with an inherited 1.5rem block margin.
+  */
+  .funnel .funnel__bars {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .funnel .funnel__step {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .funnel {
+    margin-inline: 0;
+  }
+
+  /* Summary bar ------------------------------------------------------ */
+
+  .funnel__summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem 1.5rem;
+    padding-bottom: 0.9rem;
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  .funnel__summary p {
+    margin: 0;
+    font-size: 0.8125rem;
+    color: var(--color-ink-faint);
+  }
+
+  .funnel__summary strong {
+    font-weight: 500;
+    color: var(--color-accent);
+  }
+
+  .funnel__range {
+    margin-left: auto !important;
+  }
+
+  /* Plot -------------------------------------------------------------- */
+
+  .funnel__plot {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0 0.75rem;
+    margin-top: 1.25rem;
+  }
+
+  .funnel__axis {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 15rem;
+    font-size: 0.625rem;
+    color: var(--color-ink-faint);
+    /* Nudge each label onto its gridline rather than below it. */
+    transform: translateY(-0.35em);
+  }
+
+  .funnel__bars {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .funnel__step {
+    margin: 0;
+    padding: 0;
+  }
+
+  .funnel__track {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    height: 15rem;
+    border-bottom: 1px solid var(--color-line);
+    /* Hatching stands for everyone lost by this step — the same device
+       PostHog uses, so the chart reads as the tool it came from. */
+    background-image: repeating-linear-gradient(
+      -45deg,
+      color-mix(in oklab, var(--color-accent) 9%, transparent) 0 1px,
+      transparent 1px 7px
+    );
+  }
+
+  /* Gridlines, drawn behind the bars. */
+  .funnel__track::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: repeating-linear-gradient(
+      to top,
+      var(--color-line) 0 1px,
+      transparent 1px 20%
+    );
+    opacity: 0.5;
+  }
+
+  .funnel__bar {
+    position: relative;
+    width: 100%;
+    border-radius: 0.25rem 0.25rem 0 0;
+    background: linear-gradient(
+      to top,
+      color-mix(in oklab, var(--color-accent) 70%, transparent),
+      var(--color-accent)
+    );
+  }
+
+  .funnel__bar-value {
+    position: absolute;
+    top: 0.5rem;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-surface);
+  }
+
+  /* Step captions ----------------------------------------------------- */
+
+  .funnel__meta {
+    padding-top: 0.75rem;
+  }
+
+  .funnel__meta p {
+    margin: 0;
+  }
+
+  .funnel__name {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    font-size: 0.8125rem;
+    line-height: 1.3;
+    color: var(--color-ink);
+  }
+
+  .funnel__n {
+    flex-shrink: 0;
+    padding: 0.05rem 0.3rem;
+    border-radius: 0.2rem;
+    background: var(--color-surface-lift);
+    font-size: 0.625rem;
+    color: var(--color-ink-faint);
+  }
+
+  .funnel__persons,
+  .funnel__relative,
+  .funnel__dropped,
+  .funnel__median {
+    margin-top: 0.3rem !important;
+    font-size: 0.6875rem;
+    line-height: 1.35;
+  }
+
+  .funnel__persons {
+    color: var(--color-ink-dim);
+  }
+
+  /* The step-to-step number, which the source chart never surfaces — it is the
+     one that separates "people won't finish" from "people won't start". */
+  .funnel__relative {
+    color: var(--color-accent);
+  }
+
+  .funnel__dropped {
+    color: var(--color-ink-faint);
+  }
+
+  .funnel__median {
+    color: var(--color-ink-faint);
+  }
+
+  figcaption {
+    margin-top: 1.25rem;
+    font-size: var(--text-micro);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-ink-faint);
+  }
+
+  @media (max-width: 40rem) {
+    .funnel__axis,
+    .funnel__track {
+      height: 11rem;
+    }
+
+    .funnel__name {
+      font-size: 0.75rem;
+    }
+  }
+</style>

@@ -1,0 +1,326 @@
+---
+/**
+ * The four V3 audience archetypes, rebuilt in the portfolio's own tokens.
+ *
+ * This is a recreation of the Personas tab of the internal audience insights
+ * dashboard, not a screenshot of it — the live tool is Tribute-branded and
+ * password-gated. Built as a component rather than an image because the index
+ * values carry the argument: an index of 1184 against a US average of 100 is
+ * the evidence, and a generated or screenshotted version puts those numbers
+ * beyond reach of selection, search and screen readers.
+ *
+ * `strong` marks the signals that were most statistically significant — the
+ * ones that actually drove each archetype, rather than merely describing it.
+ */
+
+interface Signal {
+  label: string;
+  strong?: boolean;
+}
+
+interface Persona {
+  icon: string;
+  name: string;
+  archetype: string;
+  blurb: string;
+  traits: { label: string; value: string }[];
+  signals: Signal[];
+}
+
+const personas: Persona[] = [
+  {
+    icon: '🎉',
+    name: 'The Celebration Planner',
+    archetype: 'Primary archetype',
+    blurb:
+      "A woman in her 50s–60s who takes charge of marking life's biggest moments — retirements, milestone birthdays, anniversaries. She's the one in the family group chat who actually makes things happen. Tribute fits naturally into how she already thinks about gifting.",
+    traits: [
+      { label: 'Age', value: '55–65+' },
+      { label: 'Gender', value: 'Female (index 105)' },
+      { label: 'Income', value: '$100k–$150k+' },
+      { label: 'Education', value: 'College / Grad School' },
+      { label: 'Occupation', value: 'Manager, Assistant, Admin' },
+      { label: 'Industry', value: 'Health, Government, Education' },
+    ],
+    signals: [
+      { label: '65+ index 128', strong: true },
+      { label: '55–59 index 126', strong: true },
+      { label: 'Female index 105', strong: true },
+      { label: 'Has Kids index 102' },
+      { label: 'Grad School index 158' },
+      { label: '$150k+ index 173' },
+    ],
+  },
+  {
+    icon: '💼',
+    name: 'The Executive Organizer',
+    archetype: 'High-value archetype',
+    blurb:
+      "A senior leader — CEO, Director, VP, Founder — who uses Tribute for employee recognition and team milestones. They're time-poor but emotionally invested in their people. They appreciate a polished, professional result with minimal effort. High purchase intent and willingness to pay.",
+    traits: [
+      { label: 'Age', value: '45–59' },
+      { label: 'Gender', value: 'Mixed' },
+      { label: 'Income', value: '$150k+' },
+      { label: 'Education', value: 'Grad School' },
+      { label: 'Occupation', value: 'CEO, Director, VP, Founder' },
+      { label: 'Industry', value: 'Software, Finance, Business Services' },
+    ],
+    signals: [
+      { label: 'Corporate Finance & M&A index 1184', strong: true },
+      { label: 'Investor Relations index 950', strong: true },
+      { label: 'Software index 186', strong: true },
+      { label: 'CEO index 153' },
+      { label: 'Director index 161' },
+      { label: 'Founder index 302' },
+    ],
+  },
+  {
+    icon: '🎨',
+    name: 'The Creative Connector',
+    archetype: 'Growth archetype',
+    blurb:
+      "A marketing or creative professional in their 30s–40s who discovers Tribute while planning something for a colleague or friend. They're digitally fluent, share things widely, and have high referral potential. They care deeply about how the final product looks and feels.",
+    traits: [
+      { label: 'Age', value: '35–49' },
+      { label: 'Gender', value: 'Female skew' },
+      { label: 'Income', value: '$100k–$150k' },
+      { label: 'Education', value: 'College / Grad School' },
+      { label: 'Occupation', value: 'Creative, CMO, Marketing Mgmt' },
+      { label: 'Industry', value: 'Media, Advertising, Software' },
+    ],
+    signals: [
+      { label: 'Creative index 2022', strong: true },
+      { label: 'CMO index 482', strong: true },
+      { label: 'Advertising/PR index 372', strong: true },
+      { label: 'Industrial/Graphic Design index 354' },
+      { label: 'Media index 100' },
+      { label: 'Publishing index 329' },
+    ],
+  },
+  {
+    icon: '📖',
+    name: 'The Legacy Keeper',
+    archetype: 'Retention archetype',
+    blurb:
+      'Someone 65+ creating a tribute for a life event with deep emotional weight — a memorial, a 50th anniversary, a retirement after 30 years. They move more deliberately, often need support, and are most likely to purchase the Video Book add-on. Once they experience Tribute, they become loyal repeat customers and strong word-of-mouth drivers.',
+    traits: [
+      { label: 'Age', value: '65+' },
+      { label: 'Gender', value: 'Female skew' },
+      { label: 'Income', value: '$100k–$150k+' },
+      { label: 'Education', value: 'College' },
+      { label: 'Occupation', value: 'Retired / Healthcare / Religious' },
+      { label: 'Location', value: 'Virginia, Iowa, Vermont' },
+    ],
+    signals: [
+      { label: '65+ index 128 (peak)', strong: true },
+      { label: 'Virginia index 291', strong: true },
+      { label: 'Iowa index 556', strong: true },
+      { label: 'Religious Leader index 106' },
+      { label: 'General Health index 128' },
+      { label: 'Vermont index 355' },
+    ],
+  },
+];
+---
+
+<div class="personas my-14" data-anim="reveal">
+  <ul class="personas__grid">
+    {
+      personas.map((p) => (
+        <li class="persona">
+          <div class="persona__head">
+            {/* Icon sits inline with the name rather than on its own line —
+                four cards of stacked icons cost a lot of height for nothing. */}
+            <h3 class="persona__name">
+              <span aria-hidden="true">{p.icon}</span>
+              {p.name}
+            </h3>
+            <p class="persona__archetype">{p.archetype}</p>
+            <p class="persona__blurb">{p.blurb}</p>
+          </div>
+
+          <dl class="persona__traits">
+            {p.traits.map((t) => (
+              <div>
+                <dt>{t.label}</dt>
+                <dd>{t.value}</dd>
+              </div>
+            ))}
+          </dl>
+
+          <div class="persona__signals">
+            <p class="persona__signals-label">Key signals</p>
+            <ul>
+              {p.signals.map((s) => (
+                <li class={s.strong ? 'is-strong' : undefined}>{s.label}</li>
+              ))}
+            </ul>
+          </div>
+        </li>
+      ))
+    }
+  </ul>
+
+  <p class="personas__method">
+    <strong>Methodology:</strong> Personas are synthesized from Dun &amp; Bradstreet audience
+    intelligence across demographics, occupation, industry, and geography. Signal tags show the most
+    statistically significant index values (100 = US average) driving each archetype. The
+    Celebration Planner represents the core acquisition target; the Executive Organizer represents
+    the highest LTV opportunity.
+  </p>
+</div>
+
+<style>
+  /*
+    List reset, deliberately over-specified.
+
+    `.case-body` styles every `ul`/`li` in the prose column as body copy —
+    `.case-body[data-astro-cid] ul` is (0,2,1), which beats a plain scoped
+    `.personas__grid[data-astro-cid]` at (0,2,0). Left unreset, the grid
+    inherits `padding-left: 1.25rem` (which insets the whole component from the
+    text column) and every card and chip inherits `margin-block: 0.5rem`.
+    Naming the wrapper as well takes these to (0,3,0)+ and settles it.
+  */
+  .personas .personas__grid,
+  .personas .persona__signals ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .personas .persona,
+  .personas .persona__signals li {
+    margin: 0;
+  }
+
+  .personas__grid {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  @media (min-width: 48rem) {
+    .personas__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  .persona {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--color-line);
+    border-radius: 0.625rem;
+    background: color-mix(in oklab, var(--color-surface-lift) 55%, transparent);
+    overflow: hidden;
+  }
+
+  .persona__head {
+    padding: 1.125rem;
+  }
+
+  .persona__name {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--color-ink);
+  }
+
+  .persona__archetype {
+    margin: 0.3rem 0 0;
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+
+  .persona__blurb {
+    margin: 0.65rem 0 0;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--color-ink-dim);
+  }
+
+  /* Traits ---------------------------------------------------------- */
+
+  .persona__traits {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.7rem 1rem;
+    margin: 0;
+    padding: 0.9rem 1.125rem;
+    border-top: 1px solid var(--color-line);
+  }
+
+  .persona__traits dt {
+    font-size: 0.625rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-ink-faint);
+  }
+
+  .persona__traits dd {
+    margin: 0.2rem 0 0;
+    font-size: 0.8125rem;
+    line-height: 1.35;
+    color: var(--color-ink);
+  }
+
+  /* Signals ---------------------------------------------------------- */
+
+  .persona__signals {
+    margin-top: auto;
+    padding: 0.9rem 1.125rem 1.125rem;
+    border-top: 1px solid var(--color-line);
+  }
+
+  .persona__signals-label {
+    margin: 0 0 0.6rem;
+    font-size: 0.625rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-ink-faint);
+  }
+
+  .persona__signals ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+  }
+
+  .persona__signals li {
+    padding: 0.2rem 0.5rem;
+    border-radius: 999px;
+    border: 1px solid var(--color-line);
+    font-size: 0.6875rem;
+    line-height: 1.35;
+    color: var(--color-ink-faint);
+  }
+
+  /* The signals that actually drove the archetype, rather than merely
+     describing it — the accent is the whole distinction being drawn. */
+  .persona__signals li.is-strong {
+    border-color: color-mix(in oklab, var(--color-accent) 45%, transparent);
+    color: var(--color-accent);
+  }
+
+  /* Methodology ------------------------------------------------------ */
+
+  .personas__method {
+    margin: 0.75rem 0 0;
+    padding: 0.9rem 1.125rem;
+    border: 1px solid var(--color-line);
+    border-radius: 0.625rem;
+    background: color-mix(in oklab, var(--color-surface-lift) 40%, transparent);
+    font-size: 0.75rem;
+    line-height: 1.55;
+    color: var(--color-ink-faint);
+  }
+
+  .personas__method strong {
+    color: var(--color-ink-dim);
+    font-weight: 600;
+  }
+</style>

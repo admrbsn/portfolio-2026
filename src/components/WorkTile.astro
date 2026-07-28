@@ -13,19 +13,24 @@ interface Props {
 }
 
 const { entry, cellClass = '', feature = false, eager = false } = Astro.props;
-const { title, client, summary, cover, coverAlt, accent } = entry.data;
+const { title, client, summary, cover, coverAlt } = entry.data;
 ---
 
 {/* Full-bleed cover fills the bento cell; text sits over a scrim so the tile
     works at any size or orientation. On small screens it falls back to a 4:3
-    box; from lg it stretches to fill its grid cell. */}
+    box; from lg it stretches to fill its grid cell.
+
+    The cover deliberately carries no `transition:name`. It used to morph into
+    the case study's full-bleed hero image; that hero is now text-first and the
+    cover sits below the meta block, roughly a viewport down. A shared-element
+    morph to a target that far off-screen animates the tile downward and out of
+    frame, which reads as a glitch — a plain cross-fade is better. */}
 <a
   href={`/work/${entry.id}`}
   class:list={[
     'group relative block aspect-[4/3] overflow-hidden rounded-xl bg-surface-lift lg:aspect-auto lg:h-full',
     cellClass,
   ]}
-  style={accent ? `--card-accent: ${accent}` : undefined}
   data-cursor="grow"
   data-cursor-label="View case study"
 >
@@ -35,16 +40,17 @@ const { title, client, summary, cover, coverAlt, accent } = entry.data;
     widths={[480, 800, 1200]}
     sizes="(min-width: 1024px) 55vw, (min-width: 640px) 46vw, 92vw"
     class="absolute inset-0 h-full w-full object-cover transition-transform duration-[900ms] ease-[var(--ease-out-expo)] group-hover:scale-[1.05]"
-    transition:name={`cover-${entry.id}`}
     loading={eager ? 'eager' : 'lazy'}
   />
 
   {/* Legibility scrim. */}
   <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent"></div>
-  {/* Accent wash on hover. */}
+  {/* Accent wash on hover — the brand green falling into the warm yellow, the
+      same ramp the headline gradients use. Was a per-case hue via
+      --card-accent; that token is gone. */}
   <div
     class="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-    style="background: linear-gradient(to top, color-mix(in oklab, var(--card-accent, var(--color-accent)) 30%, transparent), transparent 60%)"
+    style="background: linear-gradient(to top, color-mix(in oklab, var(--color-accent) 34%, transparent), color-mix(in oklab, var(--color-accent-warm) 14%, transparent) 45%, transparent 70%)"
   >
   </div>
 
