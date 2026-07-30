@@ -1,12 +1,13 @@
 ---
+import ArrowUpRight from './ArrowUpRight.astro';
 import { Image } from 'astro:assets';
 import type { ImageMetadata } from 'astro';
 import { shots, dribbbleUrl } from '../data/dribbble';
 
-// Full-bleed grid of self-hosted Dribbble thumbnails (see src/data/dribbble.ts).
+// Grid of self-hosted Dribbble thumbnails (see src/data/dribbble.ts).
 // Images are imported eagerly so Astro optimises each one; look them up by file.
 const images = import.meta.glob<{ default: ImageMetadata }>(
-  '../assets/dribbble/*.{png,jpg,jpeg}',
+  '../assets/dribbble/*.{webp,png,jpg,jpeg}',
   { eager: true },
 );
 const imageByFile = Object.fromEntries(
@@ -34,16 +35,15 @@ const imageByFile = Object.fromEntries(
       class="group hidden shrink-0 items-center gap-2 text-micro uppercase tracking-[0.14em] text-ink-dim transition-colors hover:text-accent sm:inline-flex"
     >
       See more on Dribbble
-      <span
-        class="transition-transform duration-500 ease-[var(--ease-out-expo)] group-hover:translate-x-1 group-hover:-translate-y-1"
-        aria-hidden="true">↗</span
-      >
+      <ArrowUpRight class="transition-transform duration-500 ease-[var(--ease-out-expo)] group-hover:translate-x-1 group-hover:-translate-y-1" />
     </a>
   </div>
 
-  {/* Full-bleed, tightly packed grid — a thin gutter keeps tiles off the edge. */}
+  {/* Tightly packed, but held on the same rail as every other section rather
+      than running full-bleed — at 100vw it was the only block on the page
+      ignoring the blueprint frame. */}
   <ul
-    class="mt-12 grid grid-cols-3 gap-1 px-1 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8"
+    class="mt-12 grid grid-cols-3 gap-1.5 px-shell sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6"
     data-anim="reveal-batch"
   >
     {

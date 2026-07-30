@@ -25,7 +25,7 @@
   /* Above the nav (z-40) and the custom cursor (z-60/61). */
   z-index: 100;
   overflow: hidden;
-  font-family: 'Jersey 20', ui-monospace, monospace;
+  font-family: 'Tiny5', ui-monospace, monospace;
   opacity: 0;
   transition: opacity 280ms var(--bo-ease);
 }
@@ -399,7 +399,7 @@
 
 .bo-key {
   display: inline-block;
-  font-family: 'Jersey 20', ui-monospace, monospace;
+  font-family: 'Tiny5', ui-monospace, monospace;
   font-size: 0.9375rem;
   line-height: 1;
   padding: 0.35em 0.55em;

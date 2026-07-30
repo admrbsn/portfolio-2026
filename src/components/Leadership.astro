@@ -1,4 +1,5 @@
 ---
+import ArrowUpRight from './ArrowUpRight.astro';
 import { Image } from 'astro:assets';
 import portrait from '../assets/home/portrait.jpg';
 import workspace from '../assets/home/workspace.jpg';
@@ -31,17 +32,27 @@ import workspace from '../assets/home/workspace.jpg';
       data-anim="reveal"
     />
 
-    {/* Right: workspace image, copy, link */}
+    {/* Right: workspace image, copy, link.
+
+        The books image is hidden below `lg`, where the three columns have
+        stacked: there it reads as a second full-width photo directly under the
+        portrait, and two stacked images push the copy and its CTA most of a
+        screen further down for no added argument. It only earns its place as
+        the top of the right-hand column. `hidden` rather than a smaller crop
+        because Astro still emits the srcset either way — the browser fetches
+        nothing for a `display: none` image. */}
     <div class="flex flex-col" data-anim="reveal">
       <Image
         src={workspace}
         alt="A stack of design and development books: The Design of Everyday Things, Don't Make Me Think, Grid Systems, and more"
         widths={[420, 700, 1000]}
-        sizes="(min-width: 1024px) 30vw, 92vw"
-        class="w-full rounded-xl object-cover"
+        sizes="30vw"
+        class="hidden w-full rounded-xl object-cover lg:block"
       />
 
-      <p class="mt-8 max-w-md text-[clamp(1.125rem,1.6vw,1.5rem)] leading-[1.4] text-white/90">
+      {/* Margin only where the image above it exists — below `lg` this is the
+          column's first child and the grid's own gap already spaces it. */}
+      <p class="max-w-md text-[clamp(1.125rem,1.6vw,1.5rem)] leading-[1.4] text-white/90 lg:mt-8">
         I came up doing both design and development, two disciplines that rarely sit in one person.
         Somewhere along the way it clicked that I could do more by improving how a team thinks than
         by executing faster myself.
@@ -52,10 +63,7 @@ import workspace from '../assets/home/workspace.jpg';
         class="group mt-8 inline-flex items-center gap-2 self-start rounded-full bg-white px-6 py-3 text-micro uppercase tracking-[0.14em] text-surface transition-colors hover:bg-accent"
       >
         Learn more about how I lead
-        <span
-          class="transition-transform duration-500 ease-[var(--ease-out-expo)] group-hover:translate-x-1 group-hover:-translate-y-1"
-          aria-hidden="true">↗</span
-        >
+        <ArrowUpRight class="transition-transform duration-500 ease-[var(--ease-out-expo)] group-hover:translate-x-1 group-hover:-translate-y-1" />
       </a>
     </div>
   </div>

@@ -20,7 +20,7 @@ const galleryModules = import.meta.glob<{ default: ImageMetadata }>(
 );
 
 export const getStaticPaths = (async () => {
-  const projects = (await getCollection('work', ({ data }) => !data.draft)).sort(
+  const projects = (await getCollection('work', ({ data }) => !data.draft && !data.comingSoon)).sort(
     (a, b) => a.data.order - b.data.order || b.data.year - a.data.year,
   );
 

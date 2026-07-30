@@ -12,8 +12,13 @@ const work = defineCollection({
       role: z.array(z.string()),
       /** One-line hook used on the work index and in social cards. */
       summary: z.string(),
-      cover: image(),
-      coverAlt: z.string(),
+      /*
+        Optional so a placeholder entry can sit on the work index before there
+        is anything to show. `<WorkTile>` falls back to a ruled panel; nothing
+        else reads it, so no other guard is needed.
+      */
+      cover: image().optional(),
+      coverAlt: z.string().optional(),
       /*
         There is deliberately no per-case `accent`. Case studies used to carry
         their own OKLCH hue (Tribute teal, Peterson's green, V3 amber), which
@@ -25,6 +30,13 @@ const work = defineCollection({
       /** Manual sort. Lower sorts first; ties break on year descending. */
       order: z.number().default(99),
       draft: z.boolean().default(false),
+      /**
+       * Announced but not written. Renders on the work index as a non-clickable
+       * tile with a "Coming soon" badge, and is excluded from `getStaticPaths`
+       * so no empty case study page is generated. Distinct from `draft`, which
+       * hides an entry everywhere.
+       */
+      comingSoon: z.boolean().default(false),
 
       /*
         "At a glance" — `role` above drives the work index, so these three stay

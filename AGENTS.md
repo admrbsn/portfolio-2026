@@ -44,6 +44,17 @@ utility (`--color-ink` → `text-ink`, `--text-display` → `text-display`).
 **Vidaloka** for display (`--text-display`, `--text-title`, `--text-stat`,
 headings). Two families, no third.
 
+**One heading is deliberately sans**: the work tile title in `WorkTile.astro`.
+A tile title is a claim read at a glance beside a screenshot, and the serif was
+doing section-heading work in a caption's slot. The switch carried three
+adjustments with it, which is the pattern to follow anywhere else this comes up
+— Google Sans runs wider, so the size ceiling drops (2rem → 1.75rem) to keep
+long titles off an extra line; `font-medium` replaces the weight Vidaloka got
+from its contrast; and the leading opens (1.1 → 1.15), since the serif's long
+descenders were what let it be set that tight. The case study `h1` is still
+`--text-display` in Vidaloka: the tile and the page it links to are the same
+words in different roles, and only the tile is a caption.
+
 Vidaloka ships a **single weight** — set it at `font-normal`, never
 `font-bold`. Where a heading needs more heft, thicken it with the text-stroke
 helper rather than reaching for a bolder cut that does not exist. Its
@@ -59,9 +70,11 @@ else does.
 deliberately: the brand mark should be changeable without dragging every
 paragraph on the site along with it.
 
-Jersey 20 (`--font-arcade`) is Breakout's alone and appears nowhere in the
-portfolio proper — see the Breakout section for why it is nonetheless eagerly
-loaded.
+Tiny5 (`--font-arcade`) is Breakout's alone and appears nowhere in the portfolio
+proper — see the Breakout section for why it is nonetheless eagerly loaded. It
+replaced Jersey 20, which ran tall and condensed and needed roughly 1.7x the
+size a blocky pixel face would; Tiny5 is squatter and wider, so anything ported
+from the old face needs its size taken **down** and its tracking loosened.
 
 `--color-ink-faint` is contrast-tuned: it is used almost entirely at 12px, where
 WCAG AA requires 4.5:1. It sits at 4.9:1 on `--color-surface`. Do not darken it
@@ -113,6 +126,16 @@ over real text:
   flat colour, so this one starts warmer and finishes inside the box. Used by
   `<Stat>` and the case study metrics band.
 
+**To animate one in, stack it — don't transition it.** `background-image` is not
+an animatable property, so a gradient cannot fade in over solid ink. The footer
+email hover (`Footer.astro`) is the pattern: a second copy of the text sits
+absolutely over the first carrying `.accent-gradient`, and only its opacity
+moves. It is a real `<span aria-hidden="true">` rather than a `::after` with
+`content: attr(data-copy)`, because generated content duplicating visible text
+gets announced by some screen readers — the button would hand over the address
+twice. The two copies stay registered because the overlay inherits every metric
+that matters and the host has no padding for `inset: 0` to disagree with.
+
 `[data-dead="top"|"bottom"]` hatches a section's vertical padding — the empty
 band a ruled layout leaves between the end of a grid and the next section
 boundary. It's a drafting convention: the band reads as deliberately empty
@@ -122,15 +145,71 @@ runs rail to rail, and `--spacing-section` tall so it always fills the padding
 exactly. The rails belong to `.page-rails`' background, so they paint over the
 hatch and the frame stays continuous.
 
-It is used on the two ruled grids — the principles and the leadership moments —
-and deliberately nowhere else. Hatching a band above a heading (the `top`
-variant was tried on "How I work") reads as a lid on the section rather than as
-slack left under a grid, so the effect only earns its place trailing a grid.
+It trails a ruled block and nothing else: the principles and leadership-moment
+grids on `/about`, and the résumé list on the homepage. Hatching a band *above*
+a heading (the `top` variant was tried on "How I work") reads as a lid on the
+section rather than as slack left under a grid, so the effect only earns its
+place after one.
+
+### The blueprint frame
+
+The rails, the section labels, the intersection squares and the dead-space
+hatch are **one system, and it belongs to the two framed pages** — `/` and
+`/about`, the only pages carrying `.page-rails`. Case studies are deliberately
+outside it: they are reading pages, and a drafting frame around 2,000 words of
+prose is decoration fighting the text. That is why the impact grid on a case
+study has internal dividers but no squares — it is not a boundary case, it is a
+different page type.
+
+Inside the frame, one rule governs the squares: **a grid marks every crossing of
+its own rules, or none of them.** A grid that marks its top rule but not its
+bottom is what makes the system read as arbitrary — that was the state of the
+Capabilities index before it was completed. "Every crossing" means each end of
+every internal divider, plus the four corners where the grid's own rules meet
+the rails. A rule that ends against nothing gets no square, because nothing
+crosses there.
+
+`.bp-rules` + `.bp-sq` draw the squares. Real elements, not pseudo-elements: each needs both a surface fill (to
+punch through the rule it sits on) *and* its own 1px border, and one
+pseudo-element cannot carry two bordered boxes. The host sets `--sq` and the
+positioning context; edge modifiers compose (`bp-sq bp-sq--t bp-sq--l` is a
+top-left corner). Squares that only make sense once a grid has columns are
+hidden with Tailwind on the element (`hidden lg:block`) rather than a breakpoint
+baked into the CSS, because the grids differ per page — the principles grid goes
+multi-column at `lg`, Capabilities at `sm`.
+
+The homepage Capabilities index and `/about` share this vocabulary because they
+are the same component in two places. **`/about` no longer carries a Toolkit
+section** — it duplicated Capabilities almost item for item. The hover treatment
+that lived there (item slides right, goes accent, a rule marker slides into the
+space it vacated) moved to Capabilities as `.cap-item`.
 
 The nav deliberately has **no `mix-blend-mode`**. Difference blending kept a
 monochrome bar legible over any backdrop, but it inverts the green availability
 dot to magenta and the accent dot in the wordmark to blue; the scroll-triggered
 scrim in `Nav.astro` replaces it.
+
+**The bar has no room for three links on a phone.** At a 390px viewport the
+content box is 310px wide (`px-shell` = 40px a side) and the wordmark plus
+`Work / About / Connect` measures ~356px, which is what made the links run past
+the right rail. Shrinking the type was measured and does not close the gap —
+even 13px links still overflow at 360-375px. So each link carries a `mobile`
+flag and **Connect is hidden below `sm`**: the footer already sets the same
+address at display size and ends every page, so nothing is lost. Two links plus
+the mark measure 262px, and the wordmark's mobile size is a clamp
+(`clamp(1rem, 4.6vw, 1.125rem)`) that holds 18px on every current phone and only
+gives way under ~390px, keeping the bar inside the rails down to 320px. Anything
+added to the bar has to be checked against that 310px budget.
+
+`nav.ts` publishes the bar's measured height as **`--nav-h` on the root** (a
+ResizeObserver — the wordmark steps up at `sm` and the webfont can land late).
+The home hero is `min-h-[calc(100svh-var(--nav-h,4.3125rem))]`, not `min-h-svh`:
+the bar is fixed and overlays the hero, so a full-viewport hero puts the rule at
+its foot exactly on the fold, where it takes a scroll to reveal. Subtracting the
+nav band makes the two together fill one viewport and lands that rule on screen.
+Keep the CSS fallback — `initNav` runs in reduced motion, but not with JS off.
+(The case study `.case-back` declares its own `--nav-h` locally; that one wins
+where it is set and the two agree at 69px.)
 
 ## Motion system
 
@@ -237,6 +316,41 @@ pre-JS) and `html[data-motion='reduced']` (stamped by `initMotion`, keeping JS
 the single source of truth). Keep both — they exist because the two can
 otherwise disagree and strand content invisible.
 
+### The pre-hide list, and the page loader
+
+**Every effect that animates opacity needs its `data-anim` value in the
+`html:not(.no-js)` pre-hide rule in `global.css`.** `reveal-heading` was missing
+from it, and the symptom is worth recognising: the headline painted at full
+opacity with the rest of the hero already hidden, then `revealHeading` split it
+and animated the words up from `yPercent: 118`, so the text appeared, vanished
+and re-played. Measured at ~1s on a throttled cold load (FCP 528ms, split
+1507ms). An effect whose first act is `gsap.set(el, { opacity: 1 })` is telling
+you it expects to be in that list.
+
+Behind the fix sits the real wait: nothing can reveal until GSAP has parsed and
+`document.fonts.ready` has settled, because SplitText must split against real
+metrics. `#page-loader` (the ripple, styled in `global.css`) covers it. Its
+contract mirrors the `.no-js` one:
+
+- **Hidden unless `html[data-loading]`.** Only the inline script in
+  `BaseLayout.astro` sets that, so a JS-off visit never sees it — and it must
+  stay inline in `<head>`, since it has to take effect on the first paint,
+  before the motion module is even fetched.
+- **Two independent dismissals.** `initMotion` drops the attribute via
+  `revealPage` in the lifecycle's `finally` (a thrown effect still reveals the
+  page), and the inline script's 4s timeout drops it if the module never arrives
+  at all. Both just remove the attribute, so whichever lands first wins.
+- **Skipped in reduced motion and on client-side navigation** (`__loaderShown`
+  guards the ClientRouter re-running the script). Reduced motion has nothing to
+  wait for, and a spinner between two pages of the same site is worse than the
+  cross-fade it replaces.
+
+Measured on the built site over Fast 4G / 4x CPU: ripple from first paint at
+460ms to 856ms, then a composed hero. Unthrottled it is up for ~30ms, which is
+the intent — it only shows when there is genuinely a wait. The trade is that LCP
+now lands with the hero rather than with a flash of unanimated type, so **don't
+add anything to the dismiss condition that waits on below-the-fold work.**
+
 ## Breakout
 
 `src/lib/breakout/` is a playable Breakout that overlays the live page, reached
@@ -260,9 +374,78 @@ file layout, and it is easy to break:
 - After touching either, verify: `breakout*.css` must not appear in any
   `dist/**/*.html`, and a cold load must fetch only the ~1.3KB loader chunk.
 
-The one deliberate eager cost is Jersey 20 (`--font-arcade`, latin subset,
-~19KB), imported in `global.css` because the CTA itself uses it. It is not
+**The CTA is the one section allowed off-brand.** Its rainbow — now the brick
+wall alone — derives from one array, `ROW_COLOURS` in `BreakoutCTA.astro`,
+which is also what the canvas paints its rows with. Build anything new there
+from that array rather than hardcoding a hex, or the decoration drifts from the
+game it advertises. The narrow-hue accent rule in `global.css` does not apply
+here and only here.
+
+The colour is confined to the wall on purpose. A four-field background glow, a
+rainbow title gradient and a rainbow launch button were all tried and cut:
+against a rack that is already six saturated hues, more colour behind, above and
+below it left nothing quiet enough to read the section by. The heading is plain
+white and the button is a brushed-silver coin slot — square corners, hard pixel
+bevel, zero blur anywhere in it. One blurred shadow and it stops reading as
+8-bit and starts reading as a skeuomorphic button.
+
+The wall carries a **notch that widens downward** — a ball has tunnelled up
+through the middle, so the bottom rows are chewed through and the top ones are
+untouched. That is the shape the arcade cabinet art has, and a picture of the
+mechanic the copy describes. A centred radial hole was tried first and is wrong:
+damage that does not reach an edge reads as a target, not as a ball's path.
+
+Generated in the frontmatter from a half-width that grows with depth. `t ** 1.6`
+is what curves it — linear growth gives a drawn triangle, and the exponent holds
+the top two rows fully intact before opening up quickly through the lower half.
+The constants keep the outermost column alive on every row; a rack eaten to its
+edges stops reading as a rack. Knocked-out bricks stay in the grid as empty
+sockets rather than being removed — drop the element and the survivors close
+ranks and the damage disappears.
+
+Both the gaps and the churn delays come from one seeded LCG, in that order.
+SSG output has to be byte-stable across builds, so nothing here may call
+`Math.random()`, and re-ordering those two draws changes the wall.
+
+**Never change `animation-duration` on a running animation here.** Changing it
+preserves the animation's current *time*, not its progress — so progress
+(time / duration) jumps the instant the value changes, and the element teleports.
+A `:hover` speed-up on the ball measured a ~396px jump against a ~30px normal
+frame, which read as the ball vanishing and restarting elsewhere. The wall keeps
+its speed-up because one brick jumping mid-churn among identical neighbours is
+invisible; a single tracked object jumping is not.
+
+Everything decorative is gated on `.arcade[data-visible]`, set by an
+IntersectionObserver: the section sits above the footer, so on most visits it is
+never reached, and a wall plus a ball animating against nothing is pure
+background cost. Anything animated added here must join that gate. Reduced
+motion parks the ball mid-stage rather than hiding it, so the composition still
+reads as a game in progress.
+
+The one deliberate eager cost is Tiny5 (`--font-arcade`, latin subset, ~9KB),
+imported in `global.css` because the CTA itself uses it. It is not
 render-blocking and nothing above the fold uses it.
+
+**Every block on both sides is the same object.** The CTA's rack, the canvas
+bricks and the paddle all render as a square, flat-filled block with a hard
+two-tone bevel — lit along the top and left, shadowed along the bottom and
+right, drawn light-first so the dark bands own the bottom-left and top-right
+corners (the standard pixel-art mitre). The ball and its trail are raw squares.
+
+What this replaced: rounded corners plus a vertical gradient, which read as a
+moulded keycap. A flat face with two hard bands reads as a sprite, and the
+hardness is the point — **no blur and no gradient anywhere in the block
+treatment**, on either side. One soft edge and it stops being pixel art.
+
+Two consequences in `game.ts`:
+
+- `buildGradients()` no longer builds canvas gradients; it resolves three flat
+  colours per row (face / lit / dark) plus a bevel width. Flat fills allocate
+  nothing, so the only thing still tied to layout is the bevel width. `brickGap`
+  became dead when the positional gradients went and was removed.
+- **Brick coordinates are rounded at draw time.** A bevel two or three pixels
+  wide is exactly the thing a half-pixel offset turns to mush, and the layout
+  maths is fractional.
 
 Two invariants inside the game:
 
@@ -284,6 +467,39 @@ Winning dispatches `breakout:win` on `document` with `{ score, bricks }`. That
 is the seam for the celebration easter egg; nothing in the game depends on what
 listens. `window.__breakout` is a dev-only handle (`{ game, close }`) — end
 states take minutes to reach by playing.
+
+## Dribbble
+
+`src/data/dribbble.ts` and every thumbnail in `src/assets/dribbble/` are
+**generated** — run `bun run sync:dribbble` to refresh, don't hand-edit either.
+Nothing here happens at build time: the site stays static, deterministic, and
+makes no network call to render.
+
+**Do not reach for the API.** Dribbble v2 needs an OAuth token, and a token in a
+static build is either committed or it makes the build fail on someone else's
+outage. The previous portfolio hardcoded one into `DribbbleImages.astro` and
+pushed it to a public repo. The RSS feed would be the polite alternative but
+404s now, so the script reads the public profile page instead.
+
+That makes it a scrape, keyed to Dribbble's markup. Two guards stop a markup
+change from silently emptying the grid, and **both must survive any edit**:
+
+- `MIN_SHOTS` — refuses to write at all below a floor.
+- A per-page check that most shot links resolved into complete records. Links
+  present but nothing parsed is precisely what a markup change looks like.
+
+Either one aborts before touching the data file or the images, so a failed run
+leaves the last good state intact. Verified by renaming the card class and
+confirming nothing was written.
+
+Two details worth knowing:
+
+- **Dribbble serves nothing to a default fetch UA**, and 404s past the last page
+  rather than returning an empty one.
+- **Filenames are the shot ID** (`26976778.webp`), not a position. Positional
+  names meant every file churned whenever the feed reordered. Thumbnails come
+  from the CDN pre-converted (`?format=webp&resize=640x480`) — 13KB against
+  202KB for the same image as PNG.
 
 ## Content
 

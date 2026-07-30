@@ -1,0 +1,31 @@
+---
+/**
+ * The one arrow on the site. Every outward-pointing link uses it — there was no
+ * SVG arrow before this, only a `↗` glyph, which rendered at whatever weight
+ * and optical size the display face happened to give it and never matched the
+ * hairline rules around it.
+ *
+ * Sized in `em` so it tracks its label, and stroked with `currentColor` so it
+ * inherits the link's hover colour for free. `stroke-width: 2` against the 24
+ * viewBox lands at roughly 1px at the micro sizes these labels use.
+ */
+interface Props {
+  class?: string;
+}
+
+const { class: className = '' } = Astro.props;
+---
+
+<svg
+  viewBox="0 0 24 24"
+  fill="none"
+  aria-hidden="true"
+  class:list={['h-[1.1em] w-[1.1em] shrink-0', className]}
+>
+  <path
+    d="M6 18L18 6M18 6H10M18 6V14"
+    stroke="currentColor"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"></path>
+</svg>

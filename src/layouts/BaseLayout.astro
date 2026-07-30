@@ -54,6 +54,38 @@ const ogUrl = new URL(ogImage, Astro.site);
       document.documentElement.classList.remove('no-js');
     </script>
 
+    {/*
+      Raise the page loader. Same contract as `no-js` above: the overlay is
+      hidden by default and only this script — which requires JS — ever shows
+      it, so a visit without JS goes straight to the content.
+
+      Runs here rather than in the motion module because it has to take effect
+      on the first paint, before the module has even been fetched. `initMotion`
+      drops the attribute once the page is composed; the timeout is the failsafe
+      for the module never arriving at all (offline, a chunk 404) and is the
+      reason this can't strand anyone on a spinner. Both paths just remove the
+      attribute, so whichever lands first wins and the other is a no-op.
+
+      The `__loaderShown` guard makes it a cold-load-only affair: the ClientRouter
+      re-runs inline head scripts on navigation, and a spinner between two pages
+      of the same site is worse than the cross-fade it would replace.
+    */}
+    <script is:inline>
+      (function () {
+        if (window.__loaderShown) return;
+        // Reduced motion forces every [data-anim] element visible immediately,
+        // so there is nothing to wait for — and an infinite ripple is the last
+        // thing to show someone who asked for less movement.
+        if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        window.__loaderShown = true;
+        var root = document.documentElement;
+        root.setAttribute('data-loading', '');
+        setTimeout(function () {
+          root.removeAttribute('data-loading');
+        }, 4000);
+      })();
+    </script>
+
     {/* Drive the Tegaki signature. Inline + is:inline so it runs during parse,
         before Tegaki's deferred hydration module — that guarantees the
         `tegaki:ready` listener is attached before the event fires. The moment
@@ -75,7 +107,10 @@ const ogUrl = new URL(ogImage, Astro.site);
               for (var i = 0; i < entries.length; i++) {
                 if (entries[i].isIntersecting) {
                   io.disconnect();
-                  engine.update({ time: { mode: 'uncontrolled', playing: true, duration: 3 } });
+                  // Seconds for all fourteen glyphs. This is the only speed
+                  // knob for the signature; 3s drew at a hesitant, tracing pace,
+                  // where a real signature is written in about half that.
+                  engine.update({ time: { mode: 'uncontrolled', playing: true, duration: 1.6 } });
                   engine.restart();
                 }
               }
@@ -91,6 +126,13 @@ const ogUrl = new URL(ogImage, Astro.site);
   </head>
 
   <body>
+    {/* Loader. First element in the body so it paints with the very first frame,
+        and `aria-hidden` because it is a pure waiting state — the content behind
+        it is already in the accessibility tree and readable. */}
+    <div id="page-loader" aria-hidden="true">
+      <div class="lds-ripple"><div></div><div></div></div>
+    </div>
+
     <a
       href="#main"
       class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-accent focus:px-4 focus:py-2 focus:text-surface"

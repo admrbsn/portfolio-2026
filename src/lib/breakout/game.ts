@@ -85,7 +85,6 @@ export class Breakout {
   private field = { x: 0, y: 0, w: 0, h: 0 };
   private brickW = 0;
   private brickH = 0;
-  private brickGap = 0;
   private gridX = 0;
   private gridY = 0;
   private paddleW = 0;
@@ -94,9 +93,9 @@ export class Breakout {
   private radius = 6;
   private baseSpeed = 400;
 
-  // Rebuilt on layout, never per frame — see `drawBricks`.
-  private rowGradients: CanvasGradient[] = [];
-  private paddleGradient: CanvasGradient | null = null;
+  // Resolved on layout, never per frame — see `drawBricks`.
+  private rowFills: { face: string; lit: string; dark: string }[] = [];
+  private bevel = 3;
 
   private bricks: Brick[] = [];
   private paddleX = 0;
@@ -274,7 +273,6 @@ export class Breakout {
     };
 
     const gap = Math.max(2, Math.round(fw * 0.005));
-    this.brickGap = gap;
     this.brickW = (this.field.w - gap * (COLS - 1)) / COLS;
     this.brickH = clamp(this.field.h * 0.042, 13, 26);
     this.gridX = this.field.x;
@@ -324,29 +322,24 @@ export class Breakout {
   }
 
   /**
-   * Canvas gradients are positional, so these have to be rebuilt whenever the
-   * grid moves — but only then. Each row shares one, which is what keeps the
-   * per-frame brick loop down to a fill call.
+   * Three flat colours per row — face, lit edge, shadowed edge — resolved once
+   * per layout rather than per frame.
+   *
+   * These replaced positional canvas gradients. A vertical ramp reads as a
+   * moulded keycap; a sprite is a flat face with two hard bevel bands, and the
+   * hardness is the whole point. Flat fills are also cheaper: no gradient
+   * objects to allocate, and nothing that has to be rebuilt when the grid moves
+   * — only the bevel width still depends on layout.
    */
   private buildGradients() {
-    const ctx = this.ctx;
-
-    this.rowGradients = ROWS.map((row, i) => {
-      const top = this.gridY + i * (this.brickH + this.brickGap);
-      const g = ctx.createLinearGradient(0, top, 0, top + this.brickH);
-      // Light at the top falling to a deeper shade — reads as a moulded
-      // keycap rather than a flat rectangle, without any extra draw calls.
-      g.addColorStop(0, shade(row.color, 0.34));
-      g.addColorStop(0.5, row.color);
-      g.addColorStop(1, shade(row.color, -0.2));
-      return g;
-    });
-
-    const pg = ctx.createLinearGradient(0, this.paddleY, 0, this.paddleY + this.paddleH);
-    pg.addColorStop(0, '#c4ffe2');
-    pg.addColorStop(0.45, '#3dff9e');
-    pg.addColorStop(1, '#12c877');
-    this.paddleGradient = pg;
+    this.rowFills = ROWS.map((row) => ({
+      face: row.color,
+      lit: shade(row.color, 0.45),
+      dark: shade(row.color, -0.4),
+    }));
+    // Never thinner than 2px, or the bevel disappears on a short brick and the
+    // block reads as a plain rectangle again.
+    this.bevel = Math.max(2, Math.round(this.brickH * 0.17));
   }
 
   private buildBricks() {
@@ -687,19 +680,39 @@ export class Breakout {
     ctx.restore();
   }
 
+  /**
+   * Square blocks with a hard two-tone bevel — lit along the top and left,
+   * shadowed along the bottom and right, matching the CTA's rack and the coin
+   * slot. Drawing lit first and shadowed second lets the dark bands own the
+   * bottom-left and top-right corners, which is the standard pixel-art mitre.
+   *
+   * Coordinates are rounded so every edge lands on a device pixel; a bevel two
+   * or three pixels wide is exactly the thing a half-pixel offset turns to mush.
+   */
   private drawBricks() {
     const ctx = this.ctx;
-    const r = Math.min(4, this.brickH * 0.28);
+    const bevel = this.bevel;
 
     for (const brick of this.bricks) {
       if (!brick.alive) continue;
-      // Cached per row: the gradient's stops are in absolute canvas space, and
-      // every brick in a row shares a y-extent. Building 66 of these per frame
-      // was the one obvious way to make this loop expensive.
-      ctx.fillStyle = this.rowGradients[brick.row] ?? ROWS[brick.row]!.color;
-      ctx.beginPath();
-      ctx.roundRect(brick.x, brick.y, brick.w, brick.h, r);
-      ctx.fill();
+      const fill = this.rowFills[brick.row];
+      if (!fill) continue;
+
+      const x = Math.round(brick.x);
+      const y = Math.round(brick.y);
+      const w = Math.round(brick.x + brick.w) - x;
+      const h = Math.round(brick.y + brick.h) - y;
+
+      ctx.fillStyle = fill.face;
+      ctx.fillRect(x, y, w, h);
+
+      ctx.fillStyle = fill.lit;
+      ctx.fillRect(x, y, w, bevel);
+      ctx.fillRect(x, y, bevel, h);
+
+      ctx.fillStyle = fill.dark;
+      ctx.fillRect(x, y + h - bevel, w, bevel);
+      ctx.fillRect(x + w - bevel, y, bevel, h);
     }
   }
 
@@ -713,36 +726,45 @@ export class Breakout {
     ctx.globalAlpha = 1;
   }
 
+  /** Same block treatment as the bricks — it is one, mechanically. */
   private drawPaddle() {
     const ctx = this.ctx;
-    const half = this.paddleW / 2;
-    const x = this.paddleX - half;
+    const x = Math.round(this.paddleX - this.paddleW / 2);
+    const y = Math.round(this.paddleY);
+    const w = Math.round(this.paddleW);
+    const h = Math.round(this.paddleH);
+    const bevel = Math.max(2, Math.round(h * 0.22));
+
     ctx.save();
-    ctx.shadowColor = 'rgba(61, 255, 158, 0.7)';
-    ctx.shadowBlur = 22;
-    ctx.fillStyle = this.paddleGradient ?? '#3dff9e';
-    ctx.beginPath();
-    ctx.roundRect(x, this.paddleY, this.paddleW, this.paddleH, this.paddleH / 2);
-    ctx.fill();
+    ctx.shadowColor = 'rgba(61, 255, 158, 0.55)';
+    ctx.shadowBlur = 18;
+    ctx.fillStyle = '#3dff9e';
+    ctx.fillRect(x, y, w, h);
     ctx.restore();
+
+    ctx.fillStyle = '#c4ffe2';
+    ctx.fillRect(x, y, w, bevel);
+    ctx.fillRect(x, y, bevel, h);
+
+    ctx.fillStyle = '#12c877';
+    ctx.fillRect(x, y + h - bevel, w, bevel);
+    ctx.fillRect(x + w - bevel, y, bevel, h);
   }
 
   private drawBall() {
     const ctx = this.ctx;
     const r = this.radius;
-    const size = r * 2;
-    // Rounded, not a hard square: the 1976 cabinet drew a raw block, but at
-    // this size the corners are the only aliased edges left on the field.
-    const round = r * 0.55;
+    const size = Math.round(r * 2);
+    // A raw block, as the 1976 cabinet drew it. It used to carry a small corner
+    // radius to kill the aliasing, but against square bricks and a square
+    // paddle the rounded ball was the only soft shape left on the field.
 
     if (!this.calm) {
       for (let i = 0; i < this.trail.length; i++) {
         const t = this.trail[i]!;
         ctx.globalAlpha = ((i + 1) / this.trail.length) * 0.28;
         ctx.fillStyle = '#a8fff0';
-        ctx.beginPath();
-        ctx.roundRect(t.x - r, t.y - r, size, size, round);
-        ctx.fill();
+        ctx.fillRect(Math.round(t.x - r), Math.round(t.y - r), size, size);
       }
       ctx.globalAlpha = 1;
     }
@@ -751,9 +773,7 @@ export class Breakout {
     ctx.shadowColor = 'rgba(200, 255, 255, 0.9)';
     ctx.shadowBlur = 18;
     ctx.fillStyle = '#ffffff';
-    ctx.beginPath();
-    ctx.roundRect(this.ball.x - r, this.ball.y - r, size, size, round);
-    ctx.fill();
+    ctx.fillRect(Math.round(this.ball.x - r), Math.round(this.ball.y - r), size, size);
     ctx.restore();
   }
 }

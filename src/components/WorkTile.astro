@@ -4,25 +4,31 @@ import type { CollectionEntry } from 'astro:content';
 
 interface Props {
   entry: CollectionEntry<'work'>;
-  /** Bento cell placement (col/row spans), applied at lg and up. */
+  /** Extra classes for the grid cell — the stagger offset lives here. */
   cellClass?: string;
-  /** The large tile: bigger title and a visible summary. */
-  feature?: boolean;
   /** Eager-load the tiles likely above the fold. */
   eager?: boolean;
 }
 
-const { entry, cellClass = '', feature = false, eager = false } = Astro.props;
-const { title, client, summary, cover, coverAlt } = entry.data;
+const { entry, cellClass = '', eager = false } = Astro.props;
+const { title, client, summary, cover, coverAlt, comingSoon } = entry.data;
+
+/*
+  A coming-soon entry has no case study to link to, so its tile is a <div>. It
+  keeps the same cell, crop and caption shape as a real one — the hatched panel
+  stands in for the cover and the badge does the explaining.
+*/
+const Tag = comingSoon ? 'div' : 'a';
 ---
 
 {/*
   Cover on top, text beneath it on the page surface — not overlaid.
 
-  The image holds a fixed aspect ratio and the caption flows beneath it, so a
-  tile's height follows from its column span rather than from a fixed row. The
-  image wrapper carries the rounding and `overflow-hidden` rather than the
-  anchor — the anchor now contains text that must not be clipped.
+  Every tile takes the same 16/9 crop. The stagger comes from the grid offset,
+  not from varying the shapes — with two columns, differing crops read as an
+  inconsistency rather than as rhythm. The image wrapper carries the rounding
+  and `overflow-hidden` rather than the anchor, which contains text that must
+  not be clipped.
 
   No scrim any more: nothing sits on the image, so nothing needs darkening
   underneath it.
@@ -32,43 +38,89 @@ const { title, client, summary, cover, coverAlt } = entry.data;
   cover does not render on the case study at all, so an unpaired name would
   animate the tile out on its own.
 */}
-<a
-  href={`/work/${entry.id}`}
+<Tag
+  href={comingSoon ? undefined : `/work/${entry.id}`}
   class:list={['group block', cellClass]}
-  data-cursor="grow"
-  data-cursor-label="View case study"
+  data-cursor={comingSoon ? undefined : 'grow'}
+  data-cursor-label={comingSoon ? undefined : 'View case study'}
 >
-  <div class="relative aspect-[4/3] overflow-hidden rounded-xl bg-surface-lift lg:aspect-[16/10]">
-    <Image
-      src={cover}
-      alt={coverAlt}
-      widths={[480, 800, 1200]}
-      sizes="(min-width: 1024px) 55vw, (min-width: 640px) 46vw, 92vw"
-      class="absolute inset-0 h-full w-full object-cover transition-transform duration-[900ms] ease-[var(--ease-out-expo)] group-hover:scale-[1.05]"
-      loading={eager ? 'eager' : 'lazy'}
-    />
+  <div class="relative aspect-[16/9] overflow-hidden rounded-xl bg-surface-lift">
+    {
+      cover && coverAlt ? (
+        <Image
+          src={cover}
+          alt={coverAlt}
+          widths={[480, 800, 1200, 1600]}
+          sizes="(min-width: 1024px) 46vw, 92vw"
+          class="absolute inset-0 h-full w-full object-cover transition-transform duration-[900ms] ease-[var(--ease-out-expo)] group-hover:scale-[1.05]"
+          loading={eager ? 'eager' : 'lazy'}
+        />
+      ) : (
+        /* Nothing to show yet. Uses the blueprint hatch so the cell reads as
+           deliberately empty, the same way the dead-space bands do. */
+        <div class="absolute inset-0 grid place-items-center" data-tile-placeholder>
+          <span class="font-display text-[clamp(1.5rem,3vw,2.5rem)] font-normal text-ink-faint">
+            {client}
+          </span>
+        </div>
+      )
+    }
 
-    {/* Accent wash on hover — the brand green falling into the warm yellow, the
-        same ramp the headline gradients use. */}
-    <div
-      class="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-      style="background: linear-gradient(to top, color-mix(in oklab, var(--color-accent) 34%, transparent), color-mix(in oklab, var(--color-accent-warm) 14%, transparent) 45%, transparent 70%)"
-    >
-    </div>
+    {
+      !comingSoon && (
+        /* Accent wash on hover — the brand green falling into the warm yellow,
+           the same ramp the headline gradients use. */
+        <div
+          class="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+          style="background: linear-gradient(to top, color-mix(in oklab, var(--color-accent) 34%, transparent), color-mix(in oklab, var(--color-accent-warm) 14%, transparent) 45%, transparent 70%)"
+        />
+      )
+    }
+
+    {
+      comingSoon && (
+        <span class="absolute left-4 top-4 rounded-full border border-line bg-surface/80 px-3 py-1 text-micro uppercase tracking-[0.14em] text-ink backdrop-blur-sm">
+          Coming soon
+        </span>
+      )
+    }
   </div>
 
   <div class="mt-5">
     <p class="text-micro uppercase tracking-[0.14em] text-ink-faint">{client}</p>
+    {/*
+      Sans, not the display serif — the one place on the site where a heading is
+      set in Google Sans. A tile title is a claim read at a glance next to a
+      screenshot, and the serif was doing the work of a section heading in a
+      caption's slot.
+
+      Three adjustments come with the switch, and they are why this is not just
+      a font swap: Google Sans runs wider than Vidaloka at the same size, so the
+      size ceiling comes down (2rem -> 1.75rem) to keep three-line titles off a
+      fourth line; `font-medium` supplies the weight the serif got from its
+      contrast; and the leading opens slightly (1.1 -> 1.15), since the serif's
+      long descenders were the reason it could be set that tight.
+    */}
     <h3
       class:list={[
-        'mt-1.5 font-display font-normal leading-[1.05] tracking-tight text-ink transition-colors duration-500 group-hover:text-accent',
-        feature ? 'text-[clamp(1.5rem,2.2vw,2.25rem)]' : 'text-[clamp(1.1rem,1.4vw,1.5rem)]',
+        'mt-2 text-[clamp(1.25rem,1.7vw,1.75rem)] font-medium leading-[1.15] tracking-[-0.02em] text-ink transition-colors duration-500',
+        !comingSoon && 'group-hover:text-accent',
       ]}
     >
       {title}<span class="text-accent">.</span>
     </h3>
-    <p class:list={['mt-2 max-w-lg text-ink-dim', feature ? 'text-body' : 'text-sm']}>
-      {summary}
-    </p>
+    <p class="mt-3 max-w-xl text-body leading-relaxed text-ink-dim">{summary}</p>
   </div>
-</a>
+</Tag>
+
+<style>
+  /* The same 45° hatch as the page's dead-space bands, at tile scale. */
+  [data-tile-placeholder] {
+    background-color: oklch(1 0 0 / 0.014);
+    background-image: repeating-linear-gradient(
+      45deg,
+      oklch(1 0 0 / 0.045) 0 1px,
+      transparent 1px 10px
+    );
+  }
+</style>

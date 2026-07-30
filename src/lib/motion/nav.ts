@@ -23,6 +23,21 @@ export function initNav() {
 
   bound = true;
 
+  /*
+   * Publish the bar's measured height as `--nav-h` on the root, for layouts that
+   * have to subtract it — the home hero sizes itself to `100svh - var(--nav-h)`
+   * so the nav band and the hero together fill exactly one viewport.
+   *
+   * Measured rather than hardcoded because the wordmark steps up a size at `sm`
+   * and the webfont can land late, both of which change the header's height.
+   * CSS carries a fallback, so a reduced-motion or JS-less visit still lays out.
+   */
+  const publishHeight = () => {
+    document.documentElement.style.setProperty('--nav-h', `${Math.round(nav.offsetHeight)}px`);
+  };
+  publishHeight();
+  if ('ResizeObserver' in window) new ResizeObserver(publishHeight).observe(nav);
+
   let lastY = window.scrollY;
   let ticking = false;
 

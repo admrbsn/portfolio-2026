@@ -1,17 +1,25 @@
 ---
 import { experience } from '../data/experience';
+import ArrowUpRight from './ArrowUpRight.astro';
 
-// Home résumé. Editorial two-column layout: a sticky intro on the left, the
-// role list on the right. Each role is an accordion — hover shows a "See more"
+// Home résumé. Editorial two-column layout: the role list carries the wide
+// left column, with a sticky intro in the narrow column to its right. Each
+// role is an accordion — hover shows a "See more"
 // cursor tooltip, click expands its bullets (one open at a time). Bullets are
 // visible by default so no-JS visitors still get them; JS collapses them.
 ---
 
-<section class="relative px-shell py-section" aria-labelledby="experience-heading" data-blueprint="War Stories">
-  <div class="grid gap-12 lg:grid-cols-[minmax(0,19rem)_1fr] lg:gap-20">
-    {/* Left: sticky intro. Adapts the reference's testimonial column into a
-        first-person framing; drop a real quote in here if one lands. */}
-    <div class="lg:sticky lg:top-32 lg:self-start lg:text-right" data-anim="reveal">
+<section
+  class="relative px-shell py-section"
+  aria-labelledby="experience-heading"
+  data-blueprint="War Stories"
+>
+  <div class="grid gap-12 lg:grid-cols-[1fr_minmax(0,19rem)] lg:gap-20">
+    {/* The sticky intro sits in the *right* column at lg. It stays first in the
+        DOM so it still introduces the list to a screen reader and stacks above
+        it on mobile; `lg:order-2` does the visual move. Left-aligned now that
+        it sits to the right of the list, so its text edge still faces it. */}
+    <div class="lg:sticky lg:top-32 lg:order-2 lg:self-start lg:text-left" data-anim="reveal">
       <p class="text-micro uppercase tracking-[0.14em] text-ink-faint">Experience</p>
 
       <h2
@@ -31,10 +39,7 @@ import { experience } from '../data/experience';
         class="group mt-8 inline-flex items-center gap-2 text-micro uppercase tracking-[0.14em] text-ink-dim transition-colors hover:text-accent"
       >
         See the full story
-        <span
-          class="transition-transform duration-500 ease-[var(--ease-out-expo)] group-hover:translate-x-1 group-hover:-translate-y-1"
-          aria-hidden="true">↗</span
-        >
+        <ArrowUpRight class="transition-transform duration-500 ease-[var(--ease-out-expo)] group-hover:translate-x-1 group-hover:-translate-y-1" />
       </a>
     </div>
 

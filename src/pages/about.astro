@@ -5,6 +5,7 @@ import NoiseGradient from '../components/NoiseGradient.astro';
 import { experience } from '../data/experience';
 import MomentTribute from '../components/MomentTribute.astro';
 import MomentPetersons from '../components/MomentPetersons.astro';
+import ArrowUpRight from '../components/ArrowUpRight.astro';
 import overlook from '../assets/about/overlook.webp';
 
 
@@ -123,79 +124,6 @@ const inPractice = [
   },
 ];
 
-/*
- * The full résumé skill set, in the résumé's own four groupings.
- *
- * Deliberately longer than the homepage's Capabilities index, which is a
- * curated ~46-item summary. This is the about page — the deep version — so it
- * carries everything, including the things a recruiter's search actually hits.
- */
-const toolkit = [
-  {
-    name: 'Product & design leadership',
-    items: [
-      'Product design & strategy',
-      'Cross-functional leadership',
-      'Executive communication',
-      'Design mentorship',
-      'Roadmap planning',
-      'Design systems & design tokens',
-      'Design sprints',
-      'Lean UX',
-      'Agile / Scrum',
-      'Jobs to be done (JTBD)',
-      'User journey mapping',
-      'Qualitative research',
-      'UX research & experimentation',
-      'Usability testing',
-      'Accessibility',
-      'Early-stage startup experience',
-    ],
-  },
-  {
-    name: 'Frontend & systems',
-    items: [
-      'Frontend architecture',
-      'TypeScript',
-      'JavaScript (Vue, React)',
-      'HTML, CSS / SCSS',
-      'Tailwind, DaisyUI, Shadcn',
-      'iOS & responsive design',
-      'REST APIs',
-      'Git / GitHub',
-      'Performance optimization',
-      'Design documentation',
-      'LLM-powered product design',
-    ],
-  },
-  {
-    name: 'Analytics & growth',
-    items: [
-      'Funnel analysis',
-      'Cohort analysis',
-      'Conversion optimization',
-      'Growth design',
-      'Product analytics & A/B testing',
-      'PostHog (events, HogQL)',
-      'Google Analytics 4',
-      'User activation & retention',
-    ],
-  },
-  {
-    name: 'Tools & platforms',
-    items: [
-      'Figma',
-      'Framer',
-      'Webflow',
-      'Wordpress',
-      'Headless CMS',
-      'Maze (testing, surveys)',
-      'Relume (sitemaps, flows)',
-      'Rapid prototyping',
-      'AI-native workflows (Claude Code, Cursor, V0, Lovable)',
-    ],
-  },
-];
 ---
 
 <BaseLayout
@@ -322,7 +250,7 @@ const toolkit = [
       the divider and its two intersection squares off that one attribute, so
       the squares stay correct whatever the spans are changed to.
     */}
-    <ul class="principles -mx-shell-pad mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6" data-anim="reveal-batch">
+    <ul class="principles bp-rules -mx-shell-pad mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6" data-anim="reveal-batch">
       {
         principles.map((p, i) => (
           <li
@@ -335,8 +263,8 @@ const toolkit = [
           >
             {(i === 1 || i === 2 || i === 4) && (
               <>
-                <span class="principle__sq principle__sq--top" aria-hidden="true" />
-                <span class="principle__sq principle__sq--bottom" aria-hidden="true" />
+                <span class="bp-sq bp-sq--t bp-sq--l hidden lg:block" aria-hidden="true" />
+                <span class="bp-sq bp-sq--b bp-sq--l hidden lg:block" aria-hidden="true" />
               </>
             )}
             <span class="principle__icon" aria-hidden="true">
@@ -361,10 +289,10 @@ const toolkit = [
         ))
       }
 
-      <span class="principles__corner principles__corner--tl" aria-hidden="true" />
-      <span class="principles__corner principles__corner--tr" aria-hidden="true" />
-      <span class="principles__corner principles__corner--bl" aria-hidden="true" />
-      <span class="principles__corner principles__corner--br" aria-hidden="true" />
+      <span class="bp-sq bp-sq--t bp-sq--l" aria-hidden="true" />
+      <span class="bp-sq bp-sq--t bp-sq--r" aria-hidden="true" />
+      <span class="bp-sq bp-sq--b bp-sq--l" aria-hidden="true" />
+      <span class="bp-sq bp-sq--b bp-sq--r" aria-hidden="true" />
     </ul>
   </section>
 
@@ -384,7 +312,7 @@ const toolkit = [
       corners, a divider between the two columns and squares where it meets the
       horizontal rules. No card backgrounds — the rules do the containing.
     */}
-    <div class="moments -mx-shell-pad mt-16 grid grid-cols-1 lg:grid-cols-2" data-anim="reveal-batch">
+    <div class="moments bp-rules -mx-shell-pad mt-16 grid grid-cols-1 lg:grid-cols-2" data-anim="reveal-batch">
       {
         inPractice.map((item, i) => (
           <article
@@ -393,8 +321,8 @@ const toolkit = [
           >
             {i === 1 && (
               <>
-                <span class="principle__sq principle__sq--top" aria-hidden="true" />
-                <span class="principle__sq principle__sq--bottom" aria-hidden="true" />
+                <span class="bp-sq bp-sq--t bp-sq--l hidden lg:block" aria-hidden="true" />
+                <span class="bp-sq bp-sq--b bp-sq--l hidden lg:block" aria-hidden="true" />
               </>
             )}
 
@@ -432,10 +360,10 @@ const toolkit = [
         ))
       }
 
-      <span class="principles__corner principles__corner--tl" aria-hidden="true" />
-      <span class="principles__corner principles__corner--tr" aria-hidden="true" />
-      <span class="principles__corner principles__corner--bl" aria-hidden="true" />
-      <span class="principles__corner principles__corner--br" aria-hidden="true" />
+      <span class="bp-sq bp-sq--t bp-sq--l" aria-hidden="true" />
+      <span class="bp-sq bp-sq--t bp-sq--r" aria-hidden="true" />
+      <span class="bp-sq bp-sq--b bp-sq--l" aria-hidden="true" />
+      <span class="bp-sq bp-sq--b bp-sq--r" aria-hidden="true" />
     </div>
   </section>
 
@@ -501,9 +429,10 @@ const toolkit = [
       </h2>
       <a
         href="mailto:hi@adamrobertson.co?subject=Resume%20request"
-        class="shrink-0 text-micro uppercase tracking-[0.14em] text-ink-dim transition-colors hover:text-accent"
+        class="group inline-flex shrink-0 items-center gap-2 text-micro uppercase tracking-[0.14em] text-ink-dim transition-colors hover:text-accent"
       >
-        Request a PDF →
+        Request a PDF
+        <ArrowUpRight class="transition-transform duration-500 ease-[var(--ease-out-expo)] group-hover:translate-x-1 group-hover:-translate-y-1" />
       </a>
     </div>
 
@@ -548,51 +477,6 @@ const toolkit = [
     </ol>
   </section>
 
-  {/* Toolkit ------------------------------------------------------------ */}
-  {/*
-    At `lg` the four groups are one row, and the section's bottom padding moves
-    onto the columns so their dividers run the full height down to the page's
-    closing bar rather than stopping at whichever list happens to be longest.
-    Below `lg` it is a 2x2, where column padding would blow out the row gap, so
-    the section keeps it.
-  */}
-  <section
-    class="relative border-t border-line px-shell pb-section pt-section lg:pb-0"
-    aria-labelledby="toolkit"
-    data-blueprint="What I reach for"
-  >
-    <h2 id="toolkit" class="font-display text-title font-normal text-ink" data-anim="reveal-heading">
-      Toolkit
-    </h2>
-    {/* Grouped like the homepage's Capabilities index — same ruled-column
-        vocabulary, but carrying the whole résumé rather than a summary. */}
-    <div
-      class="-mx-shell-pad mt-14 grid grid-cols-1 gap-y-12 border-t border-line sm:grid-cols-2 lg:grid-cols-4 lg:gap-y-0"
-      data-anim="reveal-batch"
-    >
-      {
-        toolkit.map((group, i) => (
-          <div
-            class:list={[
-              'px-shell-pad pt-6 lg:pb-section',
-              i % 2 === 1 && 'sm:border-l sm:border-line',
-              i === 2 && 'lg:border-l lg:border-line',
-            ]}
-          >
-            <h3 class="text-micro uppercase tracking-[0.14em] text-ink-faint">{group.name}</h3>
-            <ul class="mt-5 space-y-2.5 text-ink">
-              {group.items.map((item) => (
-                <li>
-                  <span class="toolkit__item">{item}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))
-      }
-    </div>
-  </section>
-
   {/* Contact ------------------------------------------------------------ */}
   </div>
 </BaseLayout>
@@ -612,8 +496,6 @@ const toolkit = [
   */
   .principles,
   .moments {
-    --sq: 7px;
-    position: relative;
     border-top: 1px solid var(--color-line);
     border-bottom: 1px solid var(--color-line);
   }
@@ -623,98 +505,14 @@ const toolkit = [
     position: relative;
   }
 
-  /*
-    Toolkit hover. The target is a span rather than the <li>, so the hit area is
-    the width of the words — on an <li> it would span the whole column and fire
-    with the pointer nowhere near the text.
-
-    The rule marker is absolutely positioned and rides along with the item's
-    translate, so it slides into the space the item just vacated instead of
-    reflowing the row.
-  */
-  .toolkit__item {
-    position: relative;
-    display: inline-block;
-    transition:
-      transform var(--dur-fast) var(--ease-out-expo),
-      color var(--dur-fast) ease;
-  }
-
-  .toolkit__item::before {
-    content: '';
-    position: absolute;
-    top: 0.68em;
-    left: -0.9rem;
-    width: 0.4rem;
-    height: 1px;
-    background: currentColor;
-    opacity: 0;
-    transform: scaleX(0);
-    transform-origin: right center;
-    transition:
-      opacity var(--dur-fast) ease,
-      transform var(--dur-fast) var(--ease-out-expo);
-  }
-
-  .toolkit__item:hover {
-    color: var(--color-accent);
-    transform: translateX(0.55rem);
-  }
-
-  .toolkit__item:hover::before {
-    opacity: 1;
-    transform: scaleX(1);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .toolkit__item,
-    .toolkit__item::before {
-      transition-property: opacity, color;
-    }
-    .toolkit__item:hover {
-      transform: none;
-    }
-  }
-
   /* The moments grid reuses the principles' rule and square treatment; the
      container query context lets <MomentTribute> scale its type to the cell. */
   .moment-cell {
     container-type: inline-size;
   }
 
-  .principles__corner,
-  .principle__sq {
-    position: absolute;
-    width: var(--sq);
-    height: var(--sq);
-    background: var(--color-surface);
-    border: 1px solid var(--color-line);
-    pointer-events: none;
-  }
-
-  .principles__corner--tl,
-  .principles__corner--tr {
-    top: calc(var(--sq) / -2 - 1px);
-  }
-  .principles__corner--bl,
-  .principles__corner--br {
-    bottom: calc(var(--sq) / -2 - 1px);
-  }
-  .principles__corner--tl,
-  .principles__corner--bl {
-    left: calc(var(--sq) / -2);
-  }
-  .principles__corner--tr,
-  .principles__corner--br {
-    right: calc(var(--sq) / -2);
-  }
-
-  /* Internal dividers and their intersection squares only exist once the grid
-     actually has columns. */
-  .principle__sq {
-    display: none;
-  }
-
+  /* Internal dividers only exist once the grid actually has columns. The
+     squares that mark them are hidden with Tailwind on the elements themselves. */
   @media (min-width: 64rem) {
     .principle[data-rule]::before,
     .moment-cell[data-rule]::before {
@@ -724,17 +522,6 @@ const toolkit = [
       left: 0;
       width: 1px;
       background: var(--color-line);
-    }
-
-    .principle__sq {
-      display: block;
-      left: calc(var(--sq) / -2);
-    }
-    .principle__sq--top {
-      top: calc(var(--sq) / -2 - 1px);
-    }
-    .principle__sq--bottom {
-      bottom: calc(var(--sq) / -2 - 1px);
     }
   }
 

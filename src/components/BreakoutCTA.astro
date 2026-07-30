@@ -8,55 +8,120 @@
 import { BRICK_TOTAL } from '../lib/breakout/game';
 
 const ROW_COLOURS = ['#ff3b5c', '#ff8a3d', '#ffd83d', '#3dff9e', '#3ddcff', '#8f7bff'];
-const WALL_COLS = 12;
-const WALL_TOTAL = ROW_COLOURS.length * WALL_COLS;
+// Nine wide bricks. The arcade original's rack reads as chunky slabs; at 12
+// across they were thin enough to look like a progress bar.
+const WALL_COLS = 9;
+const WALL_ROWS = ROW_COLOURS.length;
+const WALL_TOTAL = WALL_ROWS * WALL_COLS;
 
-/** Seconds for one full churn of the wall. Matches `wall-churn` in the CSS. */
-const CYCLE = 5;
+/** Seconds for one full churn of the wall. Must match `wall-churn` in the CSS. */
+const CYCLE = 8;
 
-// Deterministic shuffle: the churn needs each brick to blink at a moment that
-// *looks* random, but SSG output has to be byte-stable across builds, so this
-// seeds a small LCG rather than calling Math.random().
-const order = Array.from({ length: WALL_TOTAL }, (_, i) => i);
+// Deterministic PRNG. The wall needs two things that *look* random — which
+// bricks are missing, and when each survivor blinks — but SSG output has to be
+// byte-stable across builds, so this seeds a small LCG rather than calling
+// Math.random().
 let seed = 20260725;
-for (let i = order.length - 1; i > 0; i--) {
+const rand = () => {
   seed = (seed * 1664525 + 1013904223) % 4294967296;
-  const j = seed % (i + 1);
+  return seed / 4294967296;
+};
+
+/*
+ * The notch. A ball has tunnelled up through the middle of this rack, so the
+ * damage is a wedge that widens downward — the bottom rows are chewed through
+ * and the top ones are untouched, which is the shape the arcade cabinet art has.
+ *
+ * A brick is out when its distance from the centre column falls inside a
+ * half-width that grows with depth. `t ** 1.6` is what curves it: linear growth
+ * gave a clean triangle, and the exponent holds the top two rows fully intact
+ * before opening up quickly through the lower half. The constants are tuned so
+ * the outermost column survives on every row — a rack eaten right to its edges
+ * stops reading as a rack.
+ *
+ * Order matters: the gaps are drawn before the delays so both stay stable
+ * against the same seed.
+ */
+const cx = (WALL_COLS - 1) / 2;
+const gone = Array.from({ length: WALL_TOTAL }, (_, i) => {
+  const t = Math.floor(i / WALL_COLS) / (WALL_ROWS - 1);
+  const halfGap = t ** 1.6 * 4.3 - 0.55;
+  // Jitter ragged-edges the boundary so the wedge is not a drawn triangle.
+  return Math.abs((i % WALL_COLS) - cx) < halfGap + (rand() - 0.5) * 0.6;
+});
+
+// Negative delays spread the survivors across the whole cycle and start them
+// mid-animation, so the wall is already churning on the first frame instead of
+// sitting still until its turn comes round.
+const order = Array.from({ length: WALL_TOTAL }, (_, i) => i);
+for (let i = order.length - 1; i > 0; i--) {
+  const j = Math.floor(rand() * (i + 1));
   [order[i], order[j]] = [order[j]!, order[i]!];
 }
 
-// Negative delays spread the bricks across the whole cycle and start them
-// mid-animation, so the wall is already churning on the first frame instead of
-// sitting still until its turn comes round.
-const wall = ROW_COLOURS.flatMap((colour, row) =>
-  Array.from({ length: WALL_COLS }, (_, col) => ({
-    colour,
-    delay: `${(-(order[row * WALL_COLS + col]! / WALL_TOTAL) * CYCLE).toFixed(3)}s`,
-  })),
-);
-
-// Built from the same array the wall uses, so the button can't drift out of
-// sync with the rack it represents.
-const playGradient = `linear-gradient(100deg, ${ROW_COLOURS.join(', ')})`;
+const wall = Array.from({ length: WALL_TOTAL }, (_, i) => ({
+  colour: ROW_COLOURS[Math.floor(i / WALL_COLS)]!,
+  gone: gone[i]!,
+  delay: `${(-(order[i]! / WALL_TOTAL) * CYCLE).toFixed(3)}s`,
+}));
 ---
 
-<section class="arcade border-t border-line px-gutter py-24 text-center">
-  <div class="mx-auto max-w-xl">
+<section
+  class="arcade relative overflow-hidden border-t border-line px-gutter py-24 text-center"
+  data-blueprint="Vibe code check"
+>
+  {/*
+    The rally, loose in the whole section rather than penned under the rack.
+    Four squares on identical paths at staggered lags, so the tail traces
+    wherever the head has actually been — a static box-shadow points one way and
+    detaches the moment the ball turns.
+
+    Squares, not circles: the Atari original's ball is a block, and hard-edged
+    segments shrinking in steps read as a sprite trail where soft round dots
+    read as motion blur.
+  */}
+  <div class="rally" aria-hidden="true">
+    <span class="ball" style="--lag:0s;--size:14px;--alpha:1"></span>
+    <span class="ball" style="--lag:0.055s;--size:11px;--alpha:0.5"></span>
+    <span class="ball" style="--lag:0.11s;--size:9px;--alpha:0.28"></span>
+    <span class="ball" style="--lag:0.17s;--size:7px;--alpha:0.14"></span>
+  </div>
+
+  <div class="relative z-10 mx-auto max-w-3xl">
     {/* Decorative echo of the real rack. Bricks blink out and back on a
         continuous stagger — a preview of the mechanic, running whether or not
         anyone points at it. */}
-    <div class="wall" aria-hidden="true">
-      {wall.map((brick) => <i style={`--c:${brick.colour};--d:${brick.delay}`} />)}
+    <div class="stage" aria-hidden="true">
+      <div class="wall">
+        {
+          wall.map((brick) =>
+            brick.gone ? (
+              <i data-gone />
+            ) : (
+              <i style={`--c:${brick.colour};--d:${brick.delay}`} />
+            ),
+          )
+        }
+      </div>
     </div>
 
-    <h2 class="title mt-10 font-arcade text-[clamp(2.5rem,8vw,4.5rem)] leading-[1.05]">
+    {/* Sans, not the arcade face — this is an eyebrow, and it matches the ones
+        on every other section rather than competing with the heading it
+        introduces. */}
+    <p class="mt-12 text-[0.8125rem] font-semibold uppercase tracking-[0.16em] text-ink-dim">
       Need a break?
+    </p>
+
+    <h2 class="title mt-2 font-arcade text-[clamp(2rem,6vw,3.5rem)] leading-[1.1]">
+      Play Breakout
     </h2>
 
-    <p class="mx-auto mt-6 max-w-md text-ink-dim">
-      Play Breakout, right here on the page. It starts almost entirely blacked
-      out &mdash; every brick you knock down lets a little more of the portfolio
-      back through. Clear all {BRICK_TOTAL} to get it back.
+    {/* The heading now carries the game's name, so the copy opens on where it
+        happens rather than repeating it. */}
+    <p class="mx-auto mt-6 max-w-2xl text-ink-dim">
+      Right here on the page, over the top of everything. It starts almost
+      entirely blacked out &mdash; every brick you knock down lets a little more
+      of the portfolio back through. Clear all {BRICK_TOTAL} to get it back.
     </p>
 
     {/* The aria-label exists because "Insert coin" alone doesn't say what the
@@ -65,43 +130,47 @@ const playGradient = `linear-gradient(100deg, ${ROW_COLOURS.join(', ')})`;
     <button
       type="button"
       data-breakout-launch
-      style={`--play-gradient:${playGradient}`}
+      data-cursor="coin"
       aria-label="Insert coin — play Breakout"
-      class="play mx-auto mt-9 inline-flex items-center gap-3 font-arcade text-[1.25rem] tracking-[0.05em]"
+      class="play mx-auto mt-10 inline-flex items-center gap-4 font-arcade text-[1.1rem] tracking-[0.08em]"
     >
-      {/* Pixel-stepped play triangle — a smooth vector one would be the only
-          anti-aliased curve in the whole component. */}
-      <svg viewBox="0 0 6 10" aria-hidden="true" class="h-[1em] w-[0.6em] shrink-0">
-        <path
-          d="M0 0h2v2H0zM0 2h4v2H0zM0 4h6v2H0zM0 6h4v2H0zM0 8h2v2H0z"
-          fill="currentColor"></path>
-      </svg>
+      {/* The slot itself — a milled slit in the faceplate, which is what the
+          coin cursor is being offered to. */}
+      <span class="play__slot" aria-hidden="true"></span>
       Insert coin
     </button>
-
-    <p class="mt-6 text-micro uppercase tracking-[0.14em] text-ink-faint">
-      3 balls &middot; {BRICK_TOTAL} bricks &middot; no high scores, no accounts
-    </p>
   </div>
 </section>
 
 <style>
-  .wall {
-    display: grid;
-    grid-template-columns: repeat(12, 1fr);
-    gap: 2px;
-    width: min(22rem, 100%);
+  .stage {
+    width: min(34rem, 100%);
     margin-inline: auto;
   }
 
+  .wall {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    gap: 5px;
+  }
+
   .wall > i {
-    height: 8px;
-    border-radius: 2px;
-    /* Same top-lit gradient the canvas bricks get, so the decoration and the
-       real rack read as the same object. */
-    background: linear-gradient(to bottom, color-mix(in srgb, var(--c) 66%, white), var(--c));
+    height: 22px;
+    /*
+      Square, flat, and bevelled on all four sides — the same block the canvas
+      draws, so the decoration and the real rack are demonstrably one object.
+
+      Lit along the top and left, shadowed along the bottom and right. The
+      gradient this replaced read as a moulded keycap; a flat face with two hard
+      bands reads as a sprite, and the hardness is the whole point. Every value
+      is spread-only — one blurred shadow and it stops being pixel art.
+    */
+    background: var(--c);
+    box-shadow:
+      inset 3px 3px 0 color-mix(in srgb, var(--c) 55%, white),
+      inset -3px -3px 0 color-mix(in srgb, var(--c) 60%, black);
     opacity: 0.85;
-    animation: wall-churn 5s linear infinite;
+    animation: wall-churn 8s linear infinite;
     animation-delay: var(--d);
     /* Held until the section is actually on screen — see the observer below.
        An infinite animation that runs against a footer nobody has scrolled to
@@ -113,13 +182,28 @@ const playGradient = `linear-gradient(100deg, ${ROW_COLOURS.join(', ')})`;
     animation-play-state: running;
   }
 
+  /* Knocked out. Kept in the grid as an empty socket rather than removed, so
+     the rack still reads as a rack with a hole in it — drop the element and the
+     surviving bricks close ranks and the damage disappears. No bevel: an empty
+     slot is a recess, not a slab. */
+  .wall > i[data-gone] {
+    background: rgb(255 255 255 / 0.035);
+    /* The socket keeps a bevel too, inverted — a recess is a block pressed in,
+       so its lit and shadowed edges swap sides. */
+    box-shadow:
+      inset 3px 3px 0 rgb(0 0 0 / 0.5),
+      inset -3px -3px 0 rgb(255 255 255 / 0.04);
+    opacity: 1;
+    animation: none;
+  }
+
   /* Pointing at it winds the whole rack up. */
   .arcade:hover .wall > i,
   .arcade:focus-within .wall > i {
-    animation-duration: 1.6s;
+    animation-duration: 3.4s;
   }
 
-  /* Each brick is out for ~7% of the cycle. Spread across 72 negative delays
+  /* Each brick is out for ~7% of the cycle. Spread across the negative delays
      that leaves a handful missing at any instant — a wall being chipped at,
      rather than a wave sweeping through it. */
   @keyframes wall-churn {
@@ -141,52 +225,141 @@ const playGradient = `linear-gradient(100deg, ${ROW_COLOURS.join(', ')})`;
     }
   }
 
-  /* Gradient-lit keycap. The press still travels, but the silhouette is
-     rounded and the shadow soft — retro shape, modern finish. */
   .title {
-    background: linear-gradient(to bottom, #ffffff, #a9f2d3);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
-    filter: drop-shadow(0 0 26px oklch(0.8 0.15 138 / 0.28));
+    color: #fff;
   }
 
-  /* The rack, condensed into a button: `--play-gradient` runs the six brick
-     colours left to right, built in the frontmatter from the same array the
-     wall uses. Every stop is light enough to carry the near-black label at
-     well past AA — the deepest is the indigo at ~5.7:1. */
+  /*
+    The rally. Its own layer so the dots travel the full section — behind the
+    copy, which sits at `z-10`, so a ball crossing the headline reads as depth
+    rather than as clutter.
+  */
+  .rally {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  /*
+    `left`/`top` rather than transforms: these are absolutely positioned, so
+    they lay out nothing else, and percentage insets resolve against the section
+    at any width — a transform would need the travel distance hardcoded.
+
+    Two alternating animations at coprime durations, so the path never repeats
+    and a fixed pair of keyframes reads as a genuine rally rather than a loop.
+    `--lag` walks each trail dot back along that shared path: the base delay is
+    negative (start mid-flight, not parked at the edge) and the lag makes it
+    less negative, which is what puts a dot behind the head rather than ahead.
+  */
+  .ball {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: var(--size);
+    height: var(--size);
+    background: #fff;
+    opacity: var(--alpha);
+    animation:
+      ball-x 5.6s linear infinite alternate,
+      ball-y 3.4s linear infinite alternate;
+    animation-delay: calc(-2.4s + var(--lag)), calc(-1.3s + var(--lag));
+    animation-play-state: paused;
+  }
+
+  .arcade[data-visible] .ball {
+    animation-play-state: running;
+  }
+
+  /*
+    No hover speed-up here, deliberately.
+
+    Changing `animation-duration` mid-flight preserves the animation's current
+    *time*, not its progress — so progress (time / duration) jumps the instant
+    the value changes and the element teleports. Measured at ~396px against a
+    ~30px normal frame, which is the "ball vanishes and restarts somewhere else"
+    bug. The wall keeps its speed-up because one brick jumping mid-churn among
+    identical neighbours is invisible; a single tracked object jumping is not.
+  */
+
+  @keyframes ball-x {
+    to {
+      left: calc(100% - var(--size));
+    }
+  }
+
+  @keyframes ball-y {
+    to {
+      top: calc(100% - var(--size));
+    }
+  }
+
+  /*
+    A coin slot, not a key. Brushed-silver faceplate with a hard pixel bevel and
+    a real slit milled into it — the thing the coin cursor is being offered to.
+
+    Square corners and zero blur throughout: every edge is a step. One blurred
+    shadow anywhere in here and it stops reading as 8-bit and starts reading as
+    a skeuomorphic button, which is the opposite of the point. The outer rings
+    are stacked spread-only shadows, so the whole chunky frame costs no extra
+    elements.
+  */
   .play {
-    padding: 0.75em 1.4em;
-    border-radius: 14px;
-    color: #08120e;
-    background: var(--play-gradient);
-    border: 1px solid rgb(255 255 255 / 0.45);
+    position: relative;
+    padding: 0.8em 1.6em;
+    border: 0;
+    border-radius: 0;
+    color: #14181c;
+    background: linear-gradient(
+      to bottom,
+      #f2f5f7 0%,
+      #d3dae0 34%,
+      #b0b8bf 58%,
+      #8d959d 100%
+    );
     box-shadow:
-      inset 0 1px 0 rgb(255 255 255 / 0.55),
-      0 4px 18px oklch(0.16 0.022 190 / 0.8),
-      0 0 38px rgb(255 255 255 / 0.1);
+      /* pixel bevel, cut into the plate */
+      inset 0 3px 0 rgb(255 255 255 / 0.85),
+      inset 3px 0 0 rgb(255 255 255 / 0.32),
+      inset -3px 0 0 rgb(0 0 0 / 0.22),
+      inset 0 -3px 0 rgb(0 0 0 / 0.3),
+      /* chunky two-tone frame */
+      0 0 0 3px #626b73,
+      0 0 0 6px #20252a,
+      /* the plate's own thickness, so pressing it has somewhere to go */
+      0 9px 0 0 #20252a;
+    /* Stepped, not eased: the press should snap between two states. */
     transition:
-      transform 130ms var(--ease-out-expo),
-      box-shadow 220ms var(--ease-out-expo),
-      border-color 220ms var(--ease-out-expo),
-      filter 220ms var(--ease-out-expo);
+      transform 80ms steps(2, end),
+      box-shadow 80ms steps(2, end),
+      filter 140ms ease;
   }
 
   .play:hover {
-    border-color: #ffffff;
-    filter: saturate(1.15) brightness(1.06);
-    box-shadow:
-      inset 0 1px 0 rgb(255 255 255 / 0.7),
-      0 6px 26px oklch(0.16 0.022 190 / 0.85),
-      0 0 56px rgb(255 255 255 / 0.2);
+    filter: brightness(1.07);
   }
 
   .play:active {
-    transform: translateY(2px);
+    transform: translateY(6px);
     box-shadow:
-      inset 0 2px 6px rgb(0 0 0 / 0.35),
-      0 1px 6px oklch(0.16 0.022 190 / 0.8);
+      inset 0 3px 0 rgb(255 255 255 / 0.5),
+      inset 3px 0 0 rgb(255 255 255 / 0.2),
+      inset -3px 0 0 rgb(0 0 0 / 0.28),
+      inset 0 -3px 0 rgb(0 0 0 / 0.36),
+      0 0 0 3px #626b73,
+      0 0 0 6px #20252a,
+      0 3px 0 0 #20252a;
+  }
+
+  /* The slit. Vertical, because that is the way a coin goes in. */
+  .play__slot {
+    width: 0.34em;
+    height: 1.4em;
+    flex: none;
+    background: #0d1013;
+    box-shadow:
+      inset 0 0 0 1px #000,
+      0 0 0 2px rgb(255 255 255 / 0.55),
+      0 0 0 3px rgb(0 0 0 / 0.35);
   }
 
   /* While the chunk is in flight. */
@@ -202,6 +375,19 @@ const playGradient = `linear-gradient(100deg, ${ROW_COLOURS.join(', ')})`;
       animation: none;
       opacity: 0.85;
       transform: none;
+    }
+
+    /* The ball parks mid-stage rather than vanishing, so the composition still
+       reads as a game in progress. */
+    .ball,
+    .arcade:hover .ball,
+    .arcade:focus-within .ball {
+      animation: none;
+    }
+
+    .ball {
+      left: calc(50% - var(--size) / 2);
+      top: 12%;
     }
   }
 </style>

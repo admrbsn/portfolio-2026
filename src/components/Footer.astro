@@ -55,14 +55,28 @@ const socials: {
       that isn't the one on the clipboard. */}
   {/* `data-cursor-label` is read by <Cursor>; the visible hint below stays as
       the non-JS / touch fallback and as the aria-live target. */}
+  {/* The hover is the same `.accent-gradient` that carries "shampoo bottles" on
+      the home page, not a flat accent — but `background-image` is not an
+      animatable property, so it cannot be transitioned in over the ink.
+
+      Instead the gradient is a second copy of the address stacked on top of the
+      first, and only its *opacity* moves. It is a real `<span aria-hidden>`
+      rather than a `::after` with `content: attr(data-copy)`: generated content
+      duplicating visible text is announced by some screen readers, which would
+      read the address twice on a button whose whole job is to hand it over once.
+
+      The two copies align because the overlay inherits every metric that
+      matters (family, size, `leading-none`, the footer's `text-center`) and the
+      button has no padding for `inset: 0` to disagree with. */}
   <button
     type="button"
     data-copy={email}
     data-cursor-label="Click to copy"
-    class="group mx-auto mt-8 block font-display text-[clamp(2.25rem,7vw,5rem)] leading-none text-ink transition-colors hover:text-accent"
+    class="email-copy mx-auto mt-8 block font-display text-[clamp(2.25rem,7vw,5rem)] leading-none text-ink"
     aria-describedby="copy-hint"
   >
     {email}
+    <span class="email-copy__accent accent-gradient" aria-hidden="true">{email}</span>
   </button>
 
   <p
@@ -101,9 +115,31 @@ const socials: {
   </ul>
 
   <p class="mt-12 text-micro uppercase tracking-[0.14em] text-ink-faint">
-    &copy; 2006&ndash;{year} Adam Robertson. All rights reserved.
+    &copy; {year} Adam Robertson. All rights reserved.
   </p>
 </footer>
+
+<style>
+  .email-copy {
+    position: relative;
+  }
+
+  .email-copy__accent {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    /* Never intercepts the click — the button underneath owns it. */
+    pointer-events: none;
+    transition: opacity var(--dur-fast) ease;
+  }
+
+  /* `:focus-visible` too, so a keyboard visit gets the same signal the pointer
+     does rather than only the focus ring. */
+  .email-copy:hover .email-copy__accent,
+  .email-copy:focus-visible .email-copy__accent {
+    opacity: 1;
+  }
+</style>
 
 <script is:inline>
   // Delegated + guarded so it binds exactly once and survives the footer's

@@ -32,32 +32,36 @@ const signatureFont = createBundle({
   descender: -250,
 });
 
-// All published case studies, laid out in a mixed-size bento on the home page
-// (no separate work index). Sorted by manual order, ties break on year.
+// All published case studies, laid out as a staggered two-column list on the
+// home page (no separate work index). Sorted by manual order, ties break on year.
 const work = (await getCollection('work', ({ data }) => !data.draft)).sort(
   (a, b) => a.data.order - b.data.order || b.data.year - a.data.year,
 );
 
-// Bento cell placements, applied in order to `work`. Tiles a 5-col grid with no
-// gaps: a 3-wide feature, a 2-wide tile beside it, then a 2-wide tile on the
-// bottom-left with the two wide (3-col) tiles stacked to its right.
 /*
- * Two up, then three up, on a six-column grid.
+ * Two columns, with the right one dropped half a tile so the pair reads as
+ * staggered rather than as a table of rows.
  *
- * This replaced a row-spanning bento that worked when the cover filled the
- * whole cell and the text sat over it. With the text moved beneath the image,
- * a tile has to share its cell — and in fixed-height rows the single-row tiles
- * were left with 96px of image at a 7.85:1 crop. Column spans vary the width;
- * the image's aspect ratio then sets the height, so every cover is croppped
- * the same way and the captions line up.
+ * The offset is a margin on the odd-indexed tiles rather than two independent
+ * column elements. Independent columns would stagger continuously down the
+ * page, but they also reorder the list on mobile — a single column of three
+ * followed by another three, instead of the curated 1-6. This keeps DOM order
+ * intact and the offset simply disappears below `lg`, where the grid is one
+ * column anyway.
+ *
+ * `items-start` is what leaves the ragged bottoms: tiles hang from the top of
+ * their row and short ones open a gap beneath.
+ *
+ * The offset is also what sets the vertical rhythm, and it is easy to
+ * over-spend. Every tile is the same height (a 16/9 cover over three lines of
+ * text, ~468px at desktop), so the distance between two tiles in the same
+ * column is exactly `row gap + this offset` — the offset reappears as slack
+ * under whichever tile is *not* pushed down. At `mt-40` plus `gap-y-20` that
+ * measured 240px of empty column between tiles, which read as the grid coming
+ * apart rather than as stagger. 96px keeps the offset legible at a fifth of a
+ * tile and takes the run down to 152px.
  */
-const workCells = [
-  'lg:col-span-3', // Tribute V3 — feature
-  'lg:col-span-3', // Recording Flow
-  'lg:col-span-2', // Tribute.co
-  'lg:col-span-2', // Greetings
-  'lg:col-span-2', // Peterson's
-];
+const STAGGER = 'lg:mt-24';
 
 /*
  * Hero stats. `20×` is the Tribute growth figure; the second is a suggested
@@ -164,8 +168,14 @@ const story = [
       *top* padding and collides with the fixed nav. mt-auto collapses to 0
       instead, so tall content flows down and short content still sits at the
       bottom of the viewport. */}
+  {/* The height is `100svh` *minus the nav*, not `100svh`: the bar is fixed and
+      overlays the top of this section, so a full-viewport hero puts the rule at
+      its foot exactly on the fold, where it takes a scroll to reveal. Subtracting
+      the nav band makes the two together fill one viewport and lands that rule on
+      screen. `--nav-h` is measured and published by `nav.ts`; the fallback is the
+      bar's height at rest, for the pre-JS frame and reduced-motion visits. */}
   <section
-    class="relative flex min-h-svh flex-col overflow-hidden px-shell pb-[10vh] pt-32"
+    class="relative flex min-h-[calc(100svh-var(--nav-h,4.3125rem))] flex-col overflow-hidden px-shell pb-[10vh] pt-32"
     data-blueprint="The Hook"
     style="--bp-top: 6rem"
   >
@@ -312,27 +322,46 @@ const story = [
         pb-section so those dividers run all the way down to the next section's
         rule — one connected grid. Text stays padded (px-shell-pad) off the lines. */}
     <div
-      class="-mx-shell-pad mt-16 grid grid-cols-1 gap-y-12 border-t border-line sm:grid-cols-2 lg:grid-cols-4 lg:gap-y-0"
+      class="bp-rules -mx-shell-pad mt-16 grid grid-cols-1 gap-y-12 border-t border-line sm:grid-cols-2 lg:grid-cols-4 lg:gap-y-0"
       data-anim="reveal-batch"
     >
       {
         capabilities.map((group, i) => (
           <div
             class:list={[
-              'px-shell-pad pt-6 lg:pb-section',
+              'relative px-shell-pad pt-6 lg:pb-section',
               i % 2 === 1 && 'sm:border-l sm:border-line',
               i === 2 && 'lg:border-l lg:border-line',
             ]}
           >
+            {/* Both ends of this column's divider. Only the three internal
+                dividers get them — the outer two positions are the block's own
+                corners, below. */}
+            {i > 0 && (
+              <>
+                <span class="bp-sq bp-sq--t bp-sq--l hidden lg:block" aria-hidden="true" />
+                <span class="bp-sq bp-sq--b bp-sq--l hidden lg:block" aria-hidden="true" />
+              </>
+            )}
             <h3 class="text-micro uppercase tracking-[0.14em] text-ink-faint">{group.name}</h3>
             <ul class="mt-5 space-y-2.5 text-ink">
               {group.items.map((item) => (
-                <li>{item}</li>
+                <li>
+                  <span class="cap-item">{item}</span>
+                </li>
               ))}
             </ul>
           </div>
         ))
       }
+
+      {/* The block's own four corners, where its rules meet the page rails.
+          The bottom pair land on the next section's rule, which is what the
+          columns' `lg:pb-section` runs them down to. */}
+      <span class="bp-sq bp-sq--t bp-sq--l" aria-hidden="true" />
+      <span class="bp-sq bp-sq--t bp-sq--r" aria-hidden="true" />
+      <span class="bp-sq bp-sq--b bp-sq--l hidden lg:block" aria-hidden="true" />
+      <span class="bp-sq bp-sq--b bp-sq--r hidden lg:block" aria-hidden="true" />
     </div>
   </section>
 
@@ -345,12 +374,12 @@ const story = [
     <h2 class="font-display text-title font-normal text-ink" data-anim="reveal-heading">Selected work</h2>
 
     <div
-      class="mt-16 grid grid-cols-1 items-start gap-x-4 gap-y-10 sm:grid-cols-2 lg:grid-cols-6"
+      class="mt-16 grid grid-cols-1 items-start gap-x-8 gap-y-16 lg:grid-cols-2 lg:gap-x-16 lg:gap-y-14"
       data-anim="reveal-batch"
     >
       {
         work.map((entry, i) => (
-          <WorkTile entry={entry} cellClass={workCells[i]} feature={i === 0} eager={i < 3} />
+          <WorkTile entry={entry} cellClass={i % 2 === 1 ? STAGGER : ''} eager={i < 2} />
         ))
       }
     </div>
@@ -372,3 +401,58 @@ const story = [
   </div>
   </div>
 </BaseLayout>
+
+<style>
+  /*
+    Capability hover. The target is a span rather than the <li>, so the hit area
+    is the width of the words — on an <li> it would span the whole column and
+    fire with the pointer nowhere near the text.
+
+    The rule marker is absolutely positioned and rides along with the item's
+    translate, so it slides into the space the item just vacated instead of
+    reflowing the row.
+  */
+  .cap-item {
+    position: relative;
+    display: inline-block;
+    transition:
+      transform var(--dur-fast) var(--ease-out-expo),
+      color var(--dur-fast) ease;
+  }
+
+  .cap-item::before {
+    content: '';
+    position: absolute;
+    top: 0.68em;
+    left: -0.9rem;
+    width: 0.4rem;
+    height: 1px;
+    background: currentColor;
+    opacity: 0;
+    transform: scaleX(0);
+    transform-origin: right center;
+    transition:
+      opacity var(--dur-fast) ease,
+      transform var(--dur-fast) var(--ease-out-expo);
+  }
+
+  .cap-item:hover {
+    color: var(--color-accent);
+    transform: translateX(0.55rem);
+  }
+
+  .cap-item:hover::before {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cap-item,
+    .cap-item::before {
+      transition-property: opacity, color;
+    }
+    .cap-item:hover {
+      transform: none;
+    }
+  }
+</style>

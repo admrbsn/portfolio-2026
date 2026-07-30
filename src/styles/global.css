@@ -6,10 +6,10 @@
 @import '@fontsource-variable/google-sans';
 @import '@fontsource/vidaloka/400.css';
 /* Arcade face for the Breakout CTA and the game's own chrome. Latin subset
-   only (~19KB) and self-hosted like the rest, so it costs one same-origin
-   font request that the browser only issues once the CTA renders — it is not
+   only (~9KB) and self-hosted like the rest, so it costs one same-origin font
+   request that the browser only issues once the CTA renders — it is not
    render-blocking and nothing above the fold uses it. */
-@import '@fontsource/jersey-20/latin-400.css';
+@import '@fontsource/tiny5/latin-400.css';
 
 /* ---------------------------------------------------------------------------
    Design tokens. Tailwind v4 is CSS-first — this @theme block *is* the config,
@@ -38,11 +38,15 @@
 
   /* Breakout only. A deliberate stylistic island — it appears nowhere in the
      portfolio proper, and it is a display face: headings, HUD labels and
-     buttons, never a paragraph. Jersey 20 is a tall, condensed pixel face, so
-     it reads at far smaller sizes than a squat one like Press Start 2P — but
-     its glyphs occupy much less of the em, so every size using it needs to be
-     roughly 1.7x what an equivalent blocky pixel font would take. */
-  --font-arcade: 'Jersey 20', ui-monospace, monospace;
+     buttons, never a paragraph.
+
+     Tiny5 is a true 5px-grid bitmap face, so it wants sizes that are whole
+     multiples of that grid — set it at a size where the stems land on device
+     pixels or the whole point of it is lost to anti-aliasing. It is squatter
+     and wider than the Jersey 20 it replaced, which ran tall and condensed, so
+     anything ported from that needs its size taken *down* and its tracking
+     loosened. */
+  --font-arcade: 'Tiny5', ui-monospace, monospace;
 
   /* Display font tuning. Set for Vidaloka — a high-contrast display serif with
      a large x-height and sturdy stems; gentle tracking, modest leading. Sizing
@@ -123,13 +127,13 @@
   --dur-slow: 1100ms;
 
   /* Layout */
-  --spacing-gutter: clamp(1.25rem, 4vw, 4rem);
+  --spacing-gutter: clamp(1.5rem, 4.6vw, 5rem);
   --spacing-section: clamp(4rem, 10vw, 10rem);
   /* Content inset for the framed (blueprint) pages: the gutter — where the
      vertical rails sit — plus breathing room, so text never touches a rail.
      `shell-pad` is that breathing room on its own, so grids can pull back out
      to the rails (-mx-shell-pad) while their text stays padded (px-shell-pad). */
-  --spacing-shell-pad: clamp(0.875rem, 2vw, 2rem);
+  --spacing-shell-pad: clamp(1rem, 2.2vw, 2.5rem);
   --spacing-shell: calc(var(--spacing-gutter) + var(--spacing-shell-pad));
   /* Inset for content sitting *inside* a ruled cell (the leadership moments).
      `shell-pad` is sized to keep text off a rail; a cell holding three
@@ -246,8 +250,17 @@
     will-change: transform, opacity;
   }
 
+  /*
+    `reveal-heading` belongs in this list even though its effect sets
+    `opacity: 1` itself. Without it the h1 paints at full opacity on first paint
+    and then `revealHeading` splits it and animates the words up from
+    `yPercent: 118` — measured at ~1s after FCP on a throttled cold load, which
+    reads as the headline appearing, vanishing, and re-playing. Hidden here, it
+    only ever arrives once.
+  */
   html:not(.no-js) [data-anim='reveal'],
   html:not(.no-js) [data-anim='reveal-batch'] > *,
+  html:not(.no-js) [data-anim='reveal-heading'],
   html:not(.no-js) [data-anim='story-line'] {
     opacity: 0;
   }
@@ -347,6 +360,46 @@
     top: 0;
   }
 
+  /* Blueprint rule intersections — the small squares marking where a grid's
+     rules cross. Real elements rather than pseudo-elements: each needs both a
+     surface fill (to punch through the rule it sits on) *and* its own 1px
+     border, and one pseudo-element cannot carry two bordered boxes.
+
+     `.bp-rules` on the host establishes the positioning context and `--sq`;
+     every placement offsets by half of it so the square sits centred on the
+     line rather than beside it. The edge modifiers compose — a top-left corner
+     is `bp-sq bp-sq--t bp-sq--l`.
+
+     Squares that only make sense once a grid actually has columns are hidden
+     with Tailwind (`hidden lg:block`) rather than a breakpoint baked in here,
+     because the grid's own breakpoints differ per page. */
+  .bp-rules {
+    --sq: 7px;
+    position: relative;
+  }
+
+  .bp-sq {
+    position: absolute;
+    width: var(--sq);
+    height: var(--sq);
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    pointer-events: none;
+  }
+
+  .bp-sq--t {
+    top: calc(var(--sq) / -2 - 1px);
+  }
+  .bp-sq--b {
+    bottom: calc(var(--sq) / -2 - 1px);
+  }
+  .bp-sq--l {
+    left: calc(var(--sq) / -2);
+  }
+  .bp-sq--r {
+    right: calc(var(--sq) / -2);
+  }
+
   /* Blueprint frame: two faint vertical rails at the gutter, drawn as
      backgrounds so they sit behind all content. Contained sections sit flush
      inside them; full-bleed sections (hero, Dribbble) paint over them. Paired
@@ -407,4 +460,119 @@ html[data-motion='reduced'] [data-anim='story-line'] {
 
 html[data-motion='reduced'] [data-anim='story-line'] {
   text-shadow: none;
+}
+
+/* ---------------------------------------------------------------------------
+   Page loader
+
+   Covers the gap between first paint and a composed page. Everything carrying
+   `data-anim` starts at `opacity: 0`, and the effects that reveal it cannot run
+   until GSAP has parsed and `document.fonts.ready` has settled — SplitText has
+   to split against real metrics. On a throttled cold load that measured ~1s
+   between FCP and the headline arriving, which is a second of empty hero wash.
+   The ripple owns that second instead, and the hero then plays its reveal in
+   full rather than half-missed.
+
+   Three things keep it from being the classic loader-that-strands-the-page:
+
+   - It is opt-in from JS. The overlay is hidden unless `html[data-loading]` is
+     set, and only the inline script in BaseLayout sets it — so a visit with JS
+     off never sees it, exactly like the `.no-js` escape hatch above.
+   - `initMotion` drops the attribute when the page is actually ready, and the
+     inline script carries a timeout that drops it regardless. Either path alone
+     is enough to reveal the page.
+   - Reduced motion never gets it: that mode forces `data-anim` content visible
+     immediately, so there is nothing to wait for, and an infinite ripple is the
+     wrong thing to show someone who asked for less movement.
+
+   Cost worth knowing: this deliberately trades LCP for composure. The largest
+   paint moves from ~0.5s (hero wash under a flash of unanimated type) to
+   whenever motion is ready. Don't add anything to the dismiss condition that
+   waits on below-the-fold work.
+--------------------------------------------------------------------------- */
+#page-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 100; /* above the nav (40) and the case-study back link */
+  display: grid;
+  place-items: center;
+  background-color: var(--color-surface);
+  color: var(--color-accent);
+  opacity: 0;
+  visibility: hidden;
+  /* Delaying `visibility` until the fade finishes is what lets it animate out;
+     `display` cannot be transitioned, so the overlay stays in the layout and
+     goes untargetable instead. */
+  transition:
+    opacity 400ms ease,
+    visibility 0s linear 400ms;
+}
+
+/* No transition on the way in — the overlay has to be opaque on first paint,
+   not fade up over the content it is there to cover. */
+html[data-loading] #page-loader {
+  opacity: 1;
+  visibility: visible;
+  transition: none;
+}
+
+.lds-ripple,
+.lds-ripple div {
+  box-sizing: border-box;
+}
+
+.lds-ripple {
+  display: inline-block;
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+
+.lds-ripple div {
+  position: absolute;
+  border: 4px solid currentColor;
+  opacity: 1;
+  border-radius: 50%;
+}
+
+/* The animation is declared under the attribute rather than on the element, so
+   the two rings are not running against a hidden overlay for the life of the
+   page. */
+html[data-loading] .lds-ripple div {
+  animation: lds-ripple 1s cubic-bezier(0, 0.2, 0.8, 1) infinite;
+}
+
+html[data-loading] .lds-ripple div:nth-child(2) {
+  animation-delay: -0.5s;
+}
+
+@keyframes lds-ripple {
+  0% {
+    top: 36px;
+    left: 36px;
+    width: 8px;
+    height: 8px;
+    opacity: 0;
+  }
+  4.9% {
+    top: 36px;
+    left: 36px;
+    width: 8px;
+    height: 8px;
+    opacity: 0;
+  }
+  5% {
+    top: 36px;
+    left: 36px;
+    width: 8px;
+    height: 8px;
+    opacity: 1;
+  }
+  100% {
+    top: 0;
+    left: 0;
+    width: 80px;
+    height: 80px;
+    opacity: 0;
+  }
 }

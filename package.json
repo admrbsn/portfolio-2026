@@ -11,7 +11,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "check": "astro check",
-    "astro": "astro"
+    "astro": "astro",
+    "sync:dribbble": "bun scripts/sync-dribbble.ts"
   },
   "dependencies": {
     "@astrojs/mdx": "^7.0.3",
@@ -19,7 +20,7 @@
     "@astrojs/svelte": "^9.0.1",
     "@fontsource-variable/geist": "^5.3.0",
     "@fontsource-variable/google-sans": "^5.3.0",
-    "@fontsource/jersey-20": "^5.3.0",
+    "@fontsource/tiny5": "^5.3.0",
     "@fontsource/vidaloka": "^5.3.0",
     "@tailwindcss/vite": "^4.3.3",
     "astro": "^7.1.3",

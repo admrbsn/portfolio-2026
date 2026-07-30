@@ -38,6 +38,18 @@ let teardowns: Teardown[] = [];
 let started = false;
 
 /**
+ * Dismiss the page loader (see the Page loader block in global.css).
+ *
+ * Idempotent, and deliberately dumb: the inline script in BaseLayout carries a
+ * timeout that does the same thing, so the overlay comes down whether or not
+ * this module ever runs. Called from the lifecycle's `finally`, which means a
+ * thrown effect reveals the page rather than leaving a spinner up.
+ */
+function revealPage() {
+  document.documentElement.removeAttribute('data-loading');
+}
+
+/**
  * Wire every `data-anim` element on the current page.
  *
  * Runs on `astro:page-load`, which fires on first load *and* after every
@@ -158,7 +170,14 @@ export function bindMotionLifecycle() {
     const hash = window.location.hash;
     const scrollYAtStart = window.scrollY;
 
-    void initMotion().then(() => settleHash(hash, scrollYAtStart));
+    // `finally` rather than `then`: an effect that throws must still take the
+    // loader down, or a single bad selector hides the whole site behind a
+    // spinner. The hash correction stays after it — settling an anchor under a
+    // visible page is the point.
+    void initMotion()
+      .catch((err) => console.warn('[motion] init failed', err))
+      .finally(revealPage)
+      .then(() => settleHash(hash, scrollYAtStart));
   });
 
   document.addEventListener('astro:before-swap', () => {

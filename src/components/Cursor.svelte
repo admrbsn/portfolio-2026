@@ -8,14 +8,70 @@
    * needed and a spring here is ~15 lines, so pulling GSAP into the island
    * chunk would cost more than it saves.
    */
+  /*
+   * The coin, as a 14x14 pixel map. Drawn rather than shipped as an asset so it
+   * inherits nothing and costs no request: `.` is a hole, and the letters index
+   * COIN_HUES below — dark rim, gold ring, light face, and a white specular
+   * streak running top-left to bottom-right.
+   */
+  const COIN = [
+    '....DDDDDD....',
+    '..DDGGGGGGDD..',
+    '.DDGGLLLLGGDD.',
+    '.DGGLLLLLLGGD.',
+    'DDGLLWWLLLLGDD',
+    'DGGLLWWLLLLGGD',
+    'DGLLLLWWLLLLGD',
+    'DGLLLLLWWLLLGD',
+    'DGGLLLLLWWLGGD',
+    'DDGLLLLLLWLGDD',
+    '.DGGLLLLLLGGD.',
+    '.DDGGLLLLGGDD.',
+    '..DDGGGGGGDD..',
+    '....DDDDDD....',
+  ];
+
+  const COIN_HUES: Record<string, string> = {
+    D: '#6b3f0e',
+    G: '#e2a013',
+    L: '#f8d347',
+    W: '#ffffff',
+  };
+
+  /*
+   * Horizontal runs, not one rect per pixel: 196 cells collapse to ~40 rects,
+   * and at 14 units across an SVG scaled to 44px every edge still lands on a
+   * whole device pixel.
+   */
+  const coinRects = COIN.flatMap((row, y) => {
+    const out: { x: number; y: number; w: number; fill: string }[] = [];
+    let x = 0;
+    while (x < row.length) {
+      const c = row[x]!;
+      if (c === '.') {
+        x += 1;
+        continue;
+      }
+      let w = 1;
+      while (row[x + w] === c) w += 1;
+      out.push({ x, y, w, fill: COIN_HUES[c]! });
+      x += w;
+    }
+    return out;
+  });
+
   let dot = $state<HTMLDivElement | null>(null);
   let ring = $state<HTMLDivElement | null>(null);
   let labelEl = $state<HTMLDivElement | null>(null);
+  let coinEl = $state<HTMLDivElement | null>(null);
   let enabled = $state(false);
   let hovering = $state(false);
   // Text pulled from the hovered element's `data-cursor-label`, e.g. the case
   // study links set "View case study". Null hides the tooltip.
   let label = $state<string | null>(null);
+  // Set by `[data-cursor="coin"]` — the Breakout CTA's launch button. Replaces
+  // the dot and ring outright rather than sitting alongside them.
+  let coin = $state(false);
 
   onMount(() => {
     const fine = window.matchMedia('(hover: hover) and (pointer: fine)');
@@ -64,7 +120,8 @@
 
     // Resolve the grow/label state from whatever element sits under the cursor.
     function evalHover(el: Element | null) {
-      hovering = Boolean(el?.closest('a, button, [data-cursor="grow"]'));
+      coin = Boolean(el?.closest('[data-cursor="coin"]'));
+      hovering = !coin && Boolean(el?.closest('a, button, [data-cursor="grow"]'));
       const labelHost = el?.closest('[data-cursor-label]');
       label = labelHost?.getAttribute('data-cursor-label') || null;
     }
@@ -117,6 +174,9 @@
       // Tooltip tracks the dot exactly, offset to the lower-right so it clears
       // the cursor. The inner pill handles its own show/scale transition.
       if (labelEl) labelEl.style.transform = `translate3d(${mx}px, ${my}px, 0) translate(18px, 14px)`;
+      // Positional transform only — the flip lives on the inner <svg>, because
+      // one element cannot carry both a JS transform and a CSS one.
+      if (coinEl) coinEl.style.transform = `translate3d(${mx}px, ${my}px, 0) translate(-50%, -50%)`;
 
       raf = requestAnimationFrame(loop);
     }
@@ -138,8 +198,18 @@
 
 {#if enabled}
   <div class="cursor-layer" aria-hidden="true">
-    <div bind:this={ring} class="ring" class:grow={hovering}></div>
-    <div bind:this={dot} class="dot"></div>
+    <div bind:this={ring} class="ring" class:grow={hovering} class:hide={coin}></div>
+    <div bind:this={dot} class="dot" class:hide={coin}></div>
+  </div>
+
+  <!-- Its own layer: the coin keeps its own colours, so it must sit outside
+       `.cursor-layer`, whose drop-shadow filter is tuned for a white dot. -->
+  <div bind:this={coinEl} class="coin" class:show={coin} aria-hidden="true">
+    <svg class="coin__art" viewBox="0 0 14 14" shape-rendering="crispEdges">
+      {#each coinRects as r (`${r.x}-${r.y}`)}
+        <rect x={r.x} y={r.y} width={r.w} height="1" fill={r.fill} />
+      {/each}
+    </svg>
   </div>
   <!-- Its own layer, separate from the dot/ring, so the pill keeps its accent
        colour and drop-shadow independent of them. -->
@@ -197,6 +267,55 @@
     width: 62px;
     height: 62px;
     background: rgba(255, 255, 255, 0.14);
+  }
+
+  .dot.hide,
+  .ring.hide {
+    opacity: 0;
+  }
+
+  /* Positioned by the RAF loop like the dot; the flip is on the child. */
+  .coin {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 62;
+    pointer-events: none;
+    will-change: transform;
+    opacity: 0;
+    transition: opacity 140ms ease;
+    filter: drop-shadow(0 3px 5px rgb(0 0 0 / 0.5));
+  }
+
+  .coin.show {
+    opacity: 1;
+  }
+
+  .coin__art {
+    display: block;
+    width: 44px;
+    height: 44px;
+    /*
+      The flip. `steps(1, end)` is what keeps it 8-bit: interpolating the scale
+      smoothly reads as a rubber disc, where jumping between four fixed widths
+      reads as a sprite sheet — which is how the arcade original did it.
+    */
+    animation: coin-flip 0.85s steps(1, end) infinite;
+  }
+
+  @keyframes coin-flip {
+    0% {
+      transform: scaleX(1);
+    }
+    25% {
+      transform: scaleX(0.55);
+    }
+    50% {
+      transform: scaleX(0.12);
+    }
+    75% {
+      transform: scaleX(0.55);
+    }
   }
 
   /* Follows the cursor (positioned in the RAF loop); the inner pill animates
