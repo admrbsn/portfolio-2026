@@ -151,15 +151,39 @@ a heading (the `top` variant was tried on "How I work") reads as a lid on the
 section rather than as slack left under a grid, so the effect only earns its
 place after one.
 
+The same pattern fills **the outer gutters — the margin outside the rails —
+below `lg`**, painted as extra background layers on `.page-rails` rather than a
+pseudo-element (the wrapper's `::before`/`::after` are free, but layers keep the
+rails and the hatch in one paint order). The two rail lines stay first in the
+stack so they paint *over* the hatch, exactly as they do over a dead band, and
+`--rail-hatch` / `--rail-hatch-fill` hold the pattern so it cannot drift from
+`[data-dead]`'s. The `lg` ceiling is a composition call: single-column, the
+rails are the whole frame and a filled margin gives the column an edge to sit
+against, but by `lg` the gutter has grown to 5rem and two bands that wide start
+competing with the grid instead of framing it.
+
 ### The blueprint frame
 
-The rails, the section labels, the intersection squares and the dead-space
-hatch are **one system, and it belongs to the two framed pages** — `/` and
-`/about`, the only pages carrying `.page-rails`. Case studies are deliberately
-outside it: they are reading pages, and a drafting frame around 2,000 words of
-prose is decoration fighting the text. That is why the impact grid on a case
-study has internal dividers but no squares — it is not a boundary case, it is a
-different page type.
+The rails, the section labels and the dead-space hatch are **one system, and it
+belongs to the two framed pages** — `/` and `/about`, the only pages carrying
+`.page-rails`. Case studies stay outside *that*: they are reading pages, and a
+drafting frame around 2,000 words of prose is decoration fighting the text.
+
+**The intersection squares are the exception**, and the case study Impact grid
+carries them. They mark crossings, and that grid genuinely has crossings — its
+own top rule, the section's bottom rule, and dividers running between them. The
+distinction that matters is not which page you are on but whether rules actually
+cross: the squares travel with a ruled grid, the rails and hatch do not travel
+off the framed pages. Nothing else on a case study is ruled that way, so this
+stays one band rather than a frame.
+
+That band also runs **edge to edge**. The list is pulled out of the section's
+padding with `-mx-gutter` and given its own `px-[calc(var(--spacing-gutter)-1.5rem)]`,
+which puts the first column's text back on the same rail as the at-a-glance grid
+above while the top rule keeps spanning the full width — padding sits inside the
+border box. The at-a-glance grid above it lost its `border-b` at the same time:
+two horizontals a few lines apart boxed the strip in, and the Impact rule is the
+one with columns crossing it.
 
 Inside the frame, one rule governs the squares: **a grid marks every crossing of
 its own rules, or none of them.** A grid that marks its top rule but not its
@@ -551,11 +575,51 @@ and `Device` are passed via `<Content components={…} />` in
 `src/pages/work/[...slug].astro`, so they need no import; `Gallery`,
 `BeforeAfterSlider` and `VibeCodingDiagram` are imported per file.
 
-Two of them own interactive state and therefore follow the same teardown
+Three of them own interactive state and therefore follow the same teardown
 contract as the motion registry — they bind on `astro:page-load` and unbind on
-`astro:before-swap`. `Gallery`'s document-level `keydown` and
-`BeforeAfterSlider`'s window-level pointer listeners would otherwise accumulate
+`astro:before-swap`. `Gallery`'s document-level `keydown`,
+`BeforeAfterSlider`'s window-level pointer listeners and
+`VibeCodingDiagram`'s interval + IntersectionObserver would otherwise accumulate
 against detached DOM on every client-side navigation.
+
+`VibeCodingDiagram`'s sprint-cycle row advances itself every 4s. **The accent is
+a playhead**: exactly one card holds `data-active`, the script walks it card to
+card, and the row scrolls to follow. That replaced a static `emphasis` flag on
+the first and last cards, which read as "these two matter" rather than as a
+cycle being stepped through. So it advances **per card, not per scroll
+position** — the last few cards all clamp to the same maximum scroll, and the
+row correctly stops moving there while the playhead keeps going.
+
+The first card carries `data-active` from the server, so the row is right before
+the script runs and in reduced motion, where it never moves. Three things keep
+it from being an irritating carousel: it only runs while the row is on screen
+(it sits deep inside 2,000 words, so most visits never reach it), it pauses on
+hover and focus, and a manual scroll moves the playhead to the card the reader
+landed on.
+
+**Hover both paints the active state and takes the playhead.** The paint is CSS
+(`:hover` alongside `[data-active]`, so it lands instantly and still works if the
+script never loads); the script separately seats `index` on the hovered card, so
+the cycle resumes from where the reader was looking instead of snapping back to
+wherever the timer had got to. The row is paused throughout, so nothing scrolls
+under the pointer.
+
+The icon fill crossfades on a pseudo-element rather than switching
+`background-image`, for the same reason the footer email hover does — that
+property cannot be transitioned.
+
+Its cards and the "new way" step cards share `--vcd-fill` and `--vcd-edge`: the
+gradient is `.stat-gradient`'s ramp rather than `.accent-gradient`'s, because
+across a 24px disc the latter never leaves its green and resolves to flat
+colour. **The white glyphs on that fill measure 1.5–1.8:1** — deliberate, at the
+author's direction; `--color-surface` on the same fill is 11.9:1 if it ever
+needs to clear AA.
+
+One trap worth knowing: this component renders inside `.case-body`, whose prose
+rules target bare `ol`/`li`. Those outrank a single class here once Astro's
+scoping attribute is counted on both sides — `.case-body li { padding-left:
+0.35rem }` was silently overriding the step cards' padding. Every layout rule on
+an `li` in that component is written `.vcd`-prefixed for exactly that reason.
 
 Anything that scrolls inside the page needs `data-lenis-prevent`, or Lenis
 swallows the wheel event and scrolls the page instead — this applies to

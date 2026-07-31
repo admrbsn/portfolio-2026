@@ -195,8 +195,14 @@ const textureRows =
       </div>
     </section>
 
-    {/* At a glance ----------------------------------------------------- */}
-    <section class="border-y border-line px-gutter py-14">
+    {/* At a glance -----------------------------------------------------
+
+        `border-t` only. The bottom rule used to close this grid off, but the
+        Impact band opens with a rule of its own a few lines below it, and two
+        horizontals that close together read as a boxed-in strip rather than as
+        two stacked bands. The Impact rule is the one doing the work — it has
+        columns crossing it. */}
+    <section class="border-t border-line px-gutter py-14">
       <dl
         class="grid gap-8 sm:grid-cols-2 lg:grid-cols-4"
         data-anim="reveal-batch"
@@ -243,18 +249,24 @@ const textureRows =
             dividers run down to the section's own bottom border — one
             connected grid rather than three floating blocks.
 
-            `-mx-6` against the cells' `px-6` keeps the first column's text on
-            the same rail as the at-a-glance grid above, so the rules sit
-            between columns without insetting the copy.
+            The rule runs **edge to edge**. `-mx-gutter` pulls the list out of
+            the section's padding to the viewport, and the padding put back on
+            the list itself (`gutter - 1.5rem`, against the cells' `px-6`)
+            returns the first column's text to the same rail as the at-a-glance
+            grid above. Padding sits inside the border box, so the top rule
+            still spans the full width — which is the point: a rule that stops
+            short of the edge reads as a boxed table, and this band is a section
+            boundary. The section's own `border-b` already runs edge to edge, so
+            the two now agree.
           */}
           <dl
-            class="-mx-6 mt-10 grid grid-cols-1 border-t border-line sm:grid-cols-2 lg:grid-cols-3"
+            class="bp-rules -mx-gutter mt-10 grid grid-cols-1 border-t border-line px-[calc(var(--spacing-gutter)-1.5rem)] sm:grid-cols-2 lg:grid-cols-3"
             data-anim="reveal-batch"
           >
             {impact.map((item, i) => (
               <div
                 class:list={[
-                  'px-6 pt-8 pb-10 lg:pb-16',
+                  'relative px-6 pt-8 pb-10 lg:pb-16',
                   // At sm the grid is two-up, so only the second item sits in a
                   // right-hand column. At lg the third joins it. Both rules
                   // persist upward from their own breakpoint.
@@ -262,6 +274,34 @@ const textureRows =
                   i === 2 && 'lg:border-l lg:border-line',
                 ]}
               >
+                {/*
+                  Both ends of this column's divider, marked the way the framed
+                  pages mark theirs — a grid marks every crossing of its own
+                  rules or none of them.
+
+                  Each square is gated on the breakpoint where its rule actually
+                  crosses something. The top square appears with its divider.
+                  The bottom square waits for `lg`: below it the grid wraps to
+                  two rows, so a divider ends in the middle of the band against
+                  nothing, and a square there would mark a crossing that isn't
+                  happening. At `lg` there is one row, its bottom edge is the
+                  section's own rule, and the crossing is real.
+
+                  No squares where the top rule meets the viewport edges — the
+                  rule ends against nothing there.
+                */}
+                {i === 1 && (
+                  <>
+                    <span class="bp-sq bp-sq--t bp-sq--l hidden sm:block" aria-hidden="true" />
+                    <span class="bp-sq bp-sq--b bp-sq--l hidden lg:block" aria-hidden="true" />
+                  </>
+                )}
+                {i === 2 && (
+                  <>
+                    <span class="bp-sq bp-sq--t bp-sq--l hidden lg:block" aria-hidden="true" />
+                    <span class="bp-sq bp-sq--b bp-sq--l hidden lg:block" aria-hidden="true" />
+                  </>
+                )}
                 {/* Numbered like the About page's process list — the index is
                     what separates this band from the at-a-glance grid above,
                     which otherwise shares its label-over-value shape. */}

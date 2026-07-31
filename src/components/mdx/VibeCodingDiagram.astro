@@ -29,7 +29,6 @@ const cycle = [
     desc: 'Define focus area and ownership',
     path: 'M12 7v5l3 2',
     circle: true,
-    emphasis: true,
   },
   {
     title: 'Design & Prototype',
@@ -56,7 +55,6 @@ const cycle = [
     title: 'Ship',
     desc: 'Live product, next sprint',
     path: 'M20 6 9 17l-5-5',
-    emphasis: true,
   },
 ];
 ---
@@ -108,11 +106,20 @@ const cycle = [
     <p class="vcd__cycle-head">One-week sprint cycle</p>
 
     {/* Six cards do not fit any sensible column count on a phone, so the row
-        scrolls rather than reflowing into an unreadable stack. */}
-    <ol class="vcd__cycle-row">
+        scrolls rather than reflowing into an unreadable stack.
+
+        `data-lenis-prevent` is required on anything that scrolls inside the
+        page, or Lenis swallows the wheel event and scrolls the document
+        instead — this row was missing it and could only be dragged.
+
+        The row advances itself; see the script below. */}
+    <ol class="vcd__cycle-row" data-cycle-row data-lenis-prevent>
       {
-        cycle.map((item) => (
-          <li class={`vcd__card${item.emphasis ? ' vcd__card--emphasis' : ''}`}>
+        cycle.map((item, i) => (
+          /* `data-active` is the playhead. Rendered onto the first card so the
+             row reads correctly before the script runs and in reduced motion,
+             where it never moves. */
+          <li class="vcd__card" data-active={i === 0 ? '' : undefined}>
             <span class="vcd__icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 {item.circle && <circle cx="12" cy="12" r="9" />}
@@ -139,13 +146,199 @@ const cycle = [
   </div>
 </div>
 
+<script>
+  /**
+   * Walk the sprint-cycle row through its own steps.
+   *
+   * The row is a horizontal scroller that, on every viewport narrower than its
+   * six cards, shows a partial last card and nothing that says "there is more".
+   * Advancing it on a timer is the affordance: the cut-off card moves, so the
+   * row reads as a cycle rather than as a clipped list.
+   */
+  const STEP_MS = 2200;
+
+  function initCycleRow(row: HTMLElement) {
+    const cards = Array.from(row.children) as HTMLElement[];
+    // Reduced motion gets the row exactly as it is — scrollable, just not on
+    // its own initiative.
+    if (cards.length < 2 || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      return () => {};
+    }
+
+    let index = 0;
+    let timer: ReturnType<typeof setInterval> | null = null;
+    let paused = false;
+
+    /** Nothing to advance through when every card already fits. */
+    const overflows = () => row.scrollWidth > row.clientWidth + 4;
+
+    const maxLeft = () => row.scrollWidth - row.clientWidth;
+
+    /*
+      Where the row has to sit for a given card. Clamped, because the last few
+      cards all resolve to the same maximum scroll — the row stops moving there
+      while the playhead keeps stepping, which is the correct behaviour: those
+      cards are already fully on screen. Recomputed per tick, since a resize
+      changes both the offsets and the clamp.
+    */
+    const offsetFor = (i: number) =>
+      Math.min(Math.max(cards[i].offsetLeft - row.offsetLeft, 0), maxLeft());
+
+    /** The playhead. Exactly one card carries it. */
+    const setActive = (i: number) => {
+      index = i;
+      cards.forEach((card, n) => card.toggleAttribute('data-active', n === i));
+    };
+
+    /*
+      Steps every card, not every scroll position. An earlier version advanced
+      by distinct scroll stops, which skipped the cards that share the end
+      position — with the accent now walking the row, every card has to get its
+      turn whether or not the scroll moves for it.
+    */
+    const advance = () => {
+      if (paused) return;
+      setActive((index + 1) % cards.length);
+      if (overflows()) row.scrollTo({ left: offsetFor(index), behavior: 'smooth' });
+    };
+
+    const start = () => {
+      if (!timer) timer = setInterval(advance, STEP_MS);
+    };
+    const stop = () => {
+      if (timer) clearInterval(timer);
+      timer = null;
+    };
+
+    // Pause while someone is reading or tabbing through it — a row that moves
+    // under the pointer is the whole reason auto-advancing carousels annoy.
+    const pause = () => {
+      paused = true;
+    };
+    const resume = () => {
+      paused = false;
+    };
+
+    /* A manual scroll moves the playhead to the card the reader landed on, so
+       the next tick continues from there rather than jumping back. Skipped
+       while the script is the one scrolling — that would fight the animation
+       frame by frame. */
+    let settle: ReturnType<typeof setTimeout>;
+    const onScroll = () => {
+      clearTimeout(settle);
+      settle = setTimeout(() => {
+        if (!paused) return;
+        const left = row.scrollLeft;
+        let nearest = 0;
+        let best = Infinity;
+        cards.forEach((card, i) => {
+          const d = Math.abs(card.offsetLeft - row.offsetLeft - left);
+          if (d < best) {
+            best = d;
+            nearest = i;
+          }
+        });
+        setActive(nearest);
+      }, 140);
+    };
+
+    /* Hovering a card moves the playhead onto it. The row is paused while the
+       pointer is inside, so nothing scrolls — but the accent follows the
+       reader, and the next tick after they leave carries on from there instead
+       of snapping back to wherever the timer had got to. */
+    const onCardEnter = (event: PointerEvent) => {
+      const card = (event.target as HTMLElement).closest<HTMLElement>('.vcd__card');
+      const i = card ? cards.indexOf(card) : -1;
+      if (i >= 0) setActive(i);
+    };
+
+    row.addEventListener('pointerover', onCardEnter);
+    row.addEventListener('pointerenter', pause);
+    row.addEventListener('pointerleave', resume);
+    row.addEventListener('focusin', pause);
+    row.addEventListener('focusout', resume);
+    row.addEventListener('scroll', onScroll, { passive: true });
+
+    // Only run while the diagram is actually on screen. It sits deep inside a
+    // 2,000-word case study, so on most visits it is never reached.
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) entry.isIntersecting ? start() : stop();
+      },
+      { threshold: 0.35 },
+    );
+    io.observe(row);
+
+    return () => {
+      stop();
+      clearTimeout(settle);
+      io.disconnect();
+      row.removeEventListener('pointerover', onCardEnter);
+      row.removeEventListener('pointerenter', pause);
+      row.removeEventListener('pointerleave', resume);
+      row.removeEventListener('focusin', pause);
+      row.removeEventListener('focusout', resume);
+      row.removeEventListener('scroll', onScroll);
+    };
+  }
+
+  /*
+    Same teardown contract as the motion registry and the other interactive MDX
+    components: an interval and an observer left running against detached DOM
+    would survive every client-side navigation.
+  */
+  let teardowns: (() => void)[] = [];
+
+  document.addEventListener('astro:page-load', () => {
+    teardowns = [...document.querySelectorAll<HTMLElement>('[data-cycle-row]')].map(initCycleRow);
+  });
+
+  document.addEventListener('astro:before-swap', () => {
+    teardowns.forEach((fn) => fn());
+    teardowns = [];
+  });
+</script>
+
 <style>
   .vcd {
     font-family: var(--font-sans);
     color: var(--color-ink-dim);
+
+    /*
+      The accent fill shared by the step numerals and the cycle icons.
+
+      It is `.stat-gradient`'s ramp, not `.accent-gradient`'s, and that is the
+      whole reason it reads as a gradient at all: `.accent-gradient` is built
+      for a headline's width and spends its first half in the green, so across
+      a 24px disc it resolves to flat colour. This one starts warmer and
+      finishes inside the box. Held here so the two never drift apart.
+    */
+    --vcd-fill: linear-gradient(
+      110deg,
+      var(--color-accent) 0%,
+      oklch(0.83 0.15 125) 45%,
+      oklch(0.87 0.15 108) 100%
+    );
+    /* Border strength for anything marked as the new way. 35% sat close enough
+       to `--color-line` that the accent boxes read as the same weight as the
+       old-way ones. */
+    --vcd-edge: color-mix(in oklab, var(--color-accent) 65%, transparent);
   }
 
-  .vcd ol {
+  /*
+    This diagram is rendered inside `.case-body`, which styles bare `ol`/`li`
+    as prose — and those selectors outrank a single class here once Astro's
+    scoping attribute is counted on both sides. `.case-body li { padding-left:
+    0.35rem }` was overriding the step cards' left padding (5.6px reached the
+    element, not the 18px set below), and `margin-block: 0.5rem` was stacking on
+    top of the grid gap.
+
+    So the reset is written `.vcd`-prefixed rather than as bare element
+    selectors: that is what makes it win. Anything added here that sets padding
+    or margin on an `li` needs the same prefix or the prose rules take it back.
+  */
+  .vcd ol,
+  .vcd li {
     list-style: none;
     margin: 0;
     padding: 0;
@@ -185,7 +378,7 @@ const cycle = [
     gap: 0.5rem;
   }
 
-  .vcd__step {
+  .vcd .vcd__step {
     display: grid;
     grid-template-columns: 1.5rem 1fr;
     grid-template-areas:
@@ -193,14 +386,19 @@ const cycle = [
       '. sub';
     gap: 0 0.75rem;
     align-items: baseline;
-    padding: 0.75rem;
+    /* Horizontal padding runs ahead of the vertical: the number sits in a
+       bordered circle, and a disc set as close to the edge as a line of text
+       would be reads as crowding the box. */
+    padding: 0.85rem 1.125rem;
     border-radius: 0.5rem;
     border: 1px solid var(--color-line);
     background: color-mix(in oklab, var(--color-surface-lift) 55%, transparent);
   }
 
-  .vcd__step--new {
-    border-color: color-mix(in oklab, var(--color-accent) 35%, transparent);
+  /* The new column is the argument, so it carries the accent at a strength the
+     old column cannot match. */
+  .vcd .vcd__step--new {
+    border-color: var(--vcd-edge);
   }
 
   .vcd__step-n {
@@ -216,9 +414,15 @@ const cycle = [
     color: var(--color-ink-faint);
   }
 
+  /* Filled rather than outlined. No border: against a fill of its own the
+     accent outline is invisible and only fattens the disc by a pixel. */
   .vcd__step--new .vcd__step-n {
-    color: var(--color-accent);
-    border-color: color-mix(in oklab, var(--color-accent) 40%, transparent);
+    color: #fff;
+    border-color: transparent;
+    background-image: var(--vcd-fill);
+    /* The numerals are 11px on a light fill, so they need the extra weight to
+       hold their shape. */
+    font-weight: 600;
   }
 
   .vcd__step-title {
@@ -282,7 +486,7 @@ const cycle = [
     scrollbar-color: var(--color-line) transparent;
   }
 
-  .vcd__card {
+  .vcd .vcd__card {
     display: grid;
     gap: 0.5rem;
     align-content: start;
@@ -290,13 +494,24 @@ const cycle = [
     border-radius: 0.5rem;
     border: 1px solid var(--color-line);
     background: color-mix(in oklab, var(--color-surface-lift) 55%, transparent);
+    transition: border-color 450ms var(--ease-out-expo);
   }
 
-  .vcd__card--emphasis {
-    border-color: color-mix(in oklab, var(--color-accent) 40%, transparent);
+  /* The accent is a playhead: exactly one card holds it, and the script walks
+     it along as the row scrolls. It is the same edge the new-way steps wear —
+     what changes is that here it means "this beat", not "this card matters".
+
+     Hover paints the same state. The script also seats the playhead on the
+     hovered card, so the two agree and the cycle resumes from there — this rule
+     is what makes the response instant rather than waiting on a pointer event,
+     and what covers the card the pointer is on if the script never loads. */
+  .vcd .vcd__card[data-active],
+  .vcd .vcd__card:hover {
+    border-color: var(--vcd-edge);
   }
 
   .vcd__icon {
+    position: relative;
     display: grid;
     place-items: center;
     width: 1.75rem;
@@ -305,11 +520,41 @@ const cycle = [
     background: var(--color-surface);
     border: 1px solid var(--color-line);
     color: var(--color-ink-faint);
+    transition:
+      color 450ms var(--ease-out-expo),
+      border-color 450ms var(--ease-out-expo);
   }
 
-  .vcd__card--emphasis .vcd__icon {
-    color: var(--color-accent);
-    border-color: color-mix(in oklab, var(--color-accent) 40%, transparent);
+  /*
+    The fill crossfades rather than switching, so the playhead glides instead of
+    popping card to card. `background-image` is not an animatable property — the
+    same constraint the footer's email hover runs into — so the gradient lives
+    on a pseudo-element whose opacity is what actually moves.
+  */
+  .vcd__icon::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    background-image: var(--vcd-fill);
+    opacity: 0;
+    transition: opacity 450ms var(--ease-out-expo);
+  }
+
+  .vcd__card[data-active] .vcd__icon,
+  .vcd__card:hover .vcd__icon {
+    color: #fff;
+    border-color: transparent;
+  }
+
+  .vcd__card[data-active] .vcd__icon::before,
+  .vcd__card:hover .vcd__icon::before {
+    opacity: 1;
+  }
+
+  /* Above the fill, or the crossfade paints over the glyph. */
+  .vcd__icon svg {
+    position: relative;
   }
 
   .vcd__icon svg {

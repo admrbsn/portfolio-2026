@@ -405,6 +405,17 @@
      inside them; full-bleed sections (hero, Dribbble) paint over them. Paired
      with `border-t` between sections to complete the grid. */
   .page-rails {
+    /* The hatch that fills the outer gutters below `lg` (see the media query
+       under this layer). Declared here as tokens so the two halves of the
+       treatment — pattern and fill — cannot drift from the dead-space bands
+       they borrow from. */
+    --rail-hatch: repeating-linear-gradient(
+      45deg,
+      oklch(1 0 0 / 0.045) 0 1px,
+      transparent 1px 9px
+    );
+    --rail-hatch-fill: linear-gradient(oklch(1 0 0 / 0.014), oklch(1 0 0 / 0.014));
+
     background-image:
       linear-gradient(var(--color-line), var(--color-line)),
       linear-gradient(var(--color-line), var(--color-line));
@@ -413,6 +424,52 @@
     background-position:
       left var(--spacing-gutter) top,
       right var(--spacing-gutter) top;
+  }
+}
+
+/* Hatched outer gutters, below `lg`.
+ *
+ * The margin outside the rails is the one part of the frame that was drawn but
+ * never filled. Hatching it says the same thing `[data-dead]` says about a band
+ * under a grid — deliberately empty — and it is the same 45° pattern at the
+ * same alpha, so the page reads as one drafting system rather than two.
+ *
+ * Only below `lg`, and that is a composition call rather than a technical one:
+ * single-column, the rails are the entire frame and a filled margin gives the
+ * column an edge to sit against. From `lg` the gutter grows to 5rem and the
+ * layout puts real content across the full width, where two hatched bands that
+ * wide start competing with the grid instead of framing it.
+ *
+ * Layer order is load-bearing: the two rail lines stay first so they paint over
+ * the hatch, exactly as they do over the dead-space bands, and the frame stays
+ * continuous. The flat fill goes last, underneath its own pattern.
+ *
+ * `.page-rails` is only on `/` and `/about`; case studies sit outside the
+ * blueprint frame entirely and get none of this.
+ */
+@media (max-width: 63.9375rem) {
+  .page-rails {
+    background-image:
+      linear-gradient(var(--color-line), var(--color-line)),
+      linear-gradient(var(--color-line), var(--color-line)),
+      var(--rail-hatch),
+      var(--rail-hatch),
+      var(--rail-hatch-fill),
+      var(--rail-hatch-fill);
+    background-size:
+      1px 100%,
+      1px 100%,
+      var(--spacing-gutter) 100%,
+      var(--spacing-gutter) 100%,
+      var(--spacing-gutter) 100%,
+      var(--spacing-gutter) 100%;
+    background-position:
+      left var(--spacing-gutter) top,
+      right var(--spacing-gutter) top,
+      left top,
+      right top,
+      left top,
+      right top;
   }
 }
 
