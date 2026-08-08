@@ -1,0 +1,64 @@
+---
+/**
+ * Selection chip — a dashed, accent-tinted label with a hollow square handle on
+ * each vertical edge, as if the region below it had been selected in a design
+ * tool. Used as a section eyebrow.
+ *
+ * All of the paint lives in `.bp-chip` in `global.css`, beside `.bp-sq`, because
+ * it is part of the same blueprint vocabulary and the two share the
+ * punch-through-the-line trick. This component exists so the handle pair cannot
+ * be forgotten — a chip without them is just a dashed box.
+ *
+ * The default slot is the label. Anything passed to the `icon` slot renders
+ * before it at 1em; keep it a stroked glyph, not a filled one, or it outweighs
+ * the type it sits beside.
+ *
+ * Decorative-adjacent but *not* `aria-hidden`: the label is real text and often
+ * the only thing naming what follows. Only the handles are hidden.
+ */
+interface Props {
+  /** Extra classes on the chip itself — spacing, alignment. */
+  class?: string;
+  /** Everything else lands on the chip, which is how it takes `data-anim`. */
+  [key: string]: unknown;
+}
+
+const { class: className, ...rest } = Astro.props;
+---
+
+<span class:list={['bp-chip', className]} {...rest}>
+  <span class="bp-sq-handles" aria-hidden="true">
+    <span class="bp-chip__handle bp-chip__handle--l"></span>
+    <span class="bp-chip__handle bp-chip__handle--r"></span>
+  </span>
+  {
+    Astro.slots.has('icon') && (
+      <span class="bp-chip__icon" aria-hidden="true">
+        <slot name="icon" />
+      </span>
+    )
+  }
+  <slot />
+</span>
+
+<style>
+  /* The handles are positioned against the chip, so this wrapper must not
+     establish a containing block of its own — `display: contents` keeps it out
+     of both layout and the positioning chain. */
+  .bp-sq-handles {
+    display: contents;
+  }
+
+  .bp-chip__icon {
+    display: inline-flex;
+    /* Matched to the cap height of the micro type rather than to its em box, so
+       the glyph optically centres against uppercase letterforms. */
+    width: 0.95em;
+    height: 0.95em;
+  }
+
+  .bp-chip__icon :global(svg) {
+    width: 100%;
+    height: 100%;
+  }
+</style>

@@ -1,0 +1,640 @@
+---
+/**
+ * The design system, rendered.
+ *
+ * Everything on this page is read out of `src/styles/global.css` at build time
+ * and measured with the same `src/lib/color.ts` the token check uses — so it
+ * cannot drift from the system it documents. Add a token and it appears here;
+ * break one and the number next to it says so.
+ *
+ * `noindex` and filtered out of the sitemap. It is a working reference, not a
+ * page anyone should land on from search.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import BpChip from '../components/BpChip.astro';
+import { contrast, flatten, isInGamut, parseOklch, toHex } from '../lib/color';
+
+/*
+  `?raw` rather than `readFileSync`: this runs during the production build too,
+  where `import.meta.url` resolves to the bundled chunk and the relative path no
+  longer exists. The raw import is inlined at build time and works in both.
+  It does not inject the stylesheet — global.css is already loaded by the layout.
+*/
+import css from '../styles/global.css?raw';
+
+/** Every custom property declared in the stylesheet, in source order. */
+const props = [...css.matchAll(/(--[a-z0-9-]+)\s*:\s*([^;]+);/gi)].map(([, name, value]) => ({
+  name,
+  value: value.trim(),
+}));
+
+const byPrefix = (prefix: string, exclude: RegExp = /(?!)/) =>
+  props.filter((p) => p.name.startsWith(prefix) && !exclude.test(p.name));
+
+const surface = parseOklch(props.find((p) => p.name === '--color-surface')?.value ?? '');
+
+const colours = byPrefix('--color-').map((token) => {
+  const parsed = parseOklch(token.value);
+  const translucent = parsed?.alpha !== undefined;
+  // A hairline's own hex says nothing useful — what matters is what it becomes
+  // over the page, which is the value you would have to match by hand.
+  const resolved = parsed && translucent && surface ? flatten(parsed, surface) : parsed;
+  return {
+    ...token,
+    parsed,
+    translucent,
+    hex: resolved ? toHex(resolved) : null,
+    inGamut: parsed ? isInGamut(parsed) : true,
+    ratio: resolved && surface && !translucent ? contrast(resolved, surface) : null,
+  };
+});
+
+// `--text-*` keys ending in `--line-height` / `--letter-spacing` are modifiers
+// of the size above them, not sizes of their own.
+const type = byPrefix('--text-', /--(line-height|letter-spacing)$/);
+const spacing = byPrefix('--spacing-');
+const motion = [...byPrefix('--ease-'), ...byPrefix('--dur-')];
+
+const CHIPS = [
+  { label: '65+ index 128', strong: true },
+  { label: 'Female index 105', strong: true },
+  { label: 'Has Kids index 102', strong: false },
+];
+---
+
+<BaseLayout
+  title="Style guide · Adam Robertson"
+  description="Internal design system reference."
+  noindex
+>
+  <main id="main" class="px-shell pb-section pt-40">
+    <header class="max-w-3xl">
+      <p class="text-micro uppercase tracking-[0.14em] text-ink-faint">Internal reference</p>
+      <h1 class="mt-6 font-display text-title font-normal text-ink">Style guide</h1>
+      <p class="mt-6 text-lead text-ink-lead">
+        Read from <code>global.css</code> at build time. If a value here looks wrong, the token is
+        wrong — this page has no opinions of its own.
+      </p>
+      <p class="mt-4 text-body text-ink-dim">
+        Rules and rationale live in <code>docs/design-system/</code>. Run
+        <code>bun run check:tokens</code> to fail on anything below.
+      </p>
+    </header>
+
+    {/* Colour ------------------------------------------------------------ */}
+    <section class="sg-section" aria-labelledby="sg-colour">
+      <h2 id="sg-colour" class="sg-heading">Colour</h2>
+      <p class="sg-note">
+        Contrast is measured against <code>--color-surface</code>. Gamut is checked before the
+        browser clamps: a channel below zero paints a different colour than the one written down.
+      </p>
+
+      <ul class="sg-swatches">
+        {
+          colours.map((colour) => (
+            <li class="sg-swatch">
+              <span class="sg-swatch__chip" style={`background: var(${colour.name})`} />
+              <div class="sg-swatch__meta">
+                <code class="sg-swatch__name">{colour.name}</code>
+                <span class="sg-swatch__value">{colour.value}</span>
+                <span class="sg-swatch__value">
+                  {colour.hex}
+                  {colour.translucent && ' over surface'}
+                  {colour.ratio !== null && <> · {colour.ratio.toFixed(1)}:1</>}
+                  {!colour.inGamut && <strong class="sg-flag"> out of gamut</strong>}
+                </span>
+              </div>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    {/* Type -------------------------------------------------------------- */}
+    <section class="sg-section" aria-labelledby="sg-type">
+      <h2 id="sg-type" class="sg-heading">Type</h2>
+      <p class="sg-note">
+        Google Sans for UI and body, Vidaloka for display. Display sizes are clamps — resize the
+        window to see them move. The one documented exception is the work tile title, which is sans.
+      </p>
+
+      <ul class="sg-type">
+        {
+          type.map((token) => {
+            const display = /display|title|stat/.test(token.name);
+            return (
+              <li class="sg-type__row">
+                <code class="sg-type__name">{token.name}</code>
+                <span class="sg-type__value">{token.value}</span>
+                <p
+                  class="sg-type__sample"
+                  style={`font-size: var(${token.name}); font-family: ${display ? 'var(--font-display)' : 'var(--font-sans)'}`}
+                >
+                  Design leader with technical roots
+                </p>
+              </li>
+            );
+          })
+        }
+      </ul>
+    </section>
+
+    {/* Gradients --------------------------------------------------------- */}
+    <section class="sg-section" aria-labelledby="sg-gradient">
+      <h2 id="sg-gradient" class="sg-heading">Gradient text</h2>
+      <p class="sg-note">
+        Pick by run length. The long ramp needs width to reach the warm end; on a short run it never
+        leaves its green, which is the whole reason the compact ramp exists.
+      </p>
+
+      <div class="sg-gradients">
+        <div>
+          <p class="sg-label">.accent-gradient — long run</p>
+          <p class="accent-gradient font-display text-[clamp(1.5rem,3vw,2.5rem)]">
+            It started with shampoo bottles.
+          </p>
+          <p class="sg-label sg-label--warn">.accent-gradient — short run (reads flat)</p>
+          <p class="accent-gradient font-display text-[clamp(1.5rem,3vw,2.5rem)]">98%</p>
+        </div>
+        <div>
+          <p class="sg-label">.stat-gradient — short run</p>
+          <p class="stat-gradient font-display text-stat">98%</p>
+        </div>
+      </div>
+    </section>
+
+    {/* Blueprint --------------------------------------------------------- */}
+    <section class="sg-section" aria-labelledby="sg-blueprint">
+      <h2 id="sg-blueprint" class="sg-heading">Blueprint frame</h2>
+      <p class="sg-note">
+        A grid marks every crossing of its own rules, or none of them. Below: two internal dividers,
+        squares at both ends of each, and the 45° hatch that says a band is deliberately empty.
+      </p>
+
+      <div class="bp-rules sg-grid">
+        {
+          ['Rules', 'Squares', 'Hatch'].map((label, i) => (
+            <div class="sg-grid__cell">
+              {i > 0 && (
+                <>
+                  <span class="bp-sq bp-sq--t bp-sq--l" aria-hidden="true" />
+                  <span class="bp-sq bp-sq--b bp-sq--l" aria-hidden="true" />
+                </>
+              )}
+              <h3 class="sg-label">{label}</h3>
+              <p class="sg-grid__body">
+                {i === 0 && 'Hairlines at --color-line, never an opaque grey.'}
+                {i === 1 && 'Real elements: a fill to punch through the rule, and a border.'}
+                {i === 2 && 'One --hatch token, shared with the dead-space bands.'}
+              </p>
+            </div>
+          ))
+        }
+        <span class="bp-sq bp-sq--t bp-sq--l" aria-hidden="true" />
+        <span class="bp-sq bp-sq--t bp-sq--r" aria-hidden="true" />
+        <span class="bp-sq bp-sq--b bp-sq--l" aria-hidden="true" />
+        <span class="bp-sq bp-sq--b bp-sq--r" aria-hidden="true" />
+      </div>
+
+      <div class="sg-hatch" aria-hidden="true"></div>
+
+      <p class="sg-note sg-note--spaced">
+        The two surface textures, and they do not mean the same thing. Dots are the paper — full
+        width under <code>.page-rails</code>, saying the surface continues past the page. Hatch (above)
+        says deliberately empty, and only appears where a block stops short of a boundary. The page
+        rails themselves are dashed; every rule drawn inside them stays solid.
+      </p>
+
+      <div class="sg-texture">
+        <div class="sg-texture__dots" aria-hidden="true"></div>
+        <div class="sg-texture__dash" aria-hidden="true"></div>
+      </div>
+
+      <p class="sg-note sg-note--spaced">
+        The selection chip, <code>&lt;BpChip&gt;</code> — a label drawn as if the region under it were
+        selected in a design tool. Two handles on the mid-edges, never four corners.
+      </p>
+
+      <BpChip>
+        <svg slot="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M12 21s7-5.5 7-11a7 7 0 1 0-14 0c0 5.5 7 11 7 11Z"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linejoin="round"></path>
+          <circle cx="12" cy="10" r="2.4" stroke="currentColor" stroke-width="1.6"></circle>
+        </svg>
+        Colorado · Design &amp; frontend
+      </BpChip>
+    </section>
+
+    {/* Radius, spacing, motion ------------------------------------------- */}
+    <section class="sg-section" aria-labelledby="sg-shape">
+      <h2 id="sg-shape" class="sg-heading">Shape, spacing, motion</h2>
+
+      <div class="sg-shape">
+        <div>
+          <p class="sg-label">Radius — one token, 3px</p>
+          <div class="sg-radius">
+            <span class="sg-radius__box">--radius-ui</span>
+            <span class="sg-radius__box sg-radius__box--pill">pill</span>
+            <span class="sg-radius__box sg-radius__box--circle" />
+          </div>
+          <p class="sg-note sg-note--tight">
+            Pills and circles are shapes, not softened rectangles — they opt out deliberately.
+          </p>
+        </div>
+
+        <div>
+          <p class="sg-label">Spacing</p>
+          <ul class="sg-bars">
+            {
+              spacing.map((token) => (
+                <li class="sg-bars__row">
+                  <code class="sg-bars__name">{token.name}</code>
+                  <span class="sg-bars__bar" style={`width: var(${token.name})`} />
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+
+        <div>
+          <p class="sg-label">Motion</p>
+          <ul class="sg-tokens">
+            {
+              motion.map((token) => (
+                <li>
+                  <code>{token.name}</code>
+                  <span>{token.value}</span>
+                </li>
+              ))
+            }
+          </ul>
+          <p class="sg-note sg-note--tight">
+            Shared with GSAP so CSS and JS never disagree. Every effect returns a teardown.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    {/* States ------------------------------------------------------------ */}
+    <section class="sg-section" aria-labelledby="sg-states">
+      <h2 id="sg-states" class="sg-heading">States</h2>
+      <p class="sg-note">Hover and focus each element. Focus ring is the accent at 2px.</p>
+
+      <div class="sg-states">
+        <a href="#sg-states" class="sg-button">Primary action</a>
+        <a href="#sg-states" class="sg-link">An inline link</a>
+        <ul class="sg-chips">
+          {
+            CHIPS.map((chip) => (
+              <li class:list={['sg-chip', chip.strong && 'sg-chip--strong']}>{chip.label}</li>
+            ))
+          }
+        </ul>
+      </div>
+    </section>
+  </main>
+</BaseLayout>
+
+<style>
+  .sg-section {
+    margin-top: var(--spacing-section);
+    border-top: 1px solid var(--color-line);
+    padding-top: 2.5rem;
+  }
+
+  .sg-heading {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-title);
+    font-weight: 400;
+    color: var(--color-ink);
+  }
+
+  .sg-note {
+    max-width: 44rem;
+    margin: 1rem 0 2rem;
+    font-size: var(--text-body);
+    line-height: 1.6;
+    color: var(--color-ink-dim);
+  }
+
+  .sg-note--tight {
+    margin: 0.75rem 0 0;
+    font-size: 0.8125rem;
+  }
+
+  .sg-label {
+    margin: 0 0 0.75rem;
+    font-size: var(--text-micro);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-ink-faint);
+  }
+
+  .sg-label--warn {
+    margin-top: 2rem;
+    color: var(--color-ink-faint);
+  }
+
+  .sg-flag {
+    color: var(--color-accent-warm);
+  }
+
+  /* Colour ------------------------------------------------------------- */
+
+  .sg-swatches {
+    display: grid;
+    gap: 1px;
+    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .sg-swatch {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.85rem 1rem;
+    border: 1px solid var(--color-line);
+  }
+
+  .sg-swatch__chip {
+    width: 2.75rem;
+    height: 2.75rem;
+    flex: none;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-ui);
+  }
+
+  .sg-swatch__meta {
+    display: grid;
+    gap: 0.15rem;
+    min-width: 0;
+  }
+
+  .sg-swatch__name {
+    font-size: 0.8125rem;
+    color: var(--color-ink);
+  }
+
+  .sg-swatch__value {
+    font-size: var(--text-micro);
+    color: var(--color-ink-faint);
+  }
+
+  /* Type --------------------------------------------------------------- */
+
+  .sg-type {
+    display: grid;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .sg-type__row {
+    padding: 1.5rem 0;
+    border-top: 1px solid var(--color-line);
+  }
+
+  .sg-type__name {
+    font-size: 0.8125rem;
+    color: var(--color-ink);
+  }
+
+  .sg-type__value {
+    margin-left: 0.75rem;
+    font-size: var(--text-micro);
+    color: var(--color-ink-faint);
+  }
+
+  .sg-type__sample {
+    margin: 0.6rem 0 0;
+    line-height: 1.1;
+    color: var(--color-ink);
+  }
+
+  /* Gradients ---------------------------------------------------------- */
+
+  .sg-gradients {
+    display: grid;
+    gap: 2.5rem;
+  }
+
+  @media (min-width: 48rem) {
+    .sg-gradients {
+      grid-template-columns: 2fr 1fr;
+    }
+  }
+
+  /* Blueprint ---------------------------------------------------------- */
+
+  .sg-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    border-top: 1px solid var(--color-line);
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  @media (min-width: 48rem) {
+    .sg-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .sg-grid__cell + .sg-grid__cell {
+      border-left: 1px solid var(--color-line);
+    }
+  }
+
+  .sg-grid__cell {
+    position: relative;
+    padding: 1.5rem;
+  }
+
+  .sg-grid__body {
+    margin: 0;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--color-ink-dim);
+  }
+
+  .sg-hatch {
+    height: 5rem;
+    margin-top: -1px;
+    border-bottom: 1px solid var(--color-line);
+    background-color: var(--hatch-fill);
+    background-image: var(--hatch);
+  }
+
+  .sg-texture {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  @media (min-width: 48rem) {
+    .sg-texture {
+      grid-template-columns: 3fr 1fr;
+    }
+  }
+
+  .sg-texture__dots {
+    height: 5rem;
+    border: 1px solid var(--color-line);
+    background-image: var(--dots);
+    background-size: var(--dot-pitch) var(--dot-pitch);
+  }
+
+  /* The rail sample: one dashed vertical, centred, so the dash rhythm can be
+     read against the solid hairlines everywhere else on this page. */
+  .sg-texture__dash {
+    height: 5rem;
+    background-image: var(--rule-dash);
+    background-repeat: no-repeat;
+    background-size: 1px 100%;
+    background-position: center top;
+  }
+
+  .sg-note--spaced {
+    margin-top: 2rem;
+  }
+
+  /* Shape, spacing, motion --------------------------------------------- */
+
+  .sg-shape {
+    display: grid;
+    gap: 2.5rem;
+  }
+
+  @media (min-width: 64rem) {
+    .sg-shape {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  .sg-radius {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .sg-radius__box {
+    display: grid;
+    place-items: center;
+    padding: 0 0.9rem;
+    height: 2.75rem;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-ui);
+    background: var(--color-surface-lift);
+    font-size: var(--text-micro);
+    color: var(--color-ink-dim);
+  }
+
+  .sg-radius__box--pill {
+    border-radius: 999px;
+  }
+
+  .sg-radius__box--circle {
+    width: 2.75rem;
+    padding: 0;
+    border-radius: 50%;
+  }
+
+  .sg-bars,
+  .sg-tokens {
+    display: grid;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .sg-bars__row {
+    display: grid;
+    grid-template-columns: 11rem 1fr;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .sg-bars__name,
+  .sg-tokens code {
+    font-size: var(--text-micro);
+    color: var(--color-ink-dim);
+  }
+
+  .sg-bars__bar {
+    height: 0.5rem;
+    max-width: 100%;
+    background: var(--color-accent);
+    border-radius: var(--radius-ui);
+  }
+
+  .sg-tokens li {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--color-line);
+    font-size: var(--text-micro);
+    color: var(--color-ink-faint);
+  }
+
+  /* States ------------------------------------------------------------- */
+
+  .sg-states {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1.5rem;
+  }
+
+  .sg-button {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    border-radius: 999px;
+    background: #fff;
+    color: var(--color-surface);
+    font-size: var(--text-micro);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    transition: background-color var(--dur-fast) ease;
+  }
+
+  .sg-button:hover {
+    background: var(--color-accent);
+  }
+
+  .sg-link {
+    color: var(--color-accent);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .sg-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .sg-chip {
+    padding: 0.15rem 0.5rem;
+    border: 1px solid var(--color-line);
+    border-radius: 999px;
+    font-size: var(--text-micro);
+    color: var(--color-ink-faint);
+  }
+
+  .sg-chip--strong {
+    border-color: color-mix(in oklab, var(--color-accent) 45%, transparent);
+    color: var(--color-accent);
+  }
+</style>

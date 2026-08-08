@@ -114,13 +114,10 @@ const Tag = comingSoon ? 'div' : 'a';
 </Tag>
 
 <style>
-  /* The same 45° hatch as the page's dead-space bands, at tile scale. */
+  /* The same 45° hatch as the page's dead-space bands — literally the same, via
+     the shared token, so a change to the drafting convention reaches here too. */
   [data-tile-placeholder] {
-    background-color: oklch(1 0 0 / 0.014);
-    background-image: repeating-linear-gradient(
-      45deg,
-      oklch(1 0 0 / 0.045) 0 1px,
-      transparent 1px 10px
-    );
+    background-color: var(--hatch-fill);
+    background-image: var(--hatch);
   }
 </style>

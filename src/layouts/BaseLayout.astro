@@ -5,6 +5,9 @@ import Footer from '../components/Footer.astro';
 import BreakoutCTA from '../components/BreakoutCTA.astro';
 import Cursor from '../components/Cursor.svelte';
 import '../styles/global.css';
+// Resolved from `--color-surface` at build time — browser chrome cannot read a
+// CSS variable, and a literal here drifts the moment the token moves.
+import { surfaceHex } from '../lib/brand';
 
 // Preload the two fonts above the fold. Without this the big Vidaloka display
 // heading paints in the Georgia fallback and reflows when the webfont lands —
@@ -18,9 +21,11 @@ interface Props {
   description: string;
   /** Absolute or site-relative OG image. Falls back to the default card. */
   ogImage?: string;
+  /** Internal reference pages (`/styleguide`) keep themselves out of search. */
+  noindex?: boolean;
 }
 
-const { title, description, ogImage = '/og/default.jpg' } = Astro.props;
+const { title, description, ogImage = '/og/default.jpg', noindex = false } = Astro.props;
 
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const ogUrl = new URL(ogImage, Astro.site);
@@ -30,7 +35,14 @@ const ogUrl = new URL(ogImage, Astro.site);
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    {/* SVG first for anything modern; the ICO is there for legacy requests to
+        the well-known path, and the touch icon for iOS, which ignores both.
+        All four are generated from `public/favicon.svg` by `bun run make:icons`. */}
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="theme-color" content={surfaceHex} />
     <link rel="canonical" href={canonical} />
 
     <link rel="preload" href={vidalokaWoff2} as="font" type="font/woff2" crossorigin />
@@ -38,13 +50,21 @@ const ogUrl = new URL(ogImage, Astro.site);
 
     <title>{title}</title>
     <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
 
     <meta property="og:type" content="website" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={ogUrl} />
+    {/* Dimensions let Slack, iMessage and X reserve the right box before the
+        image lands, rather than reflowing the unfurl. */}
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={title} />
+    <meta property="og:site_name" content="Adam Robertson" />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content={ogUrl} />
 
     <link rel="sitemap" href="/sitemap-index.xml" />
 
@@ -82,6 +102,14 @@ const ogUrl = new URL(ogImage, Astro.site);
         root.setAttribute('data-loading', '');
         setTimeout(function () {
           root.removeAttribute('data-loading');
+          /*
+            The motion module never arrived — a 504 from a stale dev cache, a
+            404'd chunk, an offline second visit. Everything carrying
+            `data-anim` is pre-hidden at `opacity: 0` and only that module ever
+            reveals it, so without this the page comes back from the loader
+            *empty*. `failed` forces the same visibility reduced motion does.
+          */
+          if (!window.__motionReady) root.setAttribute('data-motion', 'failed');
         }, 4000);
       })();
     </script>

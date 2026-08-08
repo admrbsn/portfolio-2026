@@ -10,7 +10,14 @@ export default defineConfig({
   site: 'https://adamrobertson.co',
   output: 'static',
 
-  integrations: [svelte(), mdx(), sitemap()],
+  integrations: [
+    svelte(),
+    mdx(),
+    // `/styleguide` and `/og-card` are internal: a reference page and the
+    // source artwork for the social image. Both carry `noindex`, and neither
+    // belongs in the sitemap.
+    sitemap({ filter: (page) => !/\/(styleguide|og-card)/.test(page) }),
+  ],
 
   // Astro 7 defaults compressHTML to 'jsx', which strips whitespace between
   // inline elements. That breaks display type like `<span>x</span> <em>y</em>`,

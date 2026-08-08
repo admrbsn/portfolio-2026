@@ -13,6 +13,8 @@
  * ones that actually drove each archetype, rather than merely describing it.
  */
 
+import RuleCross from '../RuleCross.astro';
+
 interface Signal {
   label: string;
   strong?: boolean;
@@ -123,11 +125,51 @@ const personas: Persona[] = [
 ];
 ---
 
-<div class="personas my-14" data-anim="reveal">
+{/*
+  Ruled, not boxed. The four archetypes share one grid of rules the way the
+  homepage's Capabilities index does: horizontals running the full width of the
+  viewport, a single vertical between the columns, and a square at every
+  crossing. Four rounded panels read as four separate objects; one ruled grid
+  reads as one dataset cut four ways, which is what these are.
+
+  The horizontal rules are their own grid items rather than cell borders. A cell
+  border stops at the content column, and `margin-inline: calc(50% - 50vw)` only
+  reaches the viewport from an element that is itself centred in it — which a
+  full-width row is and a left-hand cell is not.
+
+  `--tight` rules only exist below `md`, where the grid collapses to one column
+  and every card boundary needs its own rule. At `md` they are `display: none`,
+  which takes them out of grid flow entirely so the 2x2 lays out untouched.
+*/}
+<div class="personas my-12" data-anim="reveal">
   <ul class="personas__grid">
+    <li class="personas__rule" aria-hidden="true"><RuleCross /></li>
     {
-      personas.map((p) => (
-        <li class="persona">
+      personas.map((p, i) => (
+        <>
+          {/* Between the two cards of a stacked row, below `md` only. */}
+          {i % 2 === 1 && (
+            <li class="personas__rule personas__rule--tight" aria-hidden="true">
+              <RuleCross />
+            </li>
+          )}
+
+          <li class:list={['persona', i % 2 === 1 && 'persona--right']}>
+            {/*
+              The divider is the only vertical, so it carries the only
+              crossings: the rule above each right-hand cell, and the closing
+              rule below the last one. Stacked, there is no divider and nothing
+              is marked — same rule the Impact band follows.
+            */}
+            {i % 2 === 1 && (
+              <>
+                <span class="bp-sq bp-sq--t bp-sq--l" aria-hidden="true" />
+                {i === personas.length - 1 && (
+                  <span class="bp-sq bp-sq--b bp-sq--l" aria-hidden="true" />
+                )}
+              </>
+            )}
+
           <div class="persona__head">
             {/* Icon sits inline with the name rather than on its own line —
                 four cards of stacked icons cost a lot of height for nothing. */}
@@ -156,7 +198,16 @@ const personas: Persona[] = [
               ))}
             </ul>
           </div>
-        </li>
+          </li>
+
+          {/* Row rule. After the second of a pair at `md`, after every card
+              below it — same element, the grid just has fewer columns. */}
+          {i % 2 === 1 && (
+            <li class="personas__rule" aria-hidden="true">
+              <RuleCross />
+            </li>
+          )}
+        </>
       ))
     }
   </ul>
@@ -174,18 +225,24 @@ const personas: Persona[] = [
   /*
     List reset, deliberately over-specified.
 
-    `.case-body` styles every `ul`/`li` in the prose column as body copy —
-    `.case-body[data-astro-cid] ul` is (0,2,1), which beats a plain scoped
-    `.personas__grid[data-astro-cid]` at (0,2,0). Left unreset, the grid
-    inherits `padding-left: 1.25rem` (which insets the whole component from the
-    text column) and every card and chip inherits `margin-block: 0.5rem`.
-    Naming the wrapper as well takes these to (0,3,0)+ and settles it.
+    `.case-body` styles prose `ul`/`li` as body copy. Its rules now skip
+    classed lists (`ul:not([class])`), but naming the wrapper here as well is
+    cheap insurance — this component is the one that carries chips inside cells
+    inside a list, and a stray disc anywhere in that stack is very visible.
   */
-  .personas .personas__grid,
   .personas .persona__signals ul {
     list-style: none;
     margin: 0;
     padding: 0;
+  }
+
+  /* Same reset, but this one also carries the pull-out margin below — declaring
+     `margin: 0` for it in the shared rule silently beat that. */
+  .personas .personas__grid {
+    list-style: none;
+    padding: 0;
+    margin-block: 0;
+    margin-inline: calc(-1 * var(--cell-pad));
   }
 
   .personas .persona,
@@ -194,8 +251,12 @@ const personas: Persona[] = [
   }
 
   .personas__grid {
+    /* One padding value for every cell, and the pull-out that keeps the copy on
+       the body column's rail despite it. Both read this. */
+    --cell-pad: 1.5rem;
+    position: relative;
     display: grid;
-    gap: 0.75rem;
+    gap: 0;
   }
 
   @media (min-width: 48rem) {
@@ -204,17 +265,58 @@ const personas: Persona[] = [
     }
   }
 
-  .persona {
-    display: flex;
-    flex-direction: column;
-    border: 1px solid var(--color-line);
-    border-radius: 0.625rem;
-    background: color-mix(in oklab, var(--color-surface-lift) 55%, transparent);
-    overflow: hidden;
+  /*
+    A rule, as a grid item spanning every column. The negative inline margin is
+    the standard full-bleed escape: `50%` resolves against the content column
+    and `50vw` against the viewport, so a centred row reaches both edges. The
+    body carries `overflow-x: clip`, which is what keeps that from producing a
+    horizontal scrollbar.
+  */
+  .personas__rule {
+    position: relative;
+    grid-column: 1 / -1;
+    height: 0;
+    border-top: 1px solid var(--color-line);
+    margin-inline: calc(50% - 50vw);
   }
 
-  .persona__head {
-    padding: 1.125rem;
+  @media (min-width: 48rem) {
+    /* One column becomes two; the per-card rules have nothing left to separate.
+       `display: none` also drops them out of grid flow, so the 2x2 is clean. */
+    .personas__rule--tight {
+      display: none;
+    }
+  }
+
+  /*
+    One padding value on all four sides of every cell, so the gap to a rule is
+    the same wherever you measure it — and the grid is pulled out by exactly
+    that much (`--cell-pad`) so the text still lands on the body column's rail
+    rather than stepping in from it. Cell padding and grid margin are the same
+    token for that reason: change one and the copy drifts off the rail.
+  */
+  .persona {
+    position: relative; /* containing block for this cell's own squares */
+    display: flex;
+    flex-direction: column;
+    padding: var(--cell-pad);
+  }
+
+  @media (min-width: 48rem) {
+    .persona--right {
+      border-left: 1px solid var(--color-line);
+    }
+  }
+
+  /* No divider below `md`, so nothing crosses and nothing is marked. */
+  .persona .bp-sq {
+    display: none;
+  }
+
+  @media (min-width: 48rem) {
+    .persona .bp-sq {
+      display: block;
+    }
   }
 
   .persona__name {
@@ -229,7 +331,7 @@ const personas: Persona[] = [
   }
 
   .persona__archetype {
-    margin: 0.3rem 0 0;
+    margin: 0.25rem 0 0;
     font-size: 0.6875rem;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -237,7 +339,7 @@ const personas: Persona[] = [
   }
 
   .persona__blurb {
-    margin: 0.65rem 0 0;
+    margin: 0.55rem 0 0;
     font-size: 0.8125rem;
     line-height: 1.5;
     color: var(--color-ink-dim);
@@ -245,13 +347,17 @@ const personas: Persona[] = [
 
   /* Traits ---------------------------------------------------------- */
 
+  /*
+    The internal rules are gone with the card that carried them. Sections are
+    separated by space now — with the grid's own rules doing the dividing, a
+    second order of hairline inside each cell read as clutter.
+  */
   .persona__traits {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.7rem 1rem;
-    margin: 0;
-    padding: 0.9rem 1.125rem;
-    border-top: 1px solid var(--color-line);
+    gap: 0.55rem 1rem;
+    margin: 0.9rem 0 0;
+    padding: 0;
   }
 
   .persona__traits dt {
@@ -262,7 +368,7 @@ const personas: Persona[] = [
   }
 
   .persona__traits dd {
-    margin: 0.2rem 0 0;
+    margin: 0.15rem 0 0;
     font-size: 0.8125rem;
     line-height: 1.35;
     color: var(--color-ink);
@@ -271,13 +377,12 @@ const personas: Persona[] = [
   /* Signals ---------------------------------------------------------- */
 
   .persona__signals {
-    margin-top: auto;
-    padding: 0.9rem 1.125rem 1.125rem;
-    border-top: 1px solid var(--color-line);
+    margin-top: 0.9rem;
+    padding: 0;
   }
 
   .persona__signals-label {
-    margin: 0 0 0.6rem;
+    margin: 0 0 0.5rem;
     font-size: 0.625rem;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -287,11 +392,11 @@ const personas: Persona[] = [
   .persona__signals ul {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.3rem;
+    gap: 0.28rem;
   }
 
   .persona__signals li {
-    padding: 0.2rem 0.5rem;
+    padding: 0.15rem 0.45rem;
     border-radius: 999px;
     border: 1px solid var(--color-line);
     font-size: 0.6875rem;
@@ -308,12 +413,11 @@ const personas: Persona[] = [
 
   /* Methodology ------------------------------------------------------ */
 
+  /* Unboxed too — it is a footnote under a ruled grid, and a panel here would
+     reintroduce the shape the grid just got rid of. */
   .personas__method {
-    margin: 0.75rem 0 0;
-    padding: 0.9rem 1.125rem;
-    border: 1px solid var(--color-line);
-    border-radius: 0.625rem;
-    background: color-mix(in oklab, var(--color-surface-lift) 40%, transparent);
+    margin: 0.9rem 0 0;
+    padding: 0;
     font-size: 0.75rem;
     line-height: 1.55;
     color: var(--color-ink-faint);

@@ -230,7 +230,7 @@ const gridlines = [100, 80, 60, 40, 20, 0];
   .funnel__bar {
     position: relative;
     width: 100%;
-    border-radius: 0.25rem 0.25rem 0 0;
+    border-radius: var(--radius-ui) var(--radius-ui) 0 0;
     background: linear-gradient(
       to top,
       color-mix(in oklab, var(--color-accent) 70%, transparent),
@@ -271,7 +271,7 @@ const gridlines = [100, 80, 60, 40, 20, 0];
   .funnel__n {
     flex-shrink: 0;
     padding: 0.05rem 0.3rem;
-    border-radius: 0.2rem;
+    border-radius: var(--radius-ui);
     background: var(--color-surface-lift);
     font-size: 0.625rem;
     color: var(--color-ink-faint);

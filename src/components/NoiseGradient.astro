@@ -193,7 +193,7 @@ const { variant = 'teal', intensity = 'full' } = Astro.props;
   /* Scale the blobs up on small screens so the corner wash still reads when
      text fills the whole frame. Intensity lives in the gradient's alpha now,
      so there's no separate opacity to adjust here. */
-  @media (max-width: 640px) {
+  @media (max-width: 40rem) {
     .blob-a {
       width: 130vw;
       height: 110vw;

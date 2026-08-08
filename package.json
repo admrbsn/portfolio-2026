@@ -11,6 +11,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "check": "astro check",
+    "check:tokens": "bun scripts/check-tokens.ts",
+    "make:icons": "bun scripts/make-icons.ts",
     "astro": "astro",
     "sync:dribbble": "bun scripts/sync-dribbble.ts"
   },

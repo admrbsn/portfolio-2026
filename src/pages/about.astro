@@ -7,6 +7,7 @@ import MomentTribute from '../components/MomentTribute.astro';
 import MomentPetersons from '../components/MomentPetersons.astro';
 import ArrowUpRight from '../components/ArrowUpRight.astro';
 import overlook from '../assets/about/overlook.webp';
+import RuleCross from '../components/RuleCross.astro';
 
 
 /*
@@ -158,7 +159,7 @@ const inPractice = [
         </h1>
 
         <p
-          class="max-w-xl text-[clamp(1rem,1.15vw,1.125rem)] leading-[1.6] text-white/70"
+          class="max-w-xl text-[clamp(1.0625rem,1.35vw,1.3rem)] leading-[1.55] text-ink-lead"
           data-anim="reveal"
         >
           Twenty years in, the most important thing I've learned is that the best design leaders
@@ -176,6 +177,7 @@ const inPractice = [
     aria-labelledby="pov"
     data-blueprint="Point of view"
   >
+    <RuleCross />
     <div class="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[minmax(0,18rem)_1fr] lg:gap-20">
       {/* Matched to the home résumé's sticky intro heading rather than
           `text-title` — this is a column label beside body copy, not a section
@@ -204,7 +206,7 @@ const inPractice = [
           AI has made that more interesting than ever. The question isn't which tools to adopt. It's
           how to help a team evolve its thinking so the tools actually make the work better.
         </p>
-        <p class="text-[clamp(1.125rem,1.5vw,1.375rem)] leading-[1.5] text-ink">
+        <p class="text-[clamp(1.125rem,1.5vw,1.375rem)] leading-[1.5] text-ink-lead">
           When people ask what matters most, I point to two things:
           <span class="accent-gradient font-medium">compassion</span> and
           <span class="accent-gradient font-medium">intent</span>.
@@ -232,6 +234,7 @@ const inPractice = [
     data-blueprint="Operating principles"
     data-dead="bottom"
   >
+    <RuleCross />
     <h2 id="principles" class="font-display text-title font-normal text-ink" data-anim="reveal-heading">
       How I lead
     </h2>
@@ -303,6 +306,7 @@ const inPractice = [
     data-blueprint="Receipts"
     data-dead="bottom"
   >
+    <RuleCross />
     <h2 id="in-practice" class="font-display text-title font-normal text-ink" data-anim="reveal-heading">
       In practice
     </h2>
@@ -353,7 +357,7 @@ const inPractice = [
             {/* Pulled back out to the cell edges so its rule meets the grid's
                 verticals, then re-padded inside — the same break-out pairing
                 the grid itself uses, one token up. */}
-            <p class="-mx-cell mt-8 border-t border-line px-cell pt-6 text-[clamp(1.0625rem,1.25vw,1.1875rem)] leading-[1.55] text-ink">
+            <p class="-mx-cell mt-8 border-t border-line px-cell pt-6 text-[clamp(1.125rem,1.4vw,1.25rem)] leading-[1.5] text-ink-lead">
               {item.outcome}
             </p>
           </article>
@@ -373,6 +377,7 @@ const inPractice = [
     aria-labelledby="process"
     data-blueprint="How the work happens"
   >
+    <RuleCross />
     <h2 id="process" class="font-display text-title font-normal text-ink" data-anim="reveal-heading">
       How I work
     </h2>
@@ -388,7 +393,7 @@ const inPractice = [
         processes that support deeper research, validation, and alignment, always with the goal of
         shipping meaningful work efficiently.
       </p>
-      <p class="text-[clamp(1.125rem,1.5vw,1.375rem)] leading-[1.5] text-ink">
+      <p class="text-[clamp(1.125rem,1.5vw,1.375rem)] leading-[1.5] text-ink-lead">
         And it's not one-size-fits-all.
       </p>
     </div>
@@ -423,6 +428,7 @@ const inPractice = [
     aria-labelledby="experience"
     data-blueprint="The long version"
   >
+    <RuleCross />
     <div class="flex items-end justify-between gap-6">
       <h2 id="experience" class="font-display text-title font-normal text-ink" data-anim="reveal-heading">
         Experience

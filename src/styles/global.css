@@ -49,19 +49,32 @@
   --font-arcade: 'Tiny5', ui-monospace, monospace;
 
   /* Display font tuning. Set for Vidaloka — a high-contrast display serif with
-     a large x-height and sturdy stems; gentle tracking, modest leading. Sizing
-     stays at the reduced scale (max 10.25rem) per feedback. */
-  --text-display: clamp(2.25rem, 8vw, 8.25rem);
+     a large x-height and sturdy stems; gentle tracking, modest leading.
+
+     **The three display steps are one ladder and they move together.** They sit
+     at a ~1.33 ratio (80 / 60 / 48 at 1440) so the homepage hero, a section
+     heading and a stat figure are told apart by step rather than by sheer size.
+     Retune one and the next one up starts competing with it — dropping the
+     display alone once left `--text-title` a single pixel behind the h1 it is
+     supposed to sit under.
+
+     The ladder was cut roughly 30% from where it started (display capped at
+     8.25rem, 8vw). At that size the homepage h1 ran two lines of ~115px and
+     took a third of the viewport before the argument started, and everything
+     under it — stats, lead, the rule at the foot — read as an afterthought
+     attached to a poster. Benchmarked against cloudflare.com, whose h1 measures
+     72px at the same 1440 viewport. */
+  --text-display: clamp(2.125rem, 5.6vw, 5rem);
   --text-display--line-height: 1.04;
   --text-display--letter-spacing: -0.01em;
 
-  --text-title: clamp(2.25rem, 5.5vw, 5rem);
-  --text-title--line-height: 0.95;
-  --text-title--letter-spacing: -0.03em;
+  --text-title: clamp(1.875rem, 4.2vw, 3.75rem);
+  --text-title--line-height: 0.98;
+  --text-title--letter-spacing: -0.025em;
 
   /* Hero stat figures — serif, sized to sit under the display without
      competing with it. */
-  --text-stat: clamp(2.5rem, 4.6vw, 4rem);
+  --text-stat: clamp(2rem, 3.4vw, 3rem);
   --text-stat--line-height: 1;
   --text-stat--letter-spacing: -0.01em;
 
@@ -84,6 +97,13 @@
   /* Used almost exclusively at 12px, where WCAG AA needs 4.5:1. Do not darken
      below L≈0.58. */
   --color-ink-faint: oklch(0.6 0.014 160);
+  /* Lead copy — any paragraph set larger than `--text-body`.
+     Neutral white with alpha rather than a tinted grey: `--color-ink-dim` sits
+     at hue 160 with a little chroma, which is invisible at body size but reads
+     as a faint green cast once the type is big. Before this existed, large
+     paragraphs were split four ways across `text-white/90`, `text-white/70`,
+     `text-ink` and `text-ink-dim`. */
+  --color-ink-lead: oklch(1 0 0 / 0.82);
   --color-surface: oklch(0.16 0.004 240);
   --color-surface-lift: oklch(0.21 0.006 240);
   /* Semi-transparent white rather than an opaque grey: hairlines then read the
@@ -126,7 +146,17 @@
   --dur-base: 600ms;
   --dur-slow: 1100ms;
 
-  /* Layout */
+  /* Layout ---------------------------------------------------------------
+     Breakpoints are Tailwind's defaults and are **not** redeclared here — they
+     are listed for reference, because scoped component CSS has to write them as
+     literals (a custom property cannot be used in a media query):
+
+       sm  40rem   md  48rem   lg  64rem   xl  80rem
+
+     Use one of those four and nothing else; `bun run check:tokens` fails on any
+     other width. Page-level layouts switch at `sm`/`lg`; MDX components switch
+     at `md` because they live inside a 48rem prose column and hit their own
+     limits well before the page does. */
   --spacing-gutter: clamp(1.5rem, 4.6vw, 5rem);
   --spacing-section: clamp(4rem, 10vw, 10rem);
   /* Content inset for the framed (blueprint) pages: the gutter — where the
@@ -141,6 +171,113 @@
      that use it must pair `px-cell` with `-mx-cell` on anything breaking back
      out to the cell edge, exactly as the shell-pad pair works. */
   --spacing-cell: clamp(1.5rem, 3.4vw, 3rem);
+
+  /* Radius ---------------------------------------------------------------
+     There is **one** radius, and this is it. 3px is enough to stop a corner
+     looking like a printing error and not enough to read as soft — which is
+     the point: the site is a drafting frame of hairlines, intersection squares
+     and hatch, and a 12px corner on a work tile sits inside that frame arguing
+     with it.
+
+     **To go fully square, set this to 0.** Everything below inherits it,
+     including the whole Tailwind `rounded-*` scale, so no markup changes.
+
+     Three things deliberately do NOT use it:
+
+     - **Circles and pills** (`rounded-full`, `999px`): the status dot, the
+       cursor, the nav and gallery buttons, the signal chips, the white CTA.
+       Those are shapes, not softened rectangles — a pill next to a 3px corner
+       reads as a decision; a 12px rectangle next to it reads as a leftover.
+     - **Depictions**: `Device`'s phone bezel, the leadership-moment
+       illustrations. A phone has round corners; square them and it stops being
+       a phone.
+     - **Breakout**: its own aesthetic, already documented as deliberately hard.
+  */
+  --radius-ui: 3px;
+
+  /* The Tailwind scale collapses onto the same value, so `rounded-md`,
+     `rounded-lg`, `rounded-xl` and `rounded-2xl` all resolve here rather than
+     to Tailwind's defaults. Kept as separate keys because the utilities are
+     already in the markup — this is what makes the token retroactive. */
+  --radius-sm: var(--radius-ui);
+  --radius-md: var(--radius-ui);
+  --radius-lg: var(--radius-ui);
+  --radius-xl: var(--radius-ui);
+  --radius-2xl: var(--radius-ui);
+  --radius-3xl: var(--radius-ui);
+}
+
+/* ---------------------------------------------------------------------------
+   Shared paint
+
+   Not design tokens — composed values built *from* the tokens, kept here
+   because more than one place paints them and two copies of a gradient drift
+   into two different gradients. Outside `@theme` because none of them should
+   generate a utility.
+--------------------------------------------------------------------------- */
+:root {
+  /* The 45° hatch. One definition for the dead-space bands, the mobile gutters
+     and the work tile placeholder — the same drafting convention, so they must
+     stay identical.
+
+     Alpha is the whole tuning surface. It was 0.045/0.014 and read as nothing
+     on a phone, where the bands are gutter-narrow and the hero wash sits over
+     them; 0.065/0.02 is enough to register as a deliberately hatched margin.
+     Push it much past this and the bands stop being empty space and start
+     competing with the content beside them. */
+  --hatch-line: oklch(1 0 0 / 0.065);
+  --hatch-fill: oklch(1 0 0 / 0.02);
+  --hatch: repeating-linear-gradient(45deg, var(--hatch-line) 0 1px, transparent 1px 9px);
+
+  /* The dot field — the substrate the whole frame is drawn on, the way graph
+     paper is the substrate under a drawing. It reads as "this surface goes on
+     past the edge of the page", which is a different statement from the hatch:
+     the hatch says *deliberately empty*, and it only ever appears inside the
+     frame, in a band that a grid could have filled and didn't. Keep the two
+     jobs separate — dots everywhere, hatch only where a block stops short.
+
+     12px pitch and a 1.5px dot, matched to cloudflare.com's own field. Pitch is
+     the tuning knob, not dot size: below ~10px the field turns into flat noise
+     at typical viewing distance, and above ~16px the individual dots start to
+     read as content. Alpha is deliberately under the hairline's — the frame has
+     to stay louder than the paper it is drawn on. */
+  --dot-ink: oklch(1 0 0 / 0.13);
+  --dot-pitch: 12px;
+  --dots: radial-gradient(circle, var(--dot-ink) 0.75px, transparent 0.75px);
+
+  /* Dashed hairline, for the two page rails and nothing else.
+     Following Cloudflare's split: the *outer* frame is dashed and everything
+     drawn inside it — section rules, grid dividers, card borders — stays solid.
+     That is what stops a page of hairlines reading as one flat mesh. A dashed
+     rail says "this is the margin of the drawing"; a solid rule says "this
+     divides two real things".
+
+     Built as a repeating gradient rather than `border-style: dashed` because
+     the rails are backgrounds on `.page-rails`, not borders — and a gradient is
+     the only way to control the dash rhythm exactly. 5-on/6-off at 1px reads as
+     dashed at arm's length without dissolving into dots. */
+  --rule-dash: repeating-linear-gradient(
+    to bottom,
+    var(--color-line) 0 5px,
+    transparent 5px 11px
+  );
+
+  /* The two accent ramps. `--gradient-accent` is built for a headline's width;
+     `--gradient-accent-compact` starts warmer and finishes inside the box, for
+     runs of four or five glyphs — a stat figure, a number disc, an icon tile.
+     Pick by run length: across 24px the long ramp never leaves its green. */
+  --gradient-accent: linear-gradient(
+    120deg,
+    oklch(0.77 0.14 160),
+    var(--color-accent) 45%,
+    oklch(0.86 0.15 112)
+  );
+  --gradient-accent-compact: linear-gradient(
+    110deg,
+    var(--color-accent) 0%,
+    oklch(0.83 0.15 125) 45%,
+    oklch(0.87 0.15 108) 100%
+  );
 }
 
 /* ---------------------------------------------------------------------------
@@ -202,12 +339,7 @@
      glyph painted whichever element ends up holding the text. */
   .accent-gradient,
   .accent-gradient > * {
-    background-image: linear-gradient(
-      120deg,
-      oklch(0.77 0.14 160),
-      var(--color-accent) 45%,
-      oklch(0.86 0.15 112)
-    );
+    background-image: var(--gradient-accent);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -222,12 +354,7 @@
      reads as flat colour. This starts warmer and finishes the ramp inside the
      box, so the warm end is actually visible at "98%". */
   .stat-gradient {
-    background-image: linear-gradient(
-      110deg,
-      var(--color-accent) 0%,
-      oklch(0.83 0.15 125) 45%,
-      oklch(0.87 0.15 108) 100%
-    );
+    background-image: var(--gradient-accent-compact);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -299,6 +426,12 @@
   [data-blueprint]::before {
     content: attr(data-blueprint);
     position: absolute;
+    /* Distance below the rule the label belongs to. Sections measure from their
+       own top rule, so the default is all they need. A hero starts at y=0
+       *behind* the fixed nav, and its rule is the nav's — so it passes
+       `calc(var(--nav-h) + 0.85rem)` and lands the same 0.85rem below its rule
+       as every other label. A literal there (it was `6rem`) puts the hero label
+       27px below the nav rule against everyone else's 13px. */
     top: var(--bp-top, 0.85rem);
     left: var(--spacing-gutter);
     margin-left: 0.6rem;
@@ -344,12 +477,8 @@
     pointer-events: none;
     /* Alpha over the surface rather than an opaque grey, the same way
        `--color-line` is built: it then reads identically wherever it lands. */
-    background-color: oklch(1 0 0 / 0.014);
-    background-image: repeating-linear-gradient(
-      45deg,
-      oklch(1 0 0 / 0.045) 0 1px,
-      transparent 1px 9px
-    );
+    background-color: var(--hatch-fill);
+    background-image: var(--hatch);
   }
 
   [data-dead='bottom']::after {
@@ -380,96 +509,134 @@
 
   .bp-sq {
     position: absolute;
-    width: var(--sq);
-    height: var(--sq);
+    /* `.bp-rules` sets `--sq` for grids that opt into the whole vocabulary;
+       the fallback covers hosts that only need the squares. */
+    width: var(--sq, 7px);
+    height: var(--sq, 7px);
     background: var(--color-surface);
     border: 1px solid var(--color-line);
     pointer-events: none;
   }
 
   .bp-sq--t {
-    top: calc(var(--sq) / -2 - 1px);
+    top: calc(var(--sq, 7px) / -2 - 1px);
   }
   .bp-sq--b {
-    bottom: calc(var(--sq) / -2 - 1px);
+    bottom: calc(var(--sq, 7px) / -2 - 1px);
   }
   .bp-sq--l {
-    left: calc(var(--sq) / -2);
+    left: calc(var(--sq, 7px) / -2);
   }
   .bp-sq--r {
-    right: calc(var(--sq) / -2);
+    right: calc(var(--sq, 7px) / -2);
   }
 
-  /* Blueprint frame: two faint vertical rails at the gutter, drawn as
-     backgrounds so they sit behind all content. Contained sections sit flush
-     inside them; full-bleed sections (hero, Dribbble) paint over them. Paired
-     with `border-t` between sections to complete the grid. */
-  .page-rails {
-    /* The hatch that fills the outer gutters below `lg` (see the media query
-       under this layer). Declared here as tokens so the two halves of the
-       treatment — pattern and fill — cannot drift from the dead-space bands
-       they borrow from. */
-    --rail-hatch: repeating-linear-gradient(
-      45deg,
-      oklch(1 0 0 / 0.045) 0 1px,
-      transparent 1px 9px
-    );
-    --rail-hatch-fill: linear-gradient(oklch(1 0 0 / 0.014), oklch(1 0 0 / 0.014));
-
-    background-image:
-      linear-gradient(var(--color-line), var(--color-line)),
-      linear-gradient(var(--color-line), var(--color-line));
-    background-repeat: no-repeat;
-    background-size: 1px 100%;
-    background-position:
-      left var(--spacing-gutter) top,
-      right var(--spacing-gutter) top;
+  /*
+    Rail variants. `--l`/`--r` mark a crossing at the *host's own* edge, which
+    works when that edge is the rule. A full-width section's rule crosses the
+    page rails instead, and those sit `--spacing-gutter` in from the viewport —
+    so these offset to the rail rather than to the box.
+  */
+  .bp-sq--rail-l {
+    left: calc(var(--spacing-gutter) - var(--sq, 7px) / 2);
   }
-}
+  .bp-sq--rail-r {
+    right: calc(var(--spacing-gutter) - var(--sq, 7px) / 2);
+  }
 
-/* Hatched outer gutters, below `lg`.
- *
- * The margin outside the rails is the one part of the frame that was drawn but
- * never filled. Hatching it says the same thing `[data-dead]` says about a band
- * under a grid — deliberately empty — and it is the same 45° pattern at the
- * same alpha, so the page reads as one drafting system rather than two.
- *
- * Only below `lg`, and that is a composition call rather than a technical one:
- * single-column, the rails are the entire frame and a filled margin gives the
- * column an edge to sit against. From `lg` the gutter grows to 5rem and the
- * layout puts real content across the full width, where two hatched bands that
- * wide start competing with the grid instead of framing it.
- *
- * Layer order is load-bearing: the two rail lines stay first so they paint over
- * the hatch, exactly as they do over the dead-space bands, and the frame stays
- * continuous. The flat fill goes last, underneath its own pattern.
- *
- * `.page-rails` is only on `/` and `/about`; case studies sit outside the
- * blueprint frame entirely and get none of this.
- */
-@media (max-width: 63.9375rem) {
+  /* Selection chip — a label drawn as if something on the page had been
+     selected in a design tool: dashed outline, faint accent fill, and a hollow
+     square handle centred on each vertical edge. Lifted from Cloudflare's
+     product eyebrows, and it earns its place here for the same reason it does
+     there: it names the region *and* it is the one piece of chrome that says
+     out loud that this page was drawn rather than laid out.
+
+     **Two handles, not four, and never eight.** The mid-edge pair is the
+     lightest mark that still reads as a selection; add the corners and it stops
+     being a caption and starts being a screenshot of Figma. Handles are
+     `position: absolute` on the chip's own edges, so the chip must stay
+     `relative` and must never be given `overflow: hidden`.
+
+     Accent-tinted rather than `--color-line`, because it sits above the h1 in a
+     hero whose only other colour is the wash. At `--color-line` alpha it
+     disappeared into the noise gradient entirely. */
+  .bp-chip {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.85rem;
+    border: 1px dashed color-mix(in oklab, var(--color-accent) 45%, transparent);
+    border-radius: var(--radius-ui);
+    background-color: color-mix(in oklab, var(--color-accent) 7%, transparent);
+    color: var(--color-accent);
+    font-size: var(--text-micro);
+    line-height: 1;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+
+  .bp-chip__handle {
+    position: absolute;
+    top: 50%;
+    width: 7px;
+    height: 7px;
+    /* Unfilled, unlike `.bp-sq`. That square punches a hole in the rule it sits
+       on, which needs an opaque fill — but it always sits on the flat page
+       surface. This one rides a hero whose wash is a moving colour, and a
+       `--color-surface` fill there stopped reading as a hole and started
+       reading as a solid black chip stuck to the outline. Left open, it reads
+       as a handle over any backdrop. */
+    background: transparent;
+    border: 1px solid color-mix(in oklab, var(--color-accent) 55%, transparent);
+    transform: translateY(-50%);
+    pointer-events: none;
+  }
+
+  .bp-chip__handle--l {
+    left: -4px;
+  }
+
+  .bp-chip__handle--r {
+    right: -4px;
+  }
+
+  /* Blueprint frame: two dashed vertical rails at the gutter over a full-bleed
+     dot field, all drawn as backgrounds so they sit behind every bit of
+     content. Contained sections sit flush inside the rails; full-bleed sections
+     (hero, Dribbble) paint over them. Paired with `border-t` between sections
+     to complete the grid.
+
+     **Layer order is the whole rule here.** The rails come first so they paint
+     over the dots, the same way they paint over a `[data-dead]` hatch — the
+     frame has to stay continuous wherever it crosses its own paper. Put the dot
+     layer first and the rails read as a dotted line rather than a dashed one.
+
+     The dot field is deliberately full width rather than confined to the outer
+     gutters. Squeezed into the margin it reads as a decorative border; running
+     under everything it reads as the sheet the page is drawn on, and it is what
+     gives the darker sections (Story, Selected work) any texture at all. It
+     costs nothing to tile and nothing above it is transparent enough for it to
+     interfere — the hero wash and every card cover it completely.
+
+     What this replaced: 45° hatch filling the outer gutters below `lg`, and
+     nothing at all above it. Two textures with the same job, split by a
+     breakpoint, and neither of them present at desktop where the gutter is
+     widest and emptiest. */
   .page-rails {
     background-image:
-      linear-gradient(var(--color-line), var(--color-line)),
-      linear-gradient(var(--color-line), var(--color-line)),
-      var(--rail-hatch),
-      var(--rail-hatch),
-      var(--rail-hatch-fill),
-      var(--rail-hatch-fill);
+      var(--rule-dash),
+      var(--rule-dash),
+      var(--dots);
+    background-repeat: no-repeat, no-repeat, repeat;
     background-size:
       1px 100%,
       1px 100%,
-      var(--spacing-gutter) 100%,
-      var(--spacing-gutter) 100%,
-      var(--spacing-gutter) 100%,
-      var(--spacing-gutter) 100%;
+      var(--dot-pitch) var(--dot-pitch);
     background-position:
       left var(--spacing-gutter) top,
       right var(--spacing-gutter) top,
-      left top,
-      right top,
-      left top,
-      right top;
+      left top;
   }
 }
 
@@ -506,16 +673,26 @@
   }
 }
 
+/*
+  `reduced` is the deliberate case; `failed` is the accidental one — the motion
+  module never loaded, so nothing will ever reveal the content it pre-hid. Both
+  want exactly the same outcome: everything visible, nothing animating.
+*/
 html[data-motion='reduced'] [data-anim='reveal'],
 html[data-motion='reduced'] [data-anim='reveal-batch'] > *,
 html[data-motion='reduced'] [data-anim='reveal-heading'],
-html[data-motion='reduced'] [data-anim='story-line'] {
+html[data-motion='reduced'] [data-anim='story-line'],
+html[data-motion='failed'] [data-anim='reveal'],
+html[data-motion='failed'] [data-anim='reveal-batch'] > *,
+html[data-motion='failed'] [data-anim='reveal-heading'],
+html[data-motion='failed'] [data-anim='story-line'] {
   opacity: 1 !important;
   transform: none !important;
   will-change: auto;
 }
 
-html[data-motion='reduced'] [data-anim='story-line'] {
+html[data-motion='reduced'] [data-anim='story-line'],
+html[data-motion='failed'] [data-anim='story-line'] {
   text-shadow: none;
 }
 

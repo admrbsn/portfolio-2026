@@ -1,0 +1,23 @@
+---
+/**
+ * Squares where a section's top rule crosses the page rails.
+ *
+ * The blueprint doctrine — *a grid marks every crossing of its own rules, or
+ * none of them* — applied at page scale rather than inside a single grid. Every
+ * section boundary on a framed page crosses both rails, so every one of them
+ * gets a pair.
+ *
+ * Drop it as the first child of any section that carries `border-t border-line`
+ * inside `.page-rails`. **The host must be `relative`** — without it the squares
+ * resolve against the nearest positioned ancestor and land somewhere else
+ * entirely, which is silent and looks like a spacing bug.
+ *
+ * Not a pseudo-element: `[data-blueprint]` already owns `::before` on these
+ * sections and `[data-dead]` owns `::after`, and a square needs both a surface
+ * fill (to punch through the rule) and its own border, which one pseudo-element
+ * cannot carry anyway.
+ */
+---
+
+<span class="bp-sq bp-sq--t bp-sq--rail-l" aria-hidden="true"></span>
+<span class="bp-sq bp-sq--t bp-sq--rail-r" aria-hidden="true"></span>

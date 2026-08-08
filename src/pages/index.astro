@@ -16,6 +16,8 @@ import NoiseGradient from '../components/NoiseGradient.astro';
 import Leadership from '../components/Leadership.astro';
 import Experience from '../components/Experience.astro';
 import Dribbble from '../components/Dribbble.astro';
+import RuleCross from '../components/RuleCross.astro';
+import BpChip from '../components/BpChip.astro';
 
 // Metrics come straight from the generated bundle.ts. createBundle assembles the
 // runtime bundle from these parts, which is the supported path when the prebuilt
@@ -174,10 +176,17 @@ const story = [
       the nav band makes the two together fill one viewport and lands that rule on
       screen. `--nav-h` is measured and published by `nav.ts`; the fallback is the
       bar's height at rest, for the pre-JS frame and reduced-motion visits. */}
+  {/* The 42rem ceiling on top of that is what stops the hero *growing* with the
+      display. Height came from the viewport alone, so on a 16:10 desktop the
+      block sat in ~830px with the type occupying 300 of it and `my-auto`
+      distributing the rest as two bands of empty wash — the hero read as
+      under-filled at exactly the sizes it was meant to look best at. Capped, the
+      composition holds its proportions and the next section's rule breaks the
+      fold, which is also the more honest signal that the page continues. */}
   <section
-    class="relative flex min-h-[calc(100svh-var(--nav-h,4.3125rem))] flex-col overflow-hidden px-shell pb-[10vh] pt-32"
+    class="relative flex min-h-[min(42rem,calc(100svh-var(--nav-h,4.3125rem)))] flex-col overflow-hidden px-shell pb-[8vh] pt-32"
     data-blueprint="The Hook"
-    style="--bp-top: 6rem"
+    style="--bp-top: calc(var(--nav-h, 4.3125rem) + 0.85rem)"
   >
     {/* Defaults to the teal brand wash; variant="violet" restores the old one. */}
     <NoiseGradient />
@@ -186,13 +195,31 @@ const story = [
         the overflow-safety that justify-center would lose. `relative z-10`
         keeps it above the decorative backdrop. */}
     <div class="relative z-10 my-auto" data-anim="hero-fade">
+      {/* The eyebrow is what lets the h1 come down a step without the hero
+          going top-light: it gives the block something to start on, so the
+          headline is the second mark on the page rather than the first and only
+          one. It also carries the two facts the h1 cannot (where, and the
+          design/engineering split) without spending a line of display type on
+          them. */}
+      <BpChip class="mb-8" data-anim="reveal">
+        <svg slot="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path
+            d="M12 21s7-5.5 7-11a7 7 0 1 0-14 0c0 5.5 7 11 7 11Z"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linejoin="round"></path>
+          <circle cx="12" cy="10" r="2.4" stroke="currentColor" stroke-width="1.6"></circle>
+        </svg>
+        Colorado · Design &amp; frontend
+      </BpChip>
+
       <h1 class="font-display text-display font-normal text-ink" data-anim="reveal-heading">
         Product Design Leader With Technical Roots<span class="accent-gradient">.</span>
       </h1>
 
       {/* Stats left, positioning statement right — the reference splits these
           across the base of the hero rather than stacking them. */}
-      <div class="mt-14 grid gap-10 lg:grid-cols-2 lg:gap-16">
+      <div class="mt-12 grid gap-10 lg:grid-cols-2 lg:gap-16">
         <dl class="flex gap-12 sm:gap-16" data-anim="reveal">
           {
             stats.map((stat) => (
@@ -242,7 +269,7 @@ const story = [
         </dl>
 
         <p
-          class="max-w-xl text-[clamp(1.0625rem,1.35vw,1.3rem)] leading-[1.55] text-white/90 lg:justify-self-end"
+          class="max-w-xl text-[clamp(1.0625rem,1.35vw,1.3rem)] leading-[1.55] text-ink-lead lg:justify-self-end"
           data-anim="reveal"
         >
           I'm a Colorado-based product designer and developer with technical roots and grit. I work
@@ -263,6 +290,7 @@ const story = [
     aria-label="How I found design"
     data-blueprint="Story Quest"
   >
+    <RuleCross />
     <div class="mx-auto flex max-w-2xl flex-col items-center gap-[24vh] text-center">
       {
         story.map((line) => (
@@ -306,6 +334,7 @@ const story = [
     aria-labelledby="capabilities"
     data-blueprint="My toolbelt"
   >
+    <RuleCross />
     <h2
       id="capabilities"
       class="font-display text-title font-normal text-ink"
@@ -371,6 +400,7 @@ const story = [
     class="relative scroll-mt-28 border-t border-line px-shell py-section"
     data-blueprint="Greatest Hits"
   >
+    <RuleCross />
     <h2 class="font-display text-title font-normal text-ink" data-anim="reveal-heading">Selected work</h2>
 
     <div
@@ -386,17 +416,20 @@ const story = [
   </section>
 
   {/* Leadership ------------------------------------------------------- */}
-  <div class="border-t border-line">
+  <div class="relative border-t border-line">
+    <RuleCross />
     <Leadership />
   </div>
 
   {/* Experience / résumé ---------------------------------------------- */}
-  <div class="border-t border-line">
+  <div class="relative border-t border-line">
+    <RuleCross />
     <Experience />
   </div>
 
   {/* Dribbble grid ---------------------------------------------------- */}
-  <div class="border-t border-line">
+  <div class="relative border-t border-line">
+    <RuleCross />
     <Dribbble />
   </div>
   </div>

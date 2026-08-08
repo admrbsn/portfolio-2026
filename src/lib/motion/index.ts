@@ -47,6 +47,9 @@ let started = false;
  */
 function revealPage() {
   document.documentElement.removeAttribute('data-loading');
+  /* Tells the inline failsafe in BaseLayout that this module did arrive, so it
+     does not force-reveal content that is about to animate in properly. */
+  (window as unknown as Record<string, unknown>).__motionReady = true;
 }
 
 /**

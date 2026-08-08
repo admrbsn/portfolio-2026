@@ -305,20 +305,11 @@ const cycle = [
     color: var(--color-ink-dim);
 
     /*
-      The accent fill shared by the step numerals and the cycle icons.
-
-      It is `.stat-gradient`'s ramp, not `.accent-gradient`'s, and that is the
-      whole reason it reads as a gradient at all: `.accent-gradient` is built
-      for a headline's width and spends its first half in the green, so across
-      a 24px disc it resolves to flat colour. This one starts warmer and
-      finishes inside the box. Held here so the two never drift apart.
+      The compact ramp, not the long one: `--gradient-accent` is built for a
+      headline's width and spends its first half in the green, so across a 24px
+      disc it resolves to flat colour.
     */
-    --vcd-fill: linear-gradient(
-      110deg,
-      var(--color-accent) 0%,
-      oklch(0.83 0.15 125) 45%,
-      oklch(0.87 0.15 108) 100%
-    );
+    --vcd-fill: var(--gradient-accent-compact);
     /* Border strength for anything marked as the new way. 35% sat close enough
        to `--color-line` that the accent boxes read as the same weight as the
        old-way ones. */
@@ -390,7 +381,7 @@ const cycle = [
        bordered circle, and a disc set as close to the edge as a line of text
        would be reads as crowding the box. */
     padding: 0.85rem 1.125rem;
-    border-radius: 0.5rem;
+    border-radius: var(--radius-ui);
     border: 1px solid var(--color-line);
     background: color-mix(in oklab, var(--color-surface-lift) 55%, transparent);
   }
@@ -491,7 +482,7 @@ const cycle = [
     gap: 0.5rem;
     align-content: start;
     padding: 0.875rem;
-    border-radius: 0.5rem;
+    border-radius: var(--radius-ui);
     border: 1px solid var(--color-line);
     background: color-mix(in oklab, var(--color-surface-lift) 55%, transparent);
     transition: border-color 450ms var(--ease-out-expo);
@@ -516,7 +507,7 @@ const cycle = [
     place-items: center;
     width: 1.75rem;
     height: 1.75rem;
-    border-radius: 0.375rem;
+    border-radius: var(--radius-ui);
     background: var(--color-surface);
     border: 1px solid var(--color-line);
     color: var(--color-ink-faint);

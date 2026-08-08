@@ -10,7 +10,11 @@ bun run dev       # astro dev — daemonizes; manage with `astro dev stop|status
 bun run build     # static output to dist/
 bun run preview
 bun run check     # astro check (types)
+bun run check:tokens   # design system guard rails — gamut, contrast, stray literals
 ```
+
+`/styleguide` renders the whole system from `global.css` at build time. It is
+`noindex` and kept out of the sitemap.
 
 ## Toolchain constraints
 
@@ -34,346 +38,42 @@ These are load-bearing. Changing them breaks the build in non-obvious ways.
   which strips whitespace between inline elements and silently breaks display
   type like `<span>a</span> <em>b</em>`.
 
-## Styling
+## Design system
 
-Tailwind v4 is CSS-first. **There is no `tailwind.config.js`** — the `@theme`
-block in `src/styles/global.css` is the config. Every token there becomes a
-utility (`--color-ink` → `text-ink`, `--text-display` → `text-display`).
+**The visual language lives in [`docs/design-system/`](docs/design-system/).**
+Four files, one topic each:
 
-**Type pairing**: **Google Sans** for all UI, body copy and the wordmark;
-**Vidaloka** for display (`--text-display`, `--text-title`, `--text-stat`,
-headings). Two families, no third.
+- [`tokens.md`](docs/design-system/tokens.md) — colour, type, spacing, radius,
+  motion tokens, and the rules for changing them
+- [`patterns.md`](docs/design-system/patterns.md) — the blueprint frame, ruled
+  grids, full-bleed rules, gradient text, the prose seam
+- [`components.md`](docs/design-system/components.md) — what exists, what it
+  takes, what breaks it
+- [`motion.md`](docs/design-system/motion.md) — the `data-anim` registry, the
+  teardown contract, reduced motion, the page loader
 
-**One heading is deliberately sans**: the work tile title in `WorkTile.astro`.
-A tile title is a claim read at a glance beside a screenshot, and the serif was
-doing section-heading work in a caption's slot. The switch carried three
-adjustments with it, which is the pattern to follow anywhere else this comes up
-— Google Sans runs wider, so the size ceiling drops (2rem → 1.75rem) to keep
-long titles off an extra line; `font-medium` replaces the weight Vidaloka got
-from its contrast; and the leading opens (1.1 → 1.15), since the serif's long
-descenders were what let it be set that tight. The case study `h1` is still
-`--text-display` in Vidaloka: the tile and the page it links to are the same
-words in different roles, and only the tile is a caption.
+Read those before touching anything visual. The short version, for orientation:
 
-Vidaloka ships a **single weight** — set it at `font-normal`, never
-`font-bold`. Where a heading needs more heft, thicken it with the text-stroke
-helper rather than reaching for a bolder cut that does not exist. Its
-descenders are long, so `--text-display` needs a line-height near 1; tightening
-further crowds the line below.
-
-Google Sans runs a little wider than a neutral grotesque at the same size. After
-any type-size change, check the tight cells first — the at-a-glance grid, the
-persona traits, the funnel step captions — since those wrap before anything
-else does.
-
-`--font-wordmark` resolves to `var(--font-sans)` and is kept as its own token
-deliberately: the brand mark should be changeable without dragging every
-paragraph on the site along with it.
-
-Tiny5 (`--font-arcade`) is Breakout's alone and appears nowhere in the portfolio
-proper — see the Breakout section for why it is nonetheless eagerly loaded. It
-replaced Jersey 20, which ran tall and condensed and needed roughly 1.7x the
-size a blocky pixel face would; Tiny5 is squatter and wider, so anything ported
-from the old face needs its size taken **down** and its tracking loosened.
-
-`--color-ink-faint` is contrast-tuned: it is used almost entirely at 12px, where
-WCAG AA requires 4.5:1. It sits at 4.9:1 on `--color-surface`. Do not darken it
-below `L=0.58`. `--color-status` (availability green, 12.6:1) is kept as its own
-token so the signal can be retuned independently, but it is deliberately in
-`--color-accent`'s family — the dot and the brand mark share a nav, and two
-different greens there read as a mistake.
-
-**Every accent stop must be inside sRGB.** `--color-accent` was
-`oklch(0.84 0.19 168)`, whose red channel resolves to **-0.065** — the browser
-clamps it to zero and paints `#00f0b2`, the most saturated green-cyan the
-display can make, not the colour written down. That is what made the green read
-electric-mint against a hero wash whose own teal tops out at C 0.12. At these
-lightnesses the green-cyan hues fall out of gamut somewhere around C 0.15, so
-the whole accent family is held at **C 0.14-0.15**.
-
-Hue took two passes. Fixing the clipping (H 168 → 174) removed the electric
-edge but still read minty, because **mint is a light blue-green — the fix for it
-is hue, not chroma.** `--color-accent` is now **H 138**, a yellow-green that
-leans toward `<NoiseGradient>`'s khaki highlight (H 100) rather than its teal
-blob (H 178). That direction was chosen by rendering candidates at H 138/150/162
-against the live hero rather than reasoning about it.
-
-`--color-accent-warm` (H 108) is only 30° off the accent as a result. That is
-tight but it is the entire range the gradients have — **don't push the accent
-warmer without moving the warm token too**, or both ramps flatten into one
-colour.
-
-Before changing any of them, check the value converts without a negative
-channel. Chroma that "looks more vibrant" past the gamut edge is not more
-vibrant — it is clipped, and it clips inconsistently across hues, which is
-exactly how a palette drifts out of family.
-
-**There is one accent palette, site-wide.** Case studies used to carry a
-per-entry `accent` hue in frontmatter (Tribute teal, Peterson's green, V3
-amber), overriding `--color-accent` on the article and `--card-accent` on the
-work tile. That is gone: the brand green/yellow is the only accent anywhere, so
-the pages doing the most persuading are the ones actually wearing the brand.
-Don't reintroduce a per-page hue without a reason that survives seeing all five
-studies side by side.
-
-Two gradient text utilities, both green→yellow, both `background-clip: text`
-over real text:
-
-- `.accent-gradient` — long runs (headlines, a highlighted word). Its 120deg
-  ramp needs width to reach the warm end.
-- `.stat-gradient` — stat figures. Same idea, retuned: a stat is four or five
-  glyphs, which lands entirely inside `.accent-gradient`'s green and reads as
-  flat colour, so this one starts warmer and finishes inside the box. Used by
-  `<Stat>` and the case study metrics band.
-
-**To animate one in, stack it — don't transition it.** `background-image` is not
-an animatable property, so a gradient cannot fade in over solid ink. The footer
-email hover (`Footer.astro`) is the pattern: a second copy of the text sits
-absolutely over the first carrying `.accent-gradient`, and only its opacity
-moves. It is a real `<span aria-hidden="true">` rather than a `::after` with
-`content: attr(data-copy)`, because generated content duplicating visible text
-gets announced by some screen readers — the button would hand over the address
-twice. The two copies stay registered because the overlay inherits every metric
-that matters and the host has no padding for `inset: 0` to disagree with.
-
-`[data-dead="top"|"bottom"]` hatches a section's vertical padding — the empty
-band a ruled layout leaves between the end of a grid and the next section
-boundary. It's a drafting convention: the band reads as deliberately empty
-rather than as a gap nobody filled. Painted as `::after` (`[data-blueprint]`
-already owns `::before` on the same sections), inset to `--spacing-gutter` so it
-runs rail to rail, and `--spacing-section` tall so it always fills the padding
-exactly. The rails belong to `.page-rails`' background, so they paint over the
-hatch and the frame stays continuous.
-
-It trails a ruled block and nothing else: the principles and leadership-moment
-grids on `/about`, and the résumé list on the homepage. Hatching a band *above*
-a heading (the `top` variant was tried on "How I work") reads as a lid on the
-section rather than as slack left under a grid, so the effect only earns its
-place after one.
-
-The same pattern fills **the outer gutters — the margin outside the rails —
-below `lg`**, painted as extra background layers on `.page-rails` rather than a
-pseudo-element (the wrapper's `::before`/`::after` are free, but layers keep the
-rails and the hatch in one paint order). The two rail lines stay first in the
-stack so they paint *over* the hatch, exactly as they do over a dead band, and
-`--rail-hatch` / `--rail-hatch-fill` hold the pattern so it cannot drift from
-`[data-dead]`'s. The `lg` ceiling is a composition call: single-column, the
-rails are the whole frame and a filled margin gives the column an edge to sit
-against, but by `lg` the gutter has grown to 5rem and two bands that wide start
-competing with the grid instead of framing it.
-
-### The blueprint frame
-
-The rails, the section labels and the dead-space hatch are **one system, and it
-belongs to the two framed pages** — `/` and `/about`, the only pages carrying
-`.page-rails`. Case studies stay outside *that*: they are reading pages, and a
-drafting frame around 2,000 words of prose is decoration fighting the text.
-
-**The intersection squares are the exception**, and the case study Impact grid
-carries them. They mark crossings, and that grid genuinely has crossings — its
-own top rule, the section's bottom rule, and dividers running between them. The
-distinction that matters is not which page you are on but whether rules actually
-cross: the squares travel with a ruled grid, the rails and hatch do not travel
-off the framed pages. Nothing else on a case study is ruled that way, so this
-stays one band rather than a frame.
-
-That band also runs **edge to edge**. The list is pulled out of the section's
-padding with `-mx-gutter` and given its own `px-[calc(var(--spacing-gutter)-1.5rem)]`,
-which puts the first column's text back on the same rail as the at-a-glance grid
-above while the top rule keeps spanning the full width — padding sits inside the
-border box. The at-a-glance grid above it lost its `border-b` at the same time:
-two horizontals a few lines apart boxed the strip in, and the Impact rule is the
-one with columns crossing it.
-
-Inside the frame, one rule governs the squares: **a grid marks every crossing of
-its own rules, or none of them.** A grid that marks its top rule but not its
-bottom is what makes the system read as arbitrary — that was the state of the
-Capabilities index before it was completed. "Every crossing" means each end of
-every internal divider, plus the four corners where the grid's own rules meet
-the rails. A rule that ends against nothing gets no square, because nothing
-crosses there.
-
-`.bp-rules` + `.bp-sq` draw the squares. Real elements, not pseudo-elements: each needs both a surface fill (to
-punch through the rule it sits on) *and* its own 1px border, and one
-pseudo-element cannot carry two bordered boxes. The host sets `--sq` and the
-positioning context; edge modifiers compose (`bp-sq bp-sq--t bp-sq--l` is a
-top-left corner). Squares that only make sense once a grid has columns are
-hidden with Tailwind on the element (`hidden lg:block`) rather than a breakpoint
-baked into the CSS, because the grids differ per page — the principles grid goes
-multi-column at `lg`, Capabilities at `sm`.
-
-The homepage Capabilities index and `/about` share this vocabulary because they
-are the same component in two places. **`/about` no longer carries a Toolkit
-section** — it duplicated Capabilities almost item for item. The hover treatment
-that lived there (item slides right, goes accent, a rule marker slides into the
-space it vacated) moved to Capabilities as `.cap-item`.
-
-The nav deliberately has **no `mix-blend-mode`**. Difference blending kept a
-monochrome bar legible over any backdrop, but it inverts the green availability
-dot to magenta and the accent dot in the wordmark to blue; the scroll-triggered
-scrim in `Nav.astro` replaces it.
-
-**The bar has no room for three links on a phone.** At a 390px viewport the
-content box is 310px wide (`px-shell` = 40px a side) and the wordmark plus
-`Work / About / Connect` measures ~356px, which is what made the links run past
-the right rail. Shrinking the type was measured and does not close the gap —
-even 13px links still overflow at 360-375px. So each link carries a `mobile`
-flag and **Connect is hidden below `sm`**: the footer already sets the same
-address at display size and ends every page, so nothing is lost. Two links plus
-the mark measure 262px, and the wordmark's mobile size is a clamp
-(`clamp(1rem, 4.6vw, 1.125rem)`) that holds 18px on every current phone and only
-gives way under ~390px, keeping the bar inside the rails down to 320px. Anything
-added to the bar has to be checked against that 310px budget.
-
-`nav.ts` publishes the bar's measured height as **`--nav-h` on the root** (a
-ResizeObserver — the wordmark steps up at `sm` and the webfont can land late).
-The home hero is `min-h-[calc(100svh-var(--nav-h,4.3125rem))]`, not `min-h-svh`:
-the bar is fixed and overlays the hero, so a full-viewport hero puts the rule at
-its foot exactly on the fold, where it takes a scroll to reveal. Subtracting the
-nav band makes the two together fill one viewport and lands that rule on screen.
-Keep the CSS fallback — `initNav` runs in reduced motion, but not with JS off.
-(The case study `.case-back` declares its own `--nav-h` locally; that one wins
-where it is set and the two agree at 69px.)
-
-## Motion system
-
-All animation lives in `src/lib/motion/`. Effects are declared in markup, never
-wired inline:
-
-```astro
-<h1 data-anim="reveal-heading">…</h1>
-<div data-anim="reveal-batch">…</div>
-<section data-anim="pin">…</section>
-```
-
-### Leadership-moment graphics
-
-The two illustrations in the "In practice" section of `/about` —
-`MomentTribute.astro` and `MomentPetersons.astro` — are **built in code, not
-shipped as image exports**. That is what lets them carry `--color-surface` /
-`--color-line` / `--color-accent`, keep their numbers as selectable text, and
-animate. Don't replace either with a flat asset.
-
-Both drive one effect, `data-anim="moment-reveal"`, which is a kit of four
-optional parts, each opted into by an attribute on a descendant:
-
-| attribute | behaviour |
-| --- | --- |
-| `data-type-pop` | scatter-pops in, random stagger — the background chrome |
-| `data-type-rise` | staggered rise — the foreground stack |
-| `data-type-target` | typed out character by character |
-| `data-count` | counted up to its value, honouring `data-decimals` |
-| `data-ring` | `stroke-dashoffset` drawn to a 0-1 fraction |
-
-Tribute uses pop + rise + type; Peterson's uses pop + rise + count + ring. Adding
-a third card means picking from the same set, not writing a new effect.
-
-Two things to keep in mind when editing them:
-
-- **`data-ring` requires `pathLength="1"` on the SVG element**, which normalises
-  dash maths to a 0-1 fraction. It also rules out a visible dasharray — any
-  pattern fine enough to read as dashes turns the draw into marching ants, which
-  is why Peterson's flight path is a solid line where the original art was
-  dashed.
-- **Transform ownership is split by nesting.** GSAP animates `scale`/`y` on the
-  popped element, so any CSS idle drift must live on a *parent* — see
-  `.moment__node` (CSS drift) wrapping `.moment__node-box` (GSAP). Put both on
-  one element and they overwrite each other.
-
-Every size in these components is container-relative but **clamped at both
-ends** (`clamp(0.5rem, 1.1cqw, 0.68rem)`). The cells are `container-type:
-inline-size`, and unfloored `cqw` drops the small labels to ~3px in a
-single-column cell.
-
-### Hash navigation
-
-Lenis owns the scroll position, so **the browser performs no anchor jump of its
-own** on a client-side navigation. `/#work` is handled explicitly in
-`bindMotionLifecycle`, in two passes, and both are needed:
-
-1. `astro:after-swap` — `scrollToHash()`, falling back to `resetScroll()` when
-   there is no hash. Resetting unconditionally (what it used to do) landed the
-   reader at the top of the homepage with `#work` in the URL, looking broken.
-2. `settleHash()` after `initMotion()` resolves — re-resolves the same anchor
-   once the webfont has landed and effects have claimed their space. The first
-   jump is measured against a document that then *grows underneath it*, so a
-   target far down the page lands short by however much the content above
-   expanded. It skips the correction if `window.scrollY` has moved since,
-   because yanking a reader who has started scrolling is worse than being off.
-
-This runs in reduced motion too, where `initMotion` returns early and
-`scrollToHash` falls through to native `scrollIntoView`.
-
-`pin` is currently **registered but unused**. Its only consumer was the case
-study hero, which was a full-viewport cover image that scaled and faded under
-the title; that hero is now text-first (see Content). The effect is kept as
-vocabulary rather than deleted — but it is untested against live markup, so
-check it before relying on it.
-
-The registry in `src/lib/motion/index.ts` maps each `data-anim` value to an
-effect in `effects.ts`. **Every effect must return a teardown function.** That
-contract is what keeps navigation clean — `destroyMotion()` runs all teardowns on
-`astro:before-swap`; without it, ScrollTriggers accumulate against detached DOM
-on every client-side navigation.
-
-To check for a leak after changing an effect, in dev:
-
-```js
-__motion.triggers(); // navigate away and back; must not climb
-```
-
-Two things initialise **once** and deliberately survive navigation, because they
-bind to elements the ClientRouter never swaps:
-
-- Lenis (`lenis.ts`) — bound to `window`, driven by `gsap.ticker` rather than its
-  own RAF loop so it shares a clock with ScrollTrigger. Two loops desync and read
-  as jitter on pinned sections.
-- Nav behaviour (`nav.ts`) — the nav carries `transition:persist`.
-
-### Reduced motion
-
-`initMotion()` checks `prefers-reduced-motion` first and bails before creating
-Lenis or any effect. Because `[data-anim]` elements start at `opacity: 0`, that
-bail **must** be paired with CSS forcing them visible, or the page renders blank.
-Two rules in `global.css` cover this: the `@media` query (fast path, applies
-pre-JS) and `html[data-motion='reduced']` (stamped by `initMotion`, keeping JS
-the single source of truth). Keep both — they exist because the two can
-otherwise disagree and strand content invisible.
-
-### The pre-hide list, and the page loader
-
-**Every effect that animates opacity needs its `data-anim` value in the
-`html:not(.no-js)` pre-hide rule in `global.css`.** `reveal-heading` was missing
-from it, and the symptom is worth recognising: the headline painted at full
-opacity with the rest of the hero already hidden, then `revealHeading` split it
-and animated the words up from `yPercent: 118`, so the text appeared, vanished
-and re-played. Measured at ~1s on a throttled cold load (FCP 528ms, split
-1507ms). An effect whose first act is `gsap.set(el, { opacity: 1 })` is telling
-you it expects to be in that list.
-
-Behind the fix sits the real wait: nothing can reveal until GSAP has parsed and
-`document.fonts.ready` has settled, because SplitText must split against real
-metrics. `#page-loader` (the ripple, styled in `global.css`) covers it. Its
-contract mirrors the `.no-js` one:
-
-- **Hidden unless `html[data-loading]`.** Only the inline script in
-  `BaseLayout.astro` sets that, so a JS-off visit never sees it — and it must
-  stay inline in `<head>`, since it has to take effect on the first paint,
-  before the motion module is even fetched.
-- **Two independent dismissals.** `initMotion` drops the attribute via
-  `revealPage` in the lifecycle's `finally` (a thrown effect still reveals the
-  page), and the inline script's 4s timeout drops it if the module never arrives
-  at all. Both just remove the attribute, so whichever lands first wins.
-- **Skipped in reduced motion and on client-side navigation** (`__loaderShown`
-  guards the ClientRouter re-running the script). Reduced motion has nothing to
-  wait for, and a spinner between two pages of the same site is worse than the
-  cross-fade it replaces.
-
-Measured on the built site over Fast 4G / 4x CPU: ripple from first paint at
-460ms to 856ms, then a composed hero. Unthrottled it is up for ~30ms, which is
-the intent — it only shows when there is genuinely a wait. The trade is that LCP
-now lands with the hero rather than with a flash of unanimated type, so **don't
-add anything to the dismiss condition that waits on below-the-fold work.**
+- Tailwind v4 is CSS-first. **There is no `tailwind.config.js`** — the `@theme`
+  block in `src/styles/global.css` is the config, and every key in it becomes a
+  utility.
+- **Two type families** (Google Sans for UI and body, Vidaloka for display),
+  **one accent palette** site-wide, **one radius** (`--radius-ui`, 3px). Every
+  exception is listed in `tokens.md`; if it is not on that list, it is a mistake.
+- **The three display steps are one ladder** — `--text-display` /
+  `--text-title` / `--text-stat`, 80/60/48 at 1440. Move one and you have to
+  move the others, or the step above stops reading as the step above.
+- **A grid marks every crossing of its own rules, or none of them.**
+- **Dashed is the outer frame, solid is everything inside it**, and the dot
+  field under `.page-rails` is the paper both are drawn on. The 45° hatch means
+  something different — *deliberately empty* — and only appears where a block
+  stops short of a boundary.
+- **Every motion effect returns a teardown.** `destroyMotion()` runs them on
+  `astro:before-swap`; without one, ScrollTriggers accumulate against detached
+  DOM on every client-side navigation.
+- **Components rendered inside `.case-body` must class every element they
+  emit.** That class is the seam keeping prose styles out of them — see the
+  prose seam section in `patterns.md`.
 
 ## Breakout
 
@@ -570,62 +270,11 @@ to read the individual screens inside them. Those decode to tens of megapixels
 — headless screenshot tools time out on the dev server's on-demand `/_image`
 route, which is a dev artifact, not a production one.
 
-MDX components available inside case studies — `Figure`, `PullQuote`, `Stat`
-and `Device` are passed via `<Content components={…} />` in
-`src/pages/work/[...slug].astro`, so they need no import; `Gallery`,
-`BeforeAfterSlider` and `VibeCodingDiagram` are imported per file.
-
-Three of them own interactive state and therefore follow the same teardown
-contract as the motion registry — they bind on `astro:page-load` and unbind on
-`astro:before-swap`. `Gallery`'s document-level `keydown`,
-`BeforeAfterSlider`'s window-level pointer listeners and
-`VibeCodingDiagram`'s interval + IntersectionObserver would otherwise accumulate
-against detached DOM on every client-side navigation.
-
-`VibeCodingDiagram`'s sprint-cycle row advances itself every 4s. **The accent is
-a playhead**: exactly one card holds `data-active`, the script walks it card to
-card, and the row scrolls to follow. That replaced a static `emphasis` flag on
-the first and last cards, which read as "these two matter" rather than as a
-cycle being stepped through. So it advances **per card, not per scroll
-position** — the last few cards all clamp to the same maximum scroll, and the
-row correctly stops moving there while the playhead keeps going.
-
-The first card carries `data-active` from the server, so the row is right before
-the script runs and in reduced motion, where it never moves. Three things keep
-it from being an irritating carousel: it only runs while the row is on screen
-(it sits deep inside 2,000 words, so most visits never reach it), it pauses on
-hover and focus, and a manual scroll moves the playhead to the card the reader
-landed on.
-
-**Hover both paints the active state and takes the playhead.** The paint is CSS
-(`:hover` alongside `[data-active]`, so it lands instantly and still works if the
-script never loads); the script separately seats `index` on the hovered card, so
-the cycle resumes from where the reader was looking instead of snapping back to
-wherever the timer had got to. The row is paused throughout, so nothing scrolls
-under the pointer.
-
-The icon fill crossfades on a pseudo-element rather than switching
-`background-image`, for the same reason the footer email hover does — that
-property cannot be transitioned.
-
-Its cards and the "new way" step cards share `--vcd-fill` and `--vcd-edge`: the
-gradient is `.stat-gradient`'s ramp rather than `.accent-gradient`'s, because
-across a 24px disc the latter never leaves its green and resolves to flat
-colour. **The white glyphs on that fill measure 1.5–1.8:1** — deliberate, at the
-author's direction; `--color-surface` on the same fill is 11.9:1 if it ever
-needs to clear AA.
-
-One trap worth knowing: this component renders inside `.case-body`, whose prose
-rules target bare `ol`/`li`. Those outrank a single class here once Astro's
-scoping attribute is counted on both sides — `.case-body li { padding-left:
-0.35rem }` was silently overriding the step cards' padding. Every layout rule on
-an `li` in that component is written `.vcd`-prefixed for exactly that reason.
-
-Anything that scrolls inside the page needs `data-lenis-prevent`, or Lenis
-swallows the wheel event and scrolls the page instead — this applies to
-`Device`'s screen and `Gallery`'s zoom stage. `Gallery` additionally calls
-`lenis.stop()` while its dialog is open, because a modal `<dialog>` blocks
-interaction behind it but not programmatic scrolling.
+**MDX components live in
+[`docs/design-system/components.md`](docs/design-system/components.md)** — the
+inventory, which need importing, the teardown contract the interactive ones
+follow, and the `data-lenis-prevent` requirement. What belongs here is only what
+is about the *content*:
 
 The process gallery is discovered **by convention, not frontmatter**:
 `src/assets/work/<slug>/…-gallery-<n>.webp`, globbed in `[...slug].astro`.
@@ -660,17 +309,47 @@ content. Restore substance freely; do not restore the passive constructions.
 ### Case study page order
 
 The hero is **text-first on the page surface**, following the same pattern as
-the About page (`pt-40` for the fixed nav, `text-display` h1, `reveal-heading`):
+the About page (`pt-48 md:pt-56` for the fixed nav, `reveal-heading`), at its own
+scale — `clamp(2.125rem, 4.4vw, 3.75rem)`, stepped down from 5rem. A case study
+is a reading page and its title is a claim, not a cover: at the old size the
+title alone filled most of the first screen before a word of the argument:
 
 > eyebrow (`client · year`) → h1 (`title`) → lead (`summary`) → at-a-glance grid
 > → body → metrics → process gallery → next project
 
-**The `cover` never renders on the case study page.** It is still required by
-the schema and still does real work — the bento tile on the work index, and the
-social card — but it is deliberately absent here. It was tried twice: first as
-a full-bleed pinned backdrop behind the title, then as a full-width image below
-the meta. Both put a wall of screenshot between the reader and the first
+The page carries `.page-rails` and every section is on `px-shell`, so its copy
+lines up with the nav's wordmark. The hero and the at-a-glance grid carry
+blueprint labels ("Cover Story", "The Brief"); the dead-space hatch does not
+appear here.
+
+The hero's wash is **`<NoiseGradient intensity="soft" />`, the same component the
+homepage and `/about` use** — not a copy of it. A hand-rolled copy drifted: it
+was two radials of `--color-accent` and `--color-accent-warm`, the brand green
+and yellow, where the shared wash is a khaki highlight over a teal blob on a teal
+base tint. Same family on paper, visibly different in the frame. `soft` is what
+keeps the two from being identical — same palette, smaller blobs held to the
+corner.
+
+**The `cover` renders only as a watermark.** It was tried twice as an image —
+a full-bleed pinned backdrop behind the title, then a full-width band below the
+meta — and both put a wall of screenshot between the reader and the first
 paragraph. Images belong in the body, beside the passage they illustrate.
+
+What it does now is `.hero-cover`: the same art, `grayscale(1)`, blended at
+`mix-blend-mode: luminosity` and 0.16 opacity, masked into the top-right corner
+— the slot the skills texture used to fill, with the same mask pair (a diagonal
+keeping the bottom-left clean for the title and lead, and a vertical trim
+keeping it out from behind the fixed nav).
+
+`luminosity` is the whole trick: hue and saturation come from the hero wash
+underneath and only the image's light and shade survive, so a full-colour
+product screenshot resolves into the page's own green rather than sitting on it
+as a foreign rectangle. Two rules if you retune it: **grayscale first** (or the
+source's colour leaks at the blend edges), and **keep it below the threshold
+where the UI inside the screenshot becomes legible** — the moment individual
+buttons read, it is a picture again rather than a texture. It is `aria-hidden`
+(the same art carries a real `alt` on the work index) and hidden below `md`,
+where the hero is one narrow column and the diagonal has nowhere to go.
 
 Two consequences worth knowing before adding it back:
 
@@ -735,35 +414,13 @@ Design Leadership / Frontend & Systems / Analytics & Growth / Tools &
 Platforms), extended with whatever the case study itself evidences. Matching the
 résumé wording is the point — these are the terms a recruiter searches for.
 
-They render in exactly one place: `.hero-texture`, the list set as long lines of
-display-size uppercase behind the hero type. It is `aria-hidden` and decorative.
+**Nothing renders them.** They used to set the hero's background texture — the
+list repeated as long lines of display-size uppercase, masked into the top-right
+corner behind the title. That is gone: a case study is already a text-heavy page
+and a second field of text behind the first was noise, however low the opacity.
 
-**This means the skills are currently invisible to search and to assistive
-tech** — a deliberate call, made after a visible tag row under the at-a-glance
-grid was tried and cut for clutter. If they ever need to count for SEO, add
-them back as real content rather than un-hiding the texture; at these opacities
-it is unreadable, and a screen reader would announce the whole list seven times.
-
-**Size, weight and opacity are uniform.** An earlier version varied them per row
-from the PRNG and it read as chaos, not texture. The only per-row variable left
-is the horizontal offset — enough to stop the repeated list stacking into
-visible vertical columns. That, and which skill each row starts on, come from a
-seeded PRNG in the page frontmatter, seeded on `entry.id`: a study renders
-identically on every build, but no two studies share an arrangement.
-
-Keep the leading tight (`line-height: 1.05`) and the tracking low (`0.04em`).
-The first version used caption-scale type with caption tracking and a 3rem gap,
-and it read as a floating list rather than a surface.
-
-The texture is confined to the **top-right corner**. Two mask layers,
-intersected (`mask-composite: intersect`, with `-webkit-mask-composite:
-source-in` alongside):
-
-- `linear-gradient(to bottom left, …)` — the diagonal. Opaque at the top-right,
-  gone by the middle on its way to the bottom-left, which is exactly where the
-  headline and lead sit.
-- `linear-gradient(to bottom, …)` — trims the top edge so rows do not run up
-  behind the fixed nav.
-
-Rows are `justify-content: flex-start`, not centred: the mask only reveals the
-upper-right, so rows built downward from the top are the ones that count.
+The field stays in the schema and in the five entries because the taxonomy is
+real and the words are the ones a recruiter searches for. If they should ever
+count for SEO, add them back as **real content** — a visible list, in the
+document — rather than reviving a decorative layer. The texture was
+`aria-hidden` and invisible to search anyway, so it never bought that.

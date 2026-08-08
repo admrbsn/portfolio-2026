@@ -1,0 +1,176 @@
+---
+/**
+ * The social card, as a page.
+ *
+ * Rendered at exactly 1200x630 and screenshotted into `public/og/default.jpg`
+ * (see `docs/design-system/README.md`). Built as a real page rather than drawn
+ * in a graphics tool for one reason: it uses the actual tokens, the actual
+ * fonts and the actual blueprint vocabulary, so the card cannot drift from the
+ * site the way a hand-exported PNG does.
+ *
+ * Standalone document — no `BaseLayout`, because the nav, footer, cursor and
+ * loader have no business in a screenshot.
+ */
+import '../styles/global.css';
+import NoiseGradient from '../components/NoiseGradient.astro';
+import vidalokaWoff2 from '@fontsource/vidaloka/files/vidaloka-latin-400-normal.woff2?url';
+import sansWoff2 from '@fontsource-variable/google-sans/files/google-sans-latin-wght-normal.woff2?url';
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>OG card</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <link rel="preload" href={vidalokaWoff2} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={sansWoff2} as="font" type="font/woff2" crossorigin />
+  </head>
+
+  <body class="og-body">
+    <div class="og-card">
+      <NoiseGradient intensity="soft" />
+
+      {/* The blueprint frame, at card scale: rails, one section rule, and a
+          square at each of the two crossings — the same rule the site follows. */}
+      <div class="og-rails" aria-hidden="true"></div>
+      <div class="og-rule" aria-hidden="true">
+        <span class="bp-sq bp-sq--t bp-sq--rail-l"></span>
+        <span class="bp-sq bp-sq--t bp-sq--rail-r"></span>
+      </div>
+
+      <div class="og-content">
+        <p class="og-label">Portfolio</p>
+
+        <p class="og-wordmark">Adam Robertson<span class="og-dot">.</span></p>
+
+        <h1 class="og-title">
+          Product Design Leader<br />With Technical Roots<span class="accent-gradient">.</span>
+        </h1>
+      </div>
+
+      <div class="og-foot">
+        <p class="og-meta">
+          <span class="og-status" aria-hidden="true"></span>
+          Available for work
+        </p>
+        <p class="og-meta og-meta--right">adamrobertson.co</p>
+      </div>
+    </div>
+  </body>
+</html>
+
+<style is:global>
+  /* The card is the viewport. No scrollbars, no page chrome, no rounding — the
+     screenshot is the artefact. */
+  .og-body {
+    margin: 0;
+    width: 1200px;
+    height: 630px;
+    overflow: hidden;
+    background: var(--color-surface);
+  }
+
+  .og-card {
+    position: relative;
+    width: 1200px;
+    height: 630px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 62px 72px 54px;
+    box-sizing: border-box;
+    font-family: var(--font-sans);
+    overflow: hidden;
+  }
+
+  /* Rails at the card's own gutter, drawn as a background the way `.page-rails`
+     does, so they sit behind everything. */
+  .og-rails {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--color-line), var(--color-line)),
+      linear-gradient(var(--color-line), var(--color-line));
+    background-repeat: no-repeat;
+    background-size: 1px 100%;
+    background-position:
+      left 72px top,
+      right 72px top;
+  }
+
+  .og-rule {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 132px;
+    border-top: 1px solid var(--color-line);
+    /* The squares resolve against this element, and read the rail inset. */
+    --spacing-gutter: 72px;
+  }
+
+  .og-content {
+    position: relative;
+    z-index: 1;
+    margin-top: 118px;
+  }
+
+  .og-label {
+    margin: 0;
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-ink-faint);
+  }
+
+  .og-wordmark {
+    margin: 26px 0 0;
+    font-size: 26px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    color: var(--color-ink);
+  }
+
+  .og-dot {
+    color: var(--color-accent);
+  }
+
+  .og-title {
+    margin: 18px 0 0;
+    font-family: var(--font-display);
+    font-size: 74px;
+    font-weight: 400;
+    line-height: 1.06;
+    letter-spacing: -0.015em;
+    color: var(--color-ink);
+  }
+
+  .og-foot {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .og-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0;
+    font-size: 15px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-ink-faint);
+  }
+
+  .og-meta--right {
+    color: var(--color-ink-dim);
+  }
+
+  .og-status {
+    width: 9px;
+    height: 9px;
+    border-radius: 999px;
+    background: var(--color-status);
+  }
+</style>
