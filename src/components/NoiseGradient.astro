@@ -8,6 +8,7 @@
 // geometry, which is why the blob overrides below key off `:not(.violet)`:
 //   teal     — the brand: khaki highlight falling into emerald (default)
 //   solstice — amber highlight falling into deep ocean blue
+//   fuchsia  — hot pink highlight falling into deep purple
 //   acid     — lime highlight falling into deep violet
 //   neon     — acid with hot pink worked in, low on the right (three hues)
 //   violet   — the original electric-violet/royal-blue wash, kept for comparison
@@ -21,11 +22,11 @@
 // Passing `variant` at a call site changes that one hero only, which is the
 // right way to try a palette before committing to it.
 //
-// All four are built the same way: a light highlight blob, a darker saturated
-// blob under it, and a diagonal tint. Keep the highlight around L 0.75 and the
-// under-blob around L 0.55 — they are semi-transparent layers over a near-black
-// base, so they composite *down*, and a highlight much below that stops
-// registering as a light source.
+// All of them are built the same way: a light highlight blob, a darker
+// saturated blob under it, and a diagonal tint. Keep the highlight around
+// L 0.72–0.85 and the under-blob below it — they are semi-transparent layers
+// over a near-black base, so they composite *down*, and a highlight much below
+// that stops registering as a light source.
 
 // `intensity` scales the same wash down for the shorter interior heroes:
 //   full — the homepage, where the wash is the page's opening statement
@@ -33,7 +34,7 @@
 //          stay the loudest thing in frame
 
 interface Props {
-  variant?: 'violet' | 'teal' | 'solstice' | 'acid' | 'neon';
+  variant?: 'violet' | 'teal' | 'solstice' | 'acid' | 'neon' | 'fuchsia';
   intensity?: 'full' | 'soft';
 }
 
@@ -146,6 +147,33 @@ const { variant = 'teal', intensity = 'full' } = Astro.props;
       transparent 0%,
       oklch(0.25 0.08 300 / 0.38) 60%,
       oklch(0.34 0.11 306 / 0.42) 100%
+    );
+  }
+
+  /* `.teal`'s construction with `.neon`'s two best colours: hot pink highlight
+     falling into deep purple. Two hues, no third blob — the original brand
+     shape, repainted.
+
+     **This one breaks the 60°-span rule and gets away with it on lightness.**
+     Pink and purple are neighbours (352 and 292, so 60° exactly, right on the
+     floor), and every other palette here leans on hue distance alone because its
+     two colours sit within 0.15 L of each other. These sit 0.26 apart — a
+     luminous pink over a genuinely dark purple — and value contrast reads
+     through a 50px blur just as well as hue does. Narrow the L gap and this
+     collapses into one violet immediately; that is the knob to protect, not the
+     hue.
+
+     The pink is capped by sRGB at this chroma: L 0.72 is the ceiling for C 0.20
+     at H 352, and pushing lightness any further clips the red channel. If it
+     needs to be brighter, lower the chroma — do not raise L and leave C. */
+  .fuchsia {
+    --blob-a: oklch(0.72 0.2 352 / 0.6);
+    --blob-b: oklch(0.46 0.17 292 / 0.5);
+    --tint: linear-gradient(
+      115deg,
+      transparent 0%,
+      oklch(0.24 0.09 295 / 0.38) 60%,
+      oklch(0.33 0.13 318 / 0.42) 100%
     );
   }
 
@@ -353,6 +381,18 @@ const { variant = 'teal', intensity = 'full' } = Astro.props;
       transparent 46%,
       oklch(0.26 0.06 250 / 0.26) 78%,
       oklch(0.35 0.09 245 / 0.3) 100%
+    );
+  }
+
+  .soft.fuchsia {
+    --blob-a: oklch(0.72 0.2 352 / 0.44);
+    --blob-b: oklch(0.46 0.17 292 / 0.34);
+    --tint: linear-gradient(
+      115deg,
+      transparent 0%,
+      transparent 46%,
+      oklch(0.24 0.09 295 / 0.26) 78%,
+      oklch(0.33 0.13 318 / 0.3) 100%
     );
   }
 
