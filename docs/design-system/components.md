@@ -20,10 +20,24 @@ as a selection, and adding the corners turns it from a label into a screenshot o
 Figma. The handles are absolutely positioned on the chip's own edges, so the chip
 must stay `relative` and must never be given `overflow: hidden`.
 
-Unlike `.bp-sq`, its handles are **unfilled**. That square punches a hole in the
-rule it sits on and always sits on the flat page surface; this one rides the hero
-wash, where a `--color-surface` fill stopped reading as a hole and started
-reading as a solid black chip stuck to the outline.
+Unlike `.bp-sq`, its handles are **unfilled**, and the dashed outline is *masked
+away* behind each one instead. A dash running through a selection handle reads as
+a rendering bug rather than as a handle, and the two ways of clearing it without a
+mask are both worse: an opaque fill punches the hole the way `.bp-sq` does, but
+`.bp-sq` always sits on the flat page surface and this chip rides the hero wash,
+where `--color-surface` read as a solid black tab stuck to the outline; stopping
+the left and right borders short of centre means drawing the outline as six
+background layers and reconciling the dash phase by hand at four corners.
+
+So the outline lives on `::before` (inset 0, `border-radius: inherit`) with a
+three-layer mask — the whole box, minus a square at each handle. **If you ever
+put a `border` back on `.bp-chip` itself, the mask has nothing to act on.**
+
+**The label is a sentence, not a category**, so the chip has to survive wrapping:
+`line-height: 1.35` with `text-wrap: balance`, and vertical padding set against
+that leading so a single-line chip still measures 34px. At 12px with 0.14em
+tracking a good label runs ~360px — wider than the content column below ~360px
+viewport.
 
 Its paint lives in `global.css` beside `.bp-sq`, since it is the same blueprint
 vocabulary. The component exists so the handle pair cannot be forgotten — a chip
