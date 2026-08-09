@@ -8,6 +8,7 @@
 // geometry, which is why the blob overrides below key off `:not(.violet)`:
 //   teal     — the brand: khaki highlight falling into emerald (default)
 //   solstice — amber highlight falling into deep ocean blue
+//   sunset   — peach → coral → steel blue, off the reference poster (three hues)
 //   fuchsia  — hot pink highlight falling into deep purple
 //   acid     — lime highlight falling into deep violet
 //   neon     — acid with hot pink worked in, low on the right (three hues)
@@ -34,7 +35,7 @@
 //          stay the loudest thing in frame
 
 interface Props {
-  variant?: 'violet' | 'teal' | 'solstice' | 'acid' | 'neon' | 'fuchsia';
+  variant?: 'violet' | 'teal' | 'solstice' | 'acid' | 'neon' | 'fuchsia' | 'sunset';
   intensity?: 'full' | 'soft';
 }
 
@@ -147,6 +148,48 @@ const { variant = 'teal', intensity = 'full' } = Astro.props;
       transparent 0%,
       oklch(0.25 0.08 300 / 0.38) 60%,
       oklch(0.34 0.11 306 / 0.42) 100%
+    );
+  }
+
+  /* The sunset ramp — peach → coral → steel blue, sampled off the reference
+     poster (#F8B195 / #F67280 / #C06C84 / #6C5B7B / #355C7D).
+
+     **Five bands go in as three blobs, and the two that were dropped are the
+     two the blur makes for free.** Rose sits between coral and plum on the
+     poster and appears here wherever coral's falloff crosses blue's; plum is
+     what that crossing resolves to at lower alpha. Forcing all five in would
+     mean two more blobs fighting for the same corner, and the result reads as
+     mud — the ramp is what carries the palette, not the count.
+
+     Sampled values cannot be used directly. Every swatch here is a solid ink on
+     white paper; these are semi-transparent layers over near-black, so they
+     composite *down* — the peach at its sampled `oklch(0.821 0.092 42)` lands as
+     a dull tan. Chroma goes up, and lightness with it, until the composite
+     matches the sample rather than the file. Same working-back the `.teal`
+     comment describes.
+
+     The peach is sRGB-capped: C 0.12 is the ceiling at L 0.80 / H 42 and the
+     orange end of the wheel clips hard just past it. The blue is the opposite
+     problem — sampled at L 0.46 it is a *ground* colour on the poster, and as a
+     blob over black at that lightness it vanishes. L 0.60 / C 0.14 is what makes
+     it register as the wash's body rather than as a slightly-less-black patch.
+
+     **This palette needs more alpha across the board than any other here**, and
+     the first pass proved it: at the ~0.5–0.6 the two-hue variants run, the blue
+     read as grey slate, the coral disappeared under the peach, and the whole
+     frame went muddy. Three mid-lightness colours over near-black have less
+     headroom than two, because each one is also compositing over the last. The
+     values below are up roughly a third, and the coral is up most — it is the
+     band the poster is actually recognised by. */
+  .sunset {
+    --blob-a: oklch(0.8 0.12 42 / 0.68);
+    --blob-b: oklch(0.6 0.14 250 / 0.58);
+    --blob-c: oklch(0.68 0.21 12 / 0.62);
+    --tint: linear-gradient(
+      115deg,
+      transparent 0%,
+      oklch(0.27 0.08 315 / 0.38) 55%,
+      oklch(0.34 0.09 250 / 0.44) 100%
     );
   }
 
@@ -381,6 +424,19 @@ const { variant = 'teal', intensity = 'full' } = Astro.props;
       transparent 46%,
       oklch(0.26 0.06 250 / 0.26) 78%,
       oklch(0.35 0.09 245 / 0.3) 100%
+    );
+  }
+
+  .soft.sunset {
+    --blob-a: oklch(0.8 0.12 42 / 0.48);
+    --blob-b: oklch(0.6 0.14 250 / 0.4);
+    --blob-c: oklch(0.68 0.21 12 / 0.34);
+    --tint: linear-gradient(
+      115deg,
+      transparent 0%,
+      transparent 46%,
+      oklch(0.27 0.08 315 / 0.26) 78%,
+      oklch(0.34 0.09 250 / 0.32) 100%
     );
   }
 
