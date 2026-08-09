@@ -4,9 +4,23 @@
 // content (the parent must be `relative`; keep real content at a higher
 // z-index), so it never affects text contrast.
 //
-// `variant` swaps only the palette (and a little geometry):
-//   teal   — the brand: neon yellow highlight falling into emerald (default)
-//   violet — the previous electric-violet/royal-blue wash, kept for comparison
+// `variant` swaps only the palette — every variant but `violet` shares the same
+// geometry, which is why the blob overrides below key off `:not(.violet)`:
+//   teal   — the brand: khaki highlight falling into emerald (default)
+//   indigo — cool alternate: cyan highlight falling into deep indigo
+//   ember  — warm alternate: amber highlight falling into rust
+//   violet — the original electric-violet/royal-blue wash, kept for comparison
+//
+// **Changing the default here changes every hero on the site at once** — the
+// homepage, /about and all five case studies pull from this same component.
+// Passing `variant` at a call site changes that one hero only, which is the
+// right way to try a palette before committing to it.
+//
+// All four are built the same way: a light highlight blob, a darker saturated
+// blob under it, and a diagonal tint. Keep the highlight around L 0.75 and the
+// under-blob around L 0.55 — they are semi-transparent layers over a near-black
+// base, so they composite *down*, and a highlight much below that stops
+// registering as a light source.
 
 // `intensity` scales the same wash down for the shorter interior heroes:
 //   full — the homepage, where the wash is the page's opening statement
@@ -14,7 +28,7 @@
 //          stay the loudest thing in frame
 
 interface Props {
-  variant?: 'violet' | 'teal';
+  variant?: 'violet' | 'teal' | 'indigo' | 'ember';
   intensity?: 'full' | 'soft';
 }
 
@@ -66,6 +80,37 @@ const { variant = 'teal', intensity = 'full' } = Astro.props;
     );
   }
 
+  /* Cool alternate. Same construction as `.teal`, rotated ~90° round the wheel:
+     a cyan highlight over a deep indigo. Note what it does to the accents that
+     sit *on top* of it — the chip, the h1's period, the nav status dot are all
+     brand green, and against blue they read as a lime pop rather than as more
+     of the same wash. That is the argument for this one over `.ember`, where
+     green and orange sit opposite each other and neither gives way. */
+  .indigo {
+    --blob-a: oklch(0.74 0.12 224 / 0.56);
+    --blob-b: oklch(0.53 0.14 268 / 0.5);
+    --tint: linear-gradient(
+      115deg,
+      transparent 0%,
+      oklch(0.26 0.07 262 / 0.38) 60%,
+      oklch(0.35 0.1 254 / 0.42) 100%
+    );
+  }
+
+  /* Warm alternate: amber highlight falling into rust. The loudest of the four
+     and the one that most needs the bottom-left corner emptied — over a warm
+     wash the ink loses more contrast than it does over a cool one. */
+  .ember {
+    --blob-a: oklch(0.79 0.13 68 / 0.56);
+    --blob-b: oklch(0.56 0.15 32 / 0.48);
+    --tint: linear-gradient(
+      115deg,
+      transparent 0%,
+      oklch(0.27 0.07 42 / 0.38) 60%,
+      oklch(0.36 0.1 36 / 0.42) 100%
+    );
+  }
+
   /* Base tint. Only the teal variant uses it — the violet one sits straight on
      the neutral page surface. */
   .tint {
@@ -107,11 +152,15 @@ const { variant = 'teal', intensity = 'full' } = Astro.props;
     transform: rotate(12deg);
   }
 
-  /* The reference spreads its green further down and across than the violet
-     wash does, so give that blob more reach in this variant — but keep it
-     shallow enough that its falloff finishes well before the bottom edge,
-     where a long, low-contrast ramp into black shows visible banding. */
-  .teal .blob-b {
+  /* The brand wash spreads further down and across than the violet one does, so
+     give that blob more reach — but keep it shallow enough that its falloff
+     finishes well before the bottom edge, where a long, low-contrast ramp into
+     black shows visible banding.
+
+     Keyed off `:not(.violet)` rather than named per palette: this is geometry,
+     and `violet` is the only variant that wants the tighter original. A new
+     palette should inherit the reach without touching this rule. */
+  .noise-gradient:not(.violet) .blob-b {
     width: 80vw;
     height: 60vw;
     right: -18vw;
@@ -187,6 +236,11 @@ const { variant = 'teal', intensity = 'full' } = Astro.props;
     mask-composite: intersect;
   }
 
+  /* Every non-violet palette needs its own soft pass, because the reduction is
+     in the *alpha* and alpha is baked into each colour. Same hues as the full
+     versions throughout — only the opacity moves, and the tint's ramp starts
+     later. A new palette that skips this block silently renders at full
+     strength on `/about` and the case studies. */
   .soft.teal {
     --blob-a: oklch(0.76 0.11 100 / 0.44);
     --blob-b: oklch(0.62 0.12 178 / 0.34);
@@ -196,6 +250,30 @@ const { variant = 'teal', intensity = 'full' } = Astro.props;
       transparent 46%,
       oklch(0.28 0.06 186 / 0.26) 78%,
       oklch(0.37 0.09 180 / 0.3) 100%
+    );
+  }
+
+  .soft.indigo {
+    --blob-a: oklch(0.74 0.12 224 / 0.4);
+    --blob-b: oklch(0.53 0.14 268 / 0.34);
+    --tint: linear-gradient(
+      115deg,
+      transparent 0%,
+      transparent 46%,
+      oklch(0.26 0.07 262 / 0.26) 78%,
+      oklch(0.35 0.1 254 / 0.3) 100%
+    );
+  }
+
+  .soft.ember {
+    --blob-a: oklch(0.79 0.13 68 / 0.4);
+    --blob-b: oklch(0.56 0.15 32 / 0.34);
+    --tint: linear-gradient(
+      115deg,
+      transparent 0%,
+      transparent 46%,
+      oklch(0.27 0.07 42 / 0.26) 78%,
+      oklch(0.36 0.1 36 / 0.3) 100%
     );
   }
 
@@ -213,7 +291,7 @@ const { variant = 'teal', intensity = 'full' } = Astro.props;
     top: -6%;
   }
 
-  .soft.teal .blob-b {
+  .soft:not(.violet) .blob-b {
     width: 54vw;
     height: 40vw;
     right: -14vw;
@@ -249,7 +327,7 @@ const { variant = 'teal', intensity = 'full' } = Astro.props;
       right: -32vw;
       top: -14%;
     }
-    .teal .blob-b {
+    .noise-gradient:not(.violet) .blob-b {
       width: 140vw;
       height: 120vw;
       right: -28vw;
@@ -271,7 +349,7 @@ const { variant = 'teal', intensity = 'full' } = Astro.props;
       right: -26vw;
       top: -12%;
     }
-    .soft.teal .blob-b {
+    .soft:not(.violet) .blob-b {
       width: 105vw;
       height: 92vw;
       right: -22vw;

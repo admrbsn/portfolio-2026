@@ -188,8 +188,9 @@ const story = [
     data-blueprint="The Hook"
     style="--bp-top: calc(var(--nav-h, 4.3125rem) + 0.85rem)"
   >
-    {/* Defaults to the teal brand wash; variant="violet" restores the old one. */}
-    <NoiseGradient />
+    {/* Palette trial. `variant` on the call site changes this hero only —
+        drop it to fall back to the site-wide default in NoiseGradient.astro. */}
+    <NoiseGradient variant="indigo" />
     {/* `my-auto` centres the block in the leftover space. Like mt-auto it
         collapses to 0 when content is taller than the viewport, so it keeps
         the overflow-safety that justify-center would lose. `relative z-10`
