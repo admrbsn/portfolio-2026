@@ -54,8 +54,22 @@ blobs, two gradients and a tint.
 Adding one means three things: the palette block, a matching `.soft.<name>` block
 (the reduction is in the alpha, and alpha is baked into every colour — skip it
 and the palette renders full-strength on `/about` and the case studies), and a
-gamut check. Blues clip early: H 232 at L 0.55 tops out around C 0.11, which is
-why `solstice`'s blue sits at H 250.
+gamut check. **Chroma headroom is wildly uneven by hue.** Blues clip early — H 232
+at L 0.55 tops out around C 0.11, which is why `solstice`'s blue sits at H 250 —
+while magenta is a display corner and takes C 0.24 without complaint.
+
+**A third hue goes in `--blob-c`, not in the tint.** The tint runs at 0.38–0.42
+alpha over a near-black base, so a hot pink placed there resolves to a dusty
+mauve; a colour that has to stay saturated needs its own blob at blob alpha.
+`--blob-c` defaults to `transparent`, so the third blob costs an empty composited
+layer on the palettes that don't use it — `neon` is the only one that does.
+
+Two things that make the third hue work rather than muddy the first two: it sits
+**low on the right** rather than in the top-right corner with the other two (a
+third blob on the same pile is just a fourth layer of the same colour once the
+50px blur has had it), and it carries **more alpha than either** — 0.62 against
+their ~0.5. It is the only blob the `.full` bottom fade also cuts into, so it
+loses twice.
 
 **Both `NoiseGradient` intensities empty a corner, and for the same reason.** The
 blobs live off the top-right, so their falloff is what decides how much colour

@@ -9,6 +9,7 @@
 //   teal     — the brand: khaki highlight falling into emerald (default)
 //   solstice — amber highlight falling into deep ocean blue
 //   acid     — lime highlight falling into deep violet
+//   neon     — acid with hot pink worked in, low on the right (three hues)
 //   violet   — the original electric-violet/royal-blue wash, kept for comparison
 //
 // **Two hues, far enough apart to be counted.** The blobs stack in the same
@@ -32,17 +33,24 @@
 //          stay the loudest thing in frame
 
 interface Props {
-  variant?: 'violet' | 'teal' | 'solstice' | 'acid';
+  variant?: 'violet' | 'teal' | 'solstice' | 'acid' | 'neon';
   intensity?: 'full' | 'soft';
 }
 
 const { variant = 'teal', intensity = 'full' } = Astro.props;
 ---
 
+{/*
+  Three blobs, always rendered. `--blob-c` defaults to `transparent`, so the
+  third one costs a composited empty layer and nothing else on the palettes that
+  don't use it — cheaper than branching the markup, and it means adding a third
+  hue to a variant is a one-line change in CSS rather than a prop.
+*/}
 <div class:list={['noise-gradient', variant, intensity]} aria-hidden="true">
   <div class="tint"></div>
   <div class="blob blob-a"></div>
   <div class="blob blob-b"></div>
+  <div class="blob blob-c"></div>
   <div class="grain"></div>
 </div>
 
@@ -59,7 +67,13 @@ const { variant = 'teal', intensity = 'full' } = Astro.props;
     mask-image: linear-gradient(to bottom, #000 0%, #000 82%, transparent 100%);
   }
 
-  /* Palette ---------------------------------------------------------------- */
+  /* Palette ----------------------------------------------------------------
+     `--blob-c` is opt-in: everything below inherits `transparent` unless it
+     names a third hue. */
+  .noise-gradient {
+    --blob-c: transparent;
+  }
+
   .violet {
     --blob-a: oklch(0.5 0.16 300 / 0.46);
     --blob-b: oklch(0.52 0.15 255 / 0.44);
@@ -135,6 +149,42 @@ const { variant = 'teal', intensity = 'full' } = Astro.props;
     );
   }
 
+  /* `.acid` with hot pink worked in, and the only three-hue palette. Lime →
+     violet → magenta is a continuous sweep round the wheel rather than three
+     colours dropped in a frame, which is why it holds together at 230° of total
+     span where three arbitrary hues would read as a mess.
+
+     The pink is the whole reason `--blob-c` exists. It could not be a tint stop:
+     the tint runs at 0.38–0.42 alpha over a near-black base and a hot pink there
+     resolves to a dusty mauve — the colour needs its own blob at blob alpha to
+     stay hot. And it could not sit in the top-right corner with the other two,
+     where the 50px blur would fold it straight into the violet. It sits low on
+     the right instead, so the wash reads as three bands down the frame while the
+     bottom-left stays black.
+
+     **Pink costs more alpha than any other hue here to stay hot.** At the 0.5
+     the other blobs run at, this one composited down to a dusty orchid — the
+     colour was right in the file and mauve on the screen. It is the only blob
+     that also has to survive the `.full` bottom fade, which starts at 82% and
+     takes the lower third of it, so it loses twice. 0.62 and C 0.24 is where it
+     reads as pink rather than as violet's light end.
+
+     Chroma has room because magenta is a display corner — this hue takes far
+     more of it than the blues do (see `.solstice`). Do not read that as licence:
+     past ~0.26 the pink stops sitting in the same world as the lime and starts
+     looking like a different image pasted over it. */
+  .neon {
+    --blob-a: oklch(0.85 0.17 122 / 0.55);
+    --blob-b: oklch(0.5 0.16 296 / 0.46);
+    --blob-c: oklch(0.68 0.24 352 / 0.62);
+    --tint: linear-gradient(
+      115deg,
+      transparent 0%,
+      oklch(0.25 0.08 300 / 0.34) 58%,
+      oklch(0.38 0.14 342 / 0.42) 100%
+    );
+  }
+
   /* Base tint. Only the teal variant uses it — the violet one sits straight on
      the neutral page surface. */
   .tint {
@@ -174,6 +224,23 @@ const { variant = 'teal', intensity = 'full' } = Astro.props;
     top: -8%;
     background: radial-gradient(closest-side, var(--blob-b), transparent);
     transform: rotate(12deg);
+  }
+
+  /* Third hue, opt-in. Low and to the right rather than up in the corner with
+     the other two: a third blob stacked on the same pile is a fourth layer of
+     the same colour once the 50px blur has had it. Down here it gets its own
+     band, and it stays clear of the bottom-left corner the `.full` mask empties.
+
+     `top` is a percentage of the hero, not a `vw` like the other two, so the
+     band holds its position as the hero's aspect changes rather than sliding off
+     the bottom of a short one. */
+  .blob-c {
+    width: 44vw;
+    height: 34vw;
+    right: -12vw;
+    top: 24%;
+    background: radial-gradient(closest-side, var(--blob-c), transparent);
+    transform: rotate(-8deg);
   }
 
   /* The brand wash spreads further down and across than the violet one does, so
@@ -301,6 +368,22 @@ const { variant = 'teal', intensity = 'full' } = Astro.props;
     );
   }
 
+  /* The pink takes a proportionally deeper cut than the other two. It is the
+     most saturated colour in the set and it sits lowest in the frame, which on a
+     half-height hero is exactly where the headline is. */
+  .soft.neon {
+    --blob-a: oklch(0.85 0.17 122 / 0.4);
+    --blob-b: oklch(0.5 0.16 296 / 0.34);
+    --blob-c: oklch(0.68 0.22 352 / 0.3);
+    --tint: linear-gradient(
+      115deg,
+      transparent 0%,
+      transparent 46%,
+      oklch(0.25 0.08 300 / 0.24) 78%,
+      oklch(0.36 0.12 330 / 0.3) 100%
+    );
+  }
+
   .soft .blob-a {
     width: 44vw;
     height: 36vw;
@@ -320,6 +403,13 @@ const { variant = 'teal', intensity = 'full' } = Astro.props;
     height: 40vw;
     right: -14vw;
     top: -2%;
+  }
+
+  .soft .blob-c {
+    width: 34vw;
+    height: 28vw;
+    right: -10vw;
+    top: 38%;
   }
 
   /* Film grain. Inline SVG fractal noise, desaturated, tiled small and blended
@@ -357,6 +447,16 @@ const { variant = 'teal', intensity = 'full' } = Astro.props;
       right: -28vw;
       top: -4%;
     }
+    /* Scaled up like the rest, but held *lower* rather than pushed further off
+       the edge. A phone hero is one narrow column and the other two blobs now
+       cover most of it — the third hue only stays a third hue if it keeps a band
+       of its own near the foot. */
+    .blob-c {
+      width: 110vw;
+      height: 86vw;
+      right: -24vw;
+      top: 42%;
+    }
 
     /* The scale-up above exists so the wash still reads when text fills a
        narrow frame; soft still wants to be the quieter of the two, so it takes
@@ -378,6 +478,12 @@ const { variant = 'teal', intensity = 'full' } = Astro.props;
       height: 92vw;
       right: -22vw;
       top: -4%;
+    }
+    .soft .blob-c {
+      width: 82vw;
+      height: 64vw;
+      right: -18vw;
+      top: 44%;
     }
   }
 </style>
