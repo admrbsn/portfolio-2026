@@ -43,6 +43,20 @@ Its paint lives in `global.css` beside `.bp-sq`, since it is the same blueprint
 vocabulary. The component exists so the handle pair cannot be forgotten — a chip
 without them is just a dashed box. Lifted from Cloudflare's product eyebrows.
 
+**A `NoiseGradient` palette needs two hues far enough apart to be counted.** The
+blobs stack in the same corner under a 50px blur, so anything spanning less than
+~60° composites into one colour with a light end and a dark end. `teal` spans 78°
+(khaki → emerald) and is the floor, not the target; `solstice` spans 165°
+(amber → ocean blue) and `acid` 174° (lime → violet). A first pass at an
+alternate ran cyan over indigo — 44° — and read as flat blue despite being two
+blobs, two gradients and a tint.
+
+Adding one means three things: the palette block, a matching `.soft.<name>` block
+(the reduction is in the alpha, and alpha is baked into every colour — skip it
+and the palette renders full-strength on `/about` and the case studies), and a
+gamut check. Blues clip early: H 232 at L 0.55 tops out around C 0.11, which is
+why `solstice`'s blue sits at H 250.
+
 **Both `NoiseGradient` intensities empty a corner, and for the same reason.** The
 blobs live off the top-right, so their falloff is what decides how much colour
 lands under the type. `soft` masks a whole diagonal (the headline sits lower

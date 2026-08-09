@@ -6,10 +6,14 @@
 //
 // `variant` swaps only the palette — every variant but `violet` shares the same
 // geometry, which is why the blob overrides below key off `:not(.violet)`:
-//   teal   — the brand: khaki highlight falling into emerald (default)
-//   indigo — cool alternate: cyan highlight falling into deep indigo
-//   ember  — warm alternate: amber highlight falling into rust
-//   violet — the original electric-violet/royal-blue wash, kept for comparison
+//   teal     — the brand: khaki highlight falling into emerald (default)
+//   solstice — amber highlight falling into deep ocean blue
+//   acid     — lime highlight falling into deep violet
+//   violet   — the original electric-violet/royal-blue wash, kept for comparison
+//
+// **Two hues, far enough apart to be counted.** The blobs stack in the same
+// corner under a 50px blur, so a palette spanning less than ~60° composites into
+// one colour with a light end and a dark end — see the note above `.solstice`.
 //
 // **Changing the default here changes every hero on the site at once** — the
 // homepage, /about and all five case studies pull from this same component.
@@ -28,7 +32,7 @@
 //          stay the loudest thing in frame
 
 interface Props {
-  variant?: 'violet' | 'teal' | 'indigo' | 'ember';
+  variant?: 'violet' | 'teal' | 'solstice' | 'acid';
   intensity?: 'full' | 'soft';
 }
 
@@ -80,34 +84,54 @@ const { variant = 'teal', intensity = 'full' } = Astro.props;
     );
   }
 
-  /* Cool alternate. Same construction as `.teal`, rotated ~90° round the wheel:
-     a cyan highlight over a deep indigo. Note what it does to the accents that
-     sit *on top* of it — the chip, the h1's period, the nav status dot are all
-     brand green, and against blue they read as a lime pop rather than as more
-     of the same wash. That is the argument for this one over `.ember`, where
-     green and orange sit opposite each other and neither gives way. */
-  .indigo {
-    --blob-a: oklch(0.74 0.12 224 / 0.56);
-    --blob-b: oklch(0.53 0.14 268 / 0.5);
+  /* **A wash needs two hues far enough apart to be counted.** This is the one
+     thing that decides whether a palette reads as a wash or as a tint, and it is
+     easy to get wrong: the blobs are stacked in the same corner under a 50px
+     blur, so anything under ~60° of separation composites into a single colour
+     with a light end and a dark end. A first pass at these alternates ran a cyan
+     highlight (H 224) over an indigo body (H 268) and read as flat blue, despite
+     being two blobs, two gradients and a tint. `.teal` works because it spans
+     78° from khaki to teal — and it is the *floor*, not the target.
+
+     Both alternates below span more than twice that, and they hold the rest of
+     `.teal`'s construction: light warm-ish highlight, darker saturated body
+     under it, tint pulling toward the body's hue. */
+
+  /* Warm sun over cold sea — amber falling into deep ocean blue. 165° apart,
+     the widest span of any variant, and the two ends stay legible as separate
+     colours right through the blur where the blobs overlap.
+
+     Chroma on the blue end is capped by sRGB, not by taste: H 232 at L 0.55
+     clips above C 0.11, and the tint's mid stop clips above C 0.08. Pushing the
+     hue to 250 buys the chroma back — which is why the blue here is a shade
+     more violet than the one it started from. */
+  .solstice {
+    --blob-a: oklch(0.79 0.14 55 / 0.58);
+    --blob-b: oklch(0.55 0.14 250 / 0.5);
     --tint: linear-gradient(
       115deg,
       transparent 0%,
-      oklch(0.26 0.07 262 / 0.38) 60%,
-      oklch(0.35 0.1 254 / 0.42) 100%
+      oklch(0.26 0.06 250 / 0.38) 60%,
+      oklch(0.35 0.09 245 / 0.42) 100%
     );
   }
 
-  /* Warm alternate: amber highlight falling into rust. The loudest of the four
-     and the one that most needs the bottom-left corner emptied — over a warm
-     wash the ink loses more contrast than it does over a cool one. */
-  .ember {
-    --blob-a: oklch(0.79 0.13 68 / 0.56);
-    --blob-b: oklch(0.56 0.15 32 / 0.48);
+  /* Acid lime over deep violet. 174° apart — near-complementary, and the
+     loudest of the set.
+
+     It is the only alternate that keeps the brand green *in* the wash rather
+     than beside it: the highlight sits a few degrees off `--color-accent`, so
+     the chip and the h1's period read as part of the light source instead of as
+     a colour laid over a foreign backdrop. That is the argument for this one
+     over `.solstice`, where the green accents are a third hue in the frame. */
+  .acid {
+    --blob-a: oklch(0.85 0.17 122 / 0.55);
+    --blob-b: oklch(0.5 0.16 296 / 0.52);
     --tint: linear-gradient(
       115deg,
       transparent 0%,
-      oklch(0.27 0.07 42 / 0.38) 60%,
-      oklch(0.36 0.1 36 / 0.42) 100%
+      oklch(0.25 0.08 300 / 0.38) 60%,
+      oklch(0.34 0.11 306 / 0.42) 100%
     );
   }
 
@@ -253,27 +277,27 @@ const { variant = 'teal', intensity = 'full' } = Astro.props;
     );
   }
 
-  .soft.indigo {
-    --blob-a: oklch(0.74 0.12 224 / 0.4);
-    --blob-b: oklch(0.53 0.14 268 / 0.34);
+  .soft.solstice {
+    --blob-a: oklch(0.79 0.14 55 / 0.42);
+    --blob-b: oklch(0.55 0.14 250 / 0.35);
     --tint: linear-gradient(
       115deg,
       transparent 0%,
       transparent 46%,
-      oklch(0.26 0.07 262 / 0.26) 78%,
-      oklch(0.35 0.1 254 / 0.3) 100%
+      oklch(0.26 0.06 250 / 0.26) 78%,
+      oklch(0.35 0.09 245 / 0.3) 100%
     );
   }
 
-  .soft.ember {
-    --blob-a: oklch(0.79 0.13 68 / 0.4);
-    --blob-b: oklch(0.56 0.15 32 / 0.34);
+  .soft.acid {
+    --blob-a: oklch(0.85 0.17 122 / 0.4);
+    --blob-b: oklch(0.5 0.16 296 / 0.36);
     --tint: linear-gradient(
       115deg,
       transparent 0%,
       transparent 46%,
-      oklch(0.27 0.07 42 / 0.26) 78%,
-      oklch(0.36 0.1 36 / 0.3) 100%
+      oklch(0.25 0.08 300 / 0.26) 78%,
+      oklch(0.34 0.11 306 / 0.3) 100%
     );
   }
 
