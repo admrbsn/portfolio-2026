@@ -9,7 +9,7 @@ Everything in `src/components/`. Astro components unless noted.
 | `Nav.astro` | Fixed bar. `transition:persist`, so it is wired once by `nav.ts` and never per page. |
 | `Footer.astro` | Click-to-copy email, socials, copyright. `transition:persist`. |
 | `Cursor.svelte` | Custom cursor. `client:idle`. Reads `data-cursor` / `data-cursor-label` off any element. |
-| `NoiseGradient.astro` | The hero wash: fixed-palette blobs plus inline-SVG fractal noise. |
+| `NoiseGradient.astro` | The hero wash: fixed-palette blobs plus inline-SVG fractal noise. `intensity="full"` (homepage) / `"soft"` (`/about`, case studies). |
 | `ArrowUpRight.astro` | The one shared icon. |
 | `RuleCross.astro` | The two squares where a section's top rule crosses the page rails. First child of any full-width `border-t` inside `.page-rails`; **the host must be `relative`**. |
 | `BpChip.astro` | Selection-chip eyebrow — dashed outline, faint accent fill, a hollow square handle on each vertical edge. Default slot is the label; the `icon` slot takes a stroked glyph. |
@@ -42,6 +42,21 @@ viewport.
 Its paint lives in `global.css` beside `.bp-sq`, since it is the same blueprint
 vocabulary. The component exists so the handle pair cannot be forgotten — a chip
 without them is just a dashed box. Lifted from Cloudflare's product eyebrows.
+
+**Both `NoiseGradient` intensities empty a corner, and for the same reason.** The
+blobs live off the top-right, so their falloff is what decides how much colour
+lands under the type. `soft` masks a whole diagonal (the headline sits lower
+left in a half-height hero); `full` masks a radial anchored at the **bottom-left
+corner** — the homepage h1, chip and stat figures all sit there, and colour
+behind the loudest type in the frame costs contrast and buys nothing. The corner
+going properly black is also what makes the wash read as *lit from the top
+right* rather than as an even tint.
+
+Both compose their corner mask with the bottom fade (`mask-composite: intersect`,
+with `-webkit-mask-composite: source-in` alongside for Safari) rather than
+replacing it — drop the bottom fade and the grain ends on a hard seam. Neither
+mask goes fully clear at the corner for the same reason: the grain is inside it,
+and cutting the texture to nothing puts a visible edge where it stops.
 
 **The nav has no room for three links on a phone.** At 390px the content box is
 310px and the wordmark plus `Work / About / Connect` measures ~356px. Each link

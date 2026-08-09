@@ -118,6 +118,49 @@ const { variant = 'teal', intensity = 'full' } = Astro.props;
     top: -2%;
   }
 
+  /* Full ------------------------------------------------------------------
+     The homepage hero, and the one place the wash is the page's opening
+     statement rather than an accent.
+
+     The extra mask here empties the **bottom-left corner** back to the page
+     surface. The blobs live off the top-right, but their falloff is long enough
+     that a teal cast reached the lower left — which is where the h1, the chip
+     and the stat figures all sit. Colour behind the loudest type in the frame
+     costs contrast and buys nothing, and the corner going properly black is
+     also what makes the wash read as *lit from the top right* rather than as an
+     even tint over the whole section.
+
+     Radial anchored at the corner, not a `to bottom left` linear. In a box this
+     wide a corner-keyword linear runs nearly horizontal, so it takes down the
+     entire left column including the top, where there is nothing to fix. The
+     ellipse only touches the quadrant it is aimed at.
+
+     It keeps a little alpha at the corner rather than going fully clear: the
+     grain is inside this mask too, and cutting it to nothing puts a visible
+     edge where the texture stops. Composited with the bottom fade
+     (`intersect`, `-webkit-` `source-in` alongside it for Safari) rather than
+     replacing it, for the same reason `.soft` does. */
+  .full {
+    -webkit-mask-image:
+      radial-gradient(
+        62% 88% at 0% 100%,
+        rgb(0 0 0 / 0.06) 0%,
+        rgb(0 0 0 / 0.06) 16%,
+        #000 78%
+      ),
+      linear-gradient(to bottom, #000 0%, #000 82%, transparent 100%);
+    mask-image:
+      radial-gradient(
+        62% 88% at 0% 100%,
+        rgb(0 0 0 / 0.06) 0%,
+        rgb(0 0 0 / 0.06) 16%,
+        #000 78%
+      ),
+      linear-gradient(to bottom, #000 0%, #000 82%, transparent 100%);
+    -webkit-mask-composite: source-in;
+    mask-composite: intersect;
+  }
+
   /* Soft ------------------------------------------------------------------
      The interior heroes are around half the homepage's height, so the same
      blobs fill far more of the frame and the wash starts competing with the
