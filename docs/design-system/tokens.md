@@ -106,8 +106,9 @@ that survives seeing all five studies side by side.
 ## Type
 
 **Google Sans** for all UI, body copy and the wordmark. **Vidaloka** for display
-(`--text-display`, `--text-title`, `--text-stat`, headings). Two families, no
-third.
+(`--text-display`, `--text-title`, `--text-stat`, headings). Two families across
+the whole portfolio, no third — the two extra faces below belong to the Breakout
+island and appear nowhere else.
 
 | Token | Value | At 1440 |
 | --- | --- | --- |
@@ -145,8 +146,19 @@ each set their own hero size inline, deliberately — see
 - `--font-wordmark` resolves to `var(--font-sans)` and is kept separate
   deliberately: the brand mark should be changeable without dragging every
   paragraph with it.
-- `--font-arcade` (Tiny5) is Breakout's alone. It is eagerly loaded because the
-  CTA uses it; nothing above the fold does.
+- `--font-arcade` (Tiny5, ~9KB latin) and `--font-cartridge` (Baumans, ~19KB
+  latin) are **Breakout's alone** — the small lines and the wordmark of the box
+  panel. Both are eagerly loaded because the CTA renders them; nothing above the
+  fold uses either, and neither is render-blocking.
+
+  `--font-cartridge` sets **one word at one size**. Baumans is a geometric
+  display face standing in for the 1978 Atari box lettering, which is a *drawn*
+  logotype rather than a typeface — it is the closest ready-made match, not a
+  match. Never set a sentence in it.
+
+  **That budget is now spent.** A third display face here means first moving
+  both of these into the game's own lazily-loaded stylesheet, because the only
+  thing justifying eager loading is that the CTA itself renders them.
 
 **The documented exception**: the work tile title in `WorkTile.astro` is sans. A
 tile title is a claim read at a glance beside a screenshot, and the serif was

@@ -109,13 +109,42 @@ from that array rather than hardcoding a hex, or the decoration drifts from the
 game it advertises. The narrow-hue accent rule in `global.css` does not apply
 here and only here.
 
-The colour is confined to the wall on purpose. A four-field background glow, a
-rainbow title gradient and a rainbow launch button were all tried and cut:
-against a rack that is already six saturated hues, more colour behind, above and
-below it left nothing quiet enough to read the section by. The heading is plain
-white and the button is a brushed-silver coin slot — square corners, hard pixel
-bevel, zero blur anywhere in it. One blurred shadow and it stops reading as
-8-bit and starts reading as a skeuomorphic button.
+**The section is the 1978 Atari box, rebuilt.** Orange ground (`#ff8924`), the
+wordmark in Baumans over a hard offset shadow in a *darker orange* (the
+original's shadow is not black, which is why the lettering reads as printed
+rather than embossed), two lines of red subhead, a numeral block and a spec
+block either side of a bordered art window. Every value is sampled off the
+artwork rather than eyeballed. This file's whole palette is literals by design —
+`check:tokens` allow-lists the component for exactly that reason.
+
+**What is deliberately not borrowed is the branding.** The Atari fuji, the ATARI
+wordmark and the CX2622 part number are a real company's marks, and stamping
+them on a personal site is impersonation rather than homage. The composition is
+the reference, not the identity; the colophon strip names this site instead.
+
+**Colour behind the section only works because it is contained.** A four-field
+background glow, a rainbow title gradient and a rainbow launch button were all
+tried and cut when this section was black — against a rack that is already six
+saturated hues, more colour behind, above and below left nothing quiet enough to
+read it by. That objection is answered by the box, not overturned by it: the
+orange lives inside a bordered panel and the rack lives inside a *second*
+bordered window on a dark ground, so the six hues never sit loose on the orange.
+Take either border away and the earlier failure comes straight back.
+
+The button stays a brushed-silver coin slot — square corners, hard pixel bevel,
+zero blur anywhere in it. One blurred shadow and it stops reading as 8-bit and
+starts reading as a skeuomorphic button.
+
+The player illustration is painted **over** the bricks and cropped by the
+window's bottom edge; that crop is what sells him as coming *through* the wall
+rather than standing behind it. He is sized off the panel's **height**, not its
+width — matched to the width he shrank whenever the column narrowed and ended up
+a figurine under the rack. The art window's top padding (22%) exists for the
+same reason: pinned to the top edge, the rack leaves him nothing to come through.
+
+The ™ marks are set in `--font-sans`, and that is not an oversight. Neither
+Baumans nor Tiny5 carries U+2122, and Tiny5's fallback is a 5px blob that reads
+as a rendering fault.
 
 The wall carries a **notch that widens downward** — a ball has tunnelled up
 through the middle, so the bottom rows are chewed through and the top ones are
@@ -150,9 +179,19 @@ background cost. Anything animated added here must join that gate. Reduced
 motion parks the ball mid-stage rather than hiding it, so the composition still
 reads as a game in progress.
 
-The one deliberate eager cost is Tiny5 (`--font-arcade`, latin subset, ~9KB),
-imported in `global.css` because the CTA itself uses it. It is not
-render-blocking and nothing above the fold uses it.
+The rally lives **inside the art window**, not loose in the section. It crossed
+the whole thing while the section was black; on the orange ground the same
+squares read as specks of dirt on printed card — and the box itself has no ball
+flying across its artwork. It is ordered before the player so it passes behind
+him; over his face it reads as a blemish rather than as depth.
+
+Two deliberate eager font costs, both for this one below-the-fold section: Tiny5
+(`--font-arcade`, latin, ~9KB) for every small line, and Baumans
+(`--font-cartridge`, latin, ~19KB) for the wordmark alone. Neither is
+render-blocking and nothing above the fold uses either. **Don't add a third
+display face here without first moving both into the game's own lazily-loaded
+stylesheet** — the justification for keeping them eager is that the CTA renders
+them, and that budget is now spent.
 
 **Every block on both sides is the same object.** The CTA's rack, the canvas
 bricks and the paddle all render as a square, flat-filled block with a hard

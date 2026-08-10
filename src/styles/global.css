@@ -10,6 +10,11 @@
    request that the browser only issues once the CTA renders — it is not
    render-blocking and nothing above the fold uses it. */
 @import '@fontsource/tiny5/latin-400.css';
+/* The Breakout CTA's wordmark face. One word, one size, one section — but it is
+   a real eager cost (~19KB latin) for something below the fold, and it is the
+   second such cost after Tiny5. Don't add a third display face without moving
+   both of these into the game's own lazily-loaded stylesheet first. */
+@import '@fontsource/baumans/latin-400.css';
 
 /* ---------------------------------------------------------------------------
    Design tokens. Tailwind v4 is CSS-first — this @theme block *is* the config,
@@ -47,6 +52,20 @@
      anything ported from that needs its size taken *down* and its tracking
      loosened. */
   --font-arcade: 'Tiny5', ui-monospace, monospace;
+
+  /* The Breakout CTA's wordmark, and nothing else on the site.
+
+     Baumans is a geometric display face with the same rounded, even-stroke
+     construction as the 1978 Atari box lettering — which is a *drawn* logotype,
+     not a typeface, so this is the closest ready-made stand-in rather than a
+     match. It only ever sets one word at one size, which is the only reason a
+     third display face is affordable here at all: never use it for a sentence.
+
+     Paired with `--font-arcade` for every small line in that section. The box's
+     own small type is a condensed bold grotesque, but a pixel face is the
+     deliberate substitution — this is a portfolio's homage to the box, not a
+     reproduction of it, and the 5px grid ties the panel to the game it opens. */
+  --font-cartridge: 'Baumans', var(--font-arcade);
 
   /* Display font tuning. Set for Vidaloka — a high-contrast display serif with
      a large x-height and sturdy stems; gentle tracking, modest leading.

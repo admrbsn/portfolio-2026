@@ -5,7 +5,9 @@
  * resolves once someone actually wants to play, so none of it is on the
  * critical path or in a Lighthouse run.
  */
+import { Image } from 'astro:assets';
 import { BRICK_TOTAL } from '../lib/breakout/game';
+import player from '../assets/home/breakout-player.webp';
 
 const ROW_COLOURS = ['#ff3b5c', '#ff8a3d', '#ffd83d', '#3dff9e', '#3ddcff', '#8f7bff'];
 // Nine wide bricks. The arcade original's rack reads as chunky slabs; at 12
@@ -64,98 +66,384 @@ const wall = Array.from({ length: WALL_TOTAL }, (_, i) => ({
   gone: gone[i]!,
   delay: `${(-(order[i]! / WALL_TOTAL) * CYCLE).toFixed(3)}s`,
 }));
+
+/*
+ * Box-art copy. The 1978 Atari box is the layout: wordmark, two lines of
+ * subhead, a big numeral block on the left, a spec block on the right, the
+ * illustration through the middle.
+ *
+ * What is deliberately *not* borrowed is the branding. The Atari fuji, the
+ * ATARI wordmark and the CX2622 part number are a real company's marks, and
+ * stamping them on a personal site is impersonation rather than homage — the
+ * composition is the reference, not the identity. Everything below names this
+ * site instead.
+ */
+/*
+ * Kept to lines that fit the column without wrapping at any width the band
+ * actually gets. The box's right-hand block is four short stacked phrases, and
+ * a wrapped line there stops reading as a spec sheet and starts reading as a
+ * paragraph that ran out of room.
+ */
+const SPEC = [
+  'One player',
+  'No continues',
+  'Overlays the page',
+  `Clear all ${BRICK_TOTAL} to win`,
+];
 ---
 
 <section
-  class="arcade relative overflow-hidden border-t border-line px-gutter py-24 text-center"
+  class="arcade relative border-t border-line px-gutter py-24"
   data-blueprint="Vibe code check"
+  aria-labelledby="breakout-title"
 >
   {/*
-    The rally, loose in the whole section rather than penned under the rack.
-    Four squares on identical paths at staggered lags, so the tail traces
-    wherever the head has actually been — a static box-shadow points one way and
-    detaches the moment the ball turns.
-
-    Squares, not circles: the Atari original's ball is a block, and hard-edged
-    segments shrinking in steps read as a sprite trail where soft round dots
-    read as motion blur.
+    The box. Everything that was loose on the page is now inside one panel with
+    a hard black edge — which is what makes the six-hue rack legible against a
+    saturated orange ground. The documented objection to putting colour behind
+    this section still stands: it was tried as a *field* bleeding into the page
+    and the rack had nothing to sit against. Contained in a box with a border,
+    the orange reads as an object on the shelf and the rack reads as printed on
+    it. That containment is load-bearing, not decoration.
   */}
-  <div class="rally" aria-hidden="true">
-    <span class="ball" style="--lag:0s;--size:14px;--alpha:1"></span>
-    <span class="ball" style="--lag:0.055s;--size:11px;--alpha:0.5"></span>
-    <span class="ball" style="--lag:0.11s;--size:9px;--alpha:0.28"></span>
-    <span class="ball" style="--lag:0.17s;--size:7px;--alpha:0.14"></span>
-  </div>
+  <div class="cart mx-auto">
+    <div class="cart__inner">
+      {/* Masthead — the cartridge label's own order: small line, then the
+          wordmark, then the two subhead lines. */}
+      <p class="eyebrow">Need a break?</p>
 
-  <div class="relative z-10 mx-auto max-w-3xl">
-    {/* Decorative echo of the real rack. Bricks blink out and back on a
-        continuous stagger — a preview of the mechanic, running whether or not
-        anyone points at it. */}
-    <div class="stage" aria-hidden="true">
-      <div class="wall">
-        {
-          wall.map((brick) =>
-            brick.gone ? (
-              <i data-gone />
-            ) : (
-              <i style={`--c:${brick.colour};--d:${brick.delay}`} />
-            ),
-          )
-        }
+      <h2 id="breakout-title" class="wordmark">
+        Breakout<span class="tm" aria-hidden="true">&#8482;</span>
+      </h2>
+
+      <p class="subhead">
+        Portfolio computer system<span class="tm" aria-hidden="true">&#8482;</span>
+      </p>
+      <p class="subhead">
+        Game program<span class="tm" aria-hidden="true">&#8482;</span>
+      </p>
+
+      {/* The three-column band: numeral block, art window, spec block. The box
+          puts "12 VIDEO GAMES" and the player-count copy either side of the
+          illustration, and the count is the one number this section actually
+          has to communicate. */}
+      <div class="band">
+        <p class="count">
+          <span class="count__num">{BRICK_TOTAL}</span>
+          <span class="count__word">Bricks<br />to clear</span>
+        </p>
+
+        {/* The art window. On the box this is a bordered photo panel, and it is
+            what stops the rack's six hues sitting loose on the orange. */}
+        <div class="art">
+          {/* Decorative echo of the real rack. Bricks blink out and back on a
+              continuous stagger — a preview of the mechanic, running whether or
+              not anyone points at it. */}
+          <div class="wall" aria-hidden="true">
+            {
+              wall.map((brick) =>
+                brick.gone ? (
+                  <i data-gone />
+                ) : (
+                  <i style={`--c:${brick.colour};--d:${brick.delay}`} />
+                ),
+              )
+            }
+          </div>
+
+          {/*
+            The rally, inside the playfield rather than loose in the panel.
+
+            It used to cross the whole section, which worked when the section
+            was black. On the orange ground the same squares read as specks of
+            dirt on printed card — and the box itself has no ball flying across
+            its artwork. Confined here it is doing the thing it was always for:
+            showing the mechanic, in the only place a ball belongs.
+
+            Four squares on identical paths at staggered lags, so the tail
+            traces wherever the head has actually been — a static box-shadow
+            points one way and detaches the moment the ball turns.
+
+            Squares, not circles: the Atari original's ball is a block, and
+            hard-edged segments shrinking in steps read as a sprite trail where
+            soft round dots read as motion blur.
+
+            Ordered before the player so the rally passes behind him. Over his
+            face it reads as a blemish rather than as depth.
+          */}
+          <div class="rally" aria-hidden="true">
+            <span class="ball" style="--lag:0s;--size:12px;--alpha:1"></span>
+            <span class="ball" style="--lag:0.055s;--size:10px;--alpha:0.5"></span>
+            <span class="ball" style="--lag:0.11s;--size:8px;--alpha:0.28"></span>
+            <span class="ball" style="--lag:0.17s;--size:6px;--alpha:0.14"></span>
+          </div>
+
+          {/*
+            The player, bursting up through the rack exactly as on the box —
+            drawn *over* the bricks and cropped by the window's bottom edge, so
+            he reads as coming through the wall rather than standing behind it.
+
+            `aria-hidden`: he is the box's illustration and carries no
+            information the heading and spec block do not already give.
+          */}
+          <Image
+            src={player}
+            alt=""
+            widths={[420, 640]}
+            sizes="(max-width: 48rem) 60vw, 22rem"
+            loading="lazy"
+            decoding="async"
+            class="player"
+            aria-hidden="true"
+          />
+        </div>
+
+        <ul class="spec">
+          {SPEC.map((line) => <li>{line}</li>)}
+        </ul>
       </div>
+
+      {/* The aria-label exists because "Insert coin" alone doesn't say what the
+          button does. The visible text stays a substring of the accessible name,
+          which is what WCAG 2.5.3 (Label in Name) requires. */}
+      <button
+        type="button"
+        data-breakout-launch
+        data-cursor="coin"
+        aria-label="Insert coin — play Breakout"
+        class="play font-arcade"
+      >
+        {/* The slot itself — a milled slit in the faceplate, which is what the
+            coin cursor is being offered to. */}
+        <span class="play__slot" aria-hidden="true"></span>
+        Insert coin
+      </button>
+
+      {/* The footer strip, where the box carries its publisher and part
+          number. Both are this site's, deliberately — see the note in the
+          frontmatter. */}
+      <p class="colophon">
+        <span>Adam Robertson</span>
+        <span>AR&#8209;2026</span>
+      </p>
     </div>
-
-    {/* Sans, not the arcade face — this is an eyebrow, and it matches the ones
-        on every other section rather than competing with the heading it
-        introduces. */}
-    <p class="mt-12 text-[0.8125rem] font-semibold uppercase tracking-[0.16em] text-ink-dim">
-      Need a break?
-    </p>
-
-    <h2 class="title mt-2 font-arcade text-[clamp(2rem,6vw,3.5rem)] leading-[1.1]">
-      Play Breakout
-    </h2>
-
-    {/* The heading now carries the game's name, so the copy opens on where it
-        happens rather than repeating it. */}
-    <p class="mx-auto mt-6 max-w-2xl text-ink-dim">
-      Right here on the page, over the top of everything. It starts almost
-      entirely blacked out &mdash; every brick you knock down lets a little more
-      of the portfolio back through. Clear all {BRICK_TOTAL} to get it back.
-    </p>
-
-    {/* The aria-label exists because "Insert coin" alone doesn't say what the
-        button does. The visible text stays a substring of the accessible name,
-        which is what WCAG 2.5.3 (Label in Name) requires. */}
-    <button
-      type="button"
-      data-breakout-launch
-      data-cursor="coin"
-      aria-label="Insert coin — play Breakout"
-      class="play mx-auto mt-10 inline-flex items-center gap-4 font-arcade text-[1.1rem] tracking-[0.08em]"
-    >
-      {/* The slot itself — a milled slit in the faceplate, which is what the
-          coin cursor is being offered to. */}
-      <span class="play__slot" aria-hidden="true"></span>
-      Insert coin
-    </button>
   </div>
 </section>
 
 <style>
-  .stage {
-    width: min(34rem, 100%);
-    margin-inline: auto;
+  /*
+    The box's own ink, sampled off the 1978 artwork rather than eyeballed:
+    ground #ff8924, red #dc010b, a warm off-white for the wordmark, and a
+    *darker orange* for its drop shadow — the original's shadow is not black,
+    which is why the lettering reads as printed rather than as embossed.
+
+    This section is the documented off-brand island, so these are literals by
+    design; `check:tokens` allow-lists this file for exactly that reason.
+  */
+  .cart {
+    --box: #ff8924;
+    --box-red: #dc010b;
+    --box-white: #fff9f1;
+    --box-shade: #c96d1c;
+    --box-edge: #17110b;
+
+    position: relative;
+    width: min(56rem, 100%);
+    background: var(--box);
+    /* Square, and a thick hard edge — a printed box has a trimmed edge, not a
+       radius. `--radius-ui` deliberately does not reach here. */
+    border-radius: 0;
+    box-shadow:
+      0 0 0 3px var(--box-edge),
+      0 0 0 6px rgb(255 255 255 / 0.06);
+    overflow: hidden;
+  }
+
+  .cart__inner {
+    position: relative;
+    z-index: 10;
+    padding: clamp(1.5rem, 4vw, 2.75rem) clamp(1.25rem, 4vw, 3rem)
+      clamp(1.25rem, 3vw, 2rem);
+    text-align: center;
+  }
+
+  /* Masthead ------------------------------------------------------------- */
+
+  .eyebrow {
+    font-family: var(--font-arcade);
+    font-size: 0.9375rem;
+    letter-spacing: 0.06em;
+    color: var(--box-edge);
+    opacity: 0.75;
+  }
+
+  /*
+    The wordmark. Baumans set tight and wide, in the box's warm white, over a
+    hard offset shadow in the darker orange.
+
+    `text-shadow` with **zero blur** — the original is flat printed ink and one
+    soft shadow turns it into a 2005 web header. The offset is the only depth
+    cue, and it goes down-right because that is where the box's own light
+    leaves it.
+  */
+  .wordmark {
+    margin-top: 0.15rem;
+    font-family: var(--font-cartridge);
+    font-weight: 400;
+    font-size: clamp(2.75rem, 11vw, 6.5rem);
+    line-height: 0.92;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+    color: var(--box-white);
+    text-shadow: 4px 4px 0 var(--box-shade);
+  }
+
+  /*
+    The trademark marks, riding the cap line at the size the box sets them.
+
+    **Set in the sans, deliberately.** Neither Baumans nor Tiny5 carries U+2122,
+    so both fall back — and Tiny5's fallback is a 5px blob that reads as a
+    rendering fault rather than as a ™. This is the one place in the section
+    where the site's own face is the right answer: at 0.3em nobody reads it as
+    type, they read it as a mark, and a clean one is the only kind that works.
+  */
+  .tm {
+    font-family: var(--font-sans);
+    font-size: 0.3em;
+    vertical-align: 0.85em;
+    margin-left: 0.15em;
+    letter-spacing: 0;
+  }
+
+  /* The subheads are already small, so their marks need proportionally more. */
+  .subhead .tm {
+    font-size: 0.55em;
+    vertical-align: 0.5em;
+  }
+
+  .subhead {
+    font-family: var(--font-arcade);
+    font-size: clamp(0.9375rem, 2.1vw, 1.375rem);
+    line-height: 1.15;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--box-red);
+  }
+
+  .subhead + .subhead {
+    margin-top: 0.1rem;
+  }
+
+  /* The three-column band ------------------------------------------------ */
+
+  /*
+    Numeral, art, spec. One column below `md`, because the box's side blocks are
+    printed *beside* the illustration and stacking them keeps that reading order
+    — the art must not end up above the thing that counts it.
+  */
+  .band {
+    display: grid;
+    gap: clamp(1rem, 3vw, 1.75rem);
+    align-items: center;
+    margin-top: clamp(1.25rem, 3vw, 2rem);
+  }
+
+  /* The spec column is wider than the numeral one: the numeral is two glyphs and
+     a two-word caption, the spec is four phrases that must not wrap. Equal
+     columns broke every one of them onto a second line. */
+  @media (min-width: 48rem) {
+    .band {
+      grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.5fr) minmax(0, 1fr);
+    }
+  }
+
+  .count {
+    color: var(--box-red);
+    text-align: center;
+  }
+
+  @media (min-width: 48rem) {
+    .count {
+      text-align: right;
+    }
+  }
+
+  .count__num {
+    display: block;
+    font-family: var(--font-cartridge);
+    font-size: clamp(3rem, 8vw, 4.75rem);
+    line-height: 0.85;
+    letter-spacing: -0.02em;
+  }
+
+  .count__word {
+    display: block;
+    margin-top: 0.35rem;
+    font-family: var(--font-arcade);
+    font-size: 0.9375rem;
+    line-height: 1.15;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .spec {
+    font-family: var(--font-arcade);
+    font-size: 0.9375rem;
+    line-height: 1.45;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--box-red);
+    text-align: center;
+  }
+
+  @media (min-width: 48rem) {
+    .spec {
+      text-align: left;
+    }
+  }
+
+  /* The art window ------------------------------------------------------- */
+
+  /*
+    The bordered panel the illustration and the rack share. Its dark ground is
+    what the six brick hues are legible against — on the bare orange they fought
+    it, which is the whole reason the earlier "colour behind the section"
+    attempts were cut.
+
+    `isolation: isolate` so the player's stacking stays local to this panel and
+    cannot climb over the copy above it.
+  */
+  .art {
+    position: relative;
+    isolation: isolate;
+    /*
+      The rack sits at roughly a quarter down, not at the top. That is where the
+      box prints its brick rows, and it is what leaves the figure something to
+      come *through* — pinned to the top edge, he passes under the wall instead
+      and the whole point is lost.
+    */
+    padding: 22% clamp(0.75rem, 2vw, 1.15rem) 0;
+    background: #12100f;
+    box-shadow: 0 0 0 3px var(--box-edge);
+    /* A ratio rather than a height, so the panel keeps its proportion as the
+       column narrows. */
+    aspect-ratio: 4 / 3;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
   }
 
   .wall {
     display: grid;
     grid-template-columns: repeat(9, 1fr);
-    gap: 5px;
+    gap: 4px;
   }
 
   .wall > i {
-    height: 22px;
+    /* Aspect rather than a fixed height: the rack has to keep its slab
+       proportion as the art window narrows, and a 22px brick in a 240px-wide
+       panel reads as a stripe. */
+    aspect-ratio: 5 / 2;
     /*
       Square, flat, and bevelled on all four sides — the same block the canvas
       draws, so the decoration and the real rack are demonstrably one object.
@@ -225,14 +513,61 @@ const wall = Array.from({ length: WALL_TOTAL }, (_, i) => ({
     }
   }
 
-  .title {
-    color: #fff;
+  /*
+    The player, coming up through the rack.
+
+    Two things make him read as *through* rather than *behind*: he is painted
+    over the bricks (later in the DOM, no z-index needed inside the isolated
+    panel), and his feet are cropped by the window's bottom edge. Anchored to
+    the bottom so the crop is always at the same place on him whatever the
+    panel's width does.
+
+    `mix-blend-mode: normal` and no filter — the artwork is a painted
+    illustration and every attempt to tint it toward the page's palette turned
+    it into a sticker. On the box it is full-colour against flat orange, and
+    that contrast is the composition.
+  */
+  .player {
+    position: absolute;
+    left: 50%;
+    bottom: 0;
+    /*
+      Sized off the panel's *height*, not its width. The wall is the width-bound
+      element in here; matching him to the same axis meant he shrank whenever
+      the column narrowed and ended up a figurine standing under the rack. At
+      92% of the height he crosses the lower rows at every size, which is the
+      composition — the crop at his feet is what sells him as coming through.
+    */
+    height: 92%;
+    width: auto;
+    max-width: none;
+    transform: translateX(-50%);
+    object-fit: contain;
+    object-position: bottom center;
+    pointer-events: none;
+  }
+
+  /* The colophon strip --------------------------------------------------- */
+
+  .colophon {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: clamp(1rem, 2.5vw, 1.5rem);
+    padding-top: 0.75rem;
+    border-top: 2px solid rgb(0 0 0 / 0.28);
+    font-family: var(--font-arcade);
+    font-size: 0.8125rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--box-edge);
+    opacity: 0.7;
   }
 
   /*
-    The rally. Its own layer so the dots travel the full section — behind the
-    copy, which sits at `z-10`, so a ball crossing the headline reads as depth
-    rather than as clutter.
+    The rally's own layer, filling the art window. Inset by the panel's padding
+    would pen it under the rack; `inset: 0` lets it use the whole playfield,
+    which is what the ball actually has.
   */
   .rally {
     position: absolute;
@@ -257,6 +592,8 @@ const wall = Array.from({ length: WALL_TOTAL }, (_, i) => ({
     top: 0;
     width: var(--size);
     height: var(--size);
+    /* White again, now that it lives against the playfield's black rather than
+       the orange ground. */
     background: #fff;
     opacity: var(--alpha);
     animation:
@@ -305,6 +642,12 @@ const wall = Array.from({ length: WALL_TOTAL }, (_, i) => ({
   */
   .play {
     position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 1rem;
+    margin: clamp(1.5rem, 4vw, 2.25rem) auto 0;
+    font-size: 1.1rem;
+    letter-spacing: 0.08em;
     padding: 0.8em 1.6em;
     border: 0;
     border-radius: 0;
