@@ -9,38 +9,55 @@
    * chunk would cost more than it saves.
    */
   /*
-   * The coin, as a 14x14 pixel map. Drawn rather than shipped as an asset so it
+   * The coin, as a 16x16 pixel map. Drawn rather than shipped as an asset so it
    * inherits nothing and costs no request: `.` is a hole, and the letters index
-   * COIN_HUES below — dark rim, gold ring, light face, and a white specular
-   * streak running top-left to bottom-right.
+   * COIN_HUES below.
+   *
+   * **Seven tones, not four.** The 14x14 version had rim / ring / face /
+   * specular, which is a 2600 sprite: four flat bands and a hard step between
+   * each. This is the 16-bit read of the same object — the extra tones are all
+   * *intermediates*, so the gold ramps into the face instead of stepping into
+   * it, and there is a reflected bounce (`B`) along the lower-right inside edge
+   * where a real coin picks the tabletop back up.
+   *
+   * `S` is the shadow terminator, `R` the dark rim, `O` the outer gold, `G` the
+   * mid gold, `L` the lit face, `H` the highlight, `W` the specular streak
+   * running top-left to bottom-right. The grid is still pixel-snapped and still
+   * rendered with `crispEdges`: 16-bit is a bigger palette, not a blurrier one.
    */
   const COIN = [
-    '....DDDDDD....',
-    '..DDGGGGGGDD..',
-    '.DDGGLLLLGGDD.',
-    '.DGGLLLLLLGGD.',
-    'DDGLLWWLLLLGDD',
-    'DGGLLWWLLLLGGD',
-    'DGLLLLWWLLLLGD',
-    'DGLLLLLWWLLLGD',
-    'DGGLLLLLWWLGGD',
-    'DDGLLLLLLWLGDD',
-    '.DGGLLLLLLGGD.',
-    '.DDGGLLLLGGDD.',
-    '..DDGGGGGGDD..',
-    '....DDDDDD....',
+    '.....RRRRRR.....',
+    '...RRSSSSSSRR...',
+    '..RSSOOOOOOSSR..',
+    '.RSSOOGGGGOOSSR.',
+    '.RSOOGGLLLLGOOSR',
+    'RSOOGLLWWLLLGOOS',
+    'RSOGGLLWWLLLLGOS',
+    'RSOGLLLLWWLLLBGS',
+    'RSOGLLLLLWWLLBGS',
+    'RSOGGLLLLLWWLBGS',
+    'RSOOGLLLLLLWBBOS',
+    '.RSOOGGLLLLBBOSR',
+    '.RSSOOGGGGBBOSSR',
+    '..RSSOOOOBBOSSR.',
+    '...RRSSSSSSRR...',
+    '.....RRRRRR.....',
   ];
 
   const COIN_HUES: Record<string, string> = {
-    D: '#6b3f0e',
-    G: '#e2a013',
-    L: '#f8d347',
-    W: '#ffffff',
+    R: '#4a2a06',
+    S: '#8a5510',
+    O: '#c98a15',
+    G: '#e5aa22',
+    L: '#f7d34a',
+    H: '#fde98d',
+    W: '#fffbe8',
+    B: '#f0bd3c',
   };
 
   /*
-   * Horizontal runs, not one rect per pixel: 196 cells collapse to ~40 rects,
-   * and at 14 units across an SVG scaled to 44px every edge still lands on a
+   * Horizontal runs, not one rect per pixel: 256 cells collapse to ~90 rects,
+   * and at 16 units across an SVG scaled to 48px every edge still lands on a
    * whole device pixel.
    */
   const coinRects = COIN.flatMap((row, y) => {
@@ -205,7 +222,7 @@
   <!-- Its own layer: the coin keeps its own colours, so it must sit outside
        `.cursor-layer`, whose drop-shadow filter is tuned for a white dot. -->
   <div bind:this={coinEl} class="coin" class:show={coin} aria-hidden="true">
-    <svg class="coin__art" viewBox="0 0 14 14" shape-rendering="crispEdges">
+    <svg class="coin__art" viewBox="0 0 16 16" shape-rendering="crispEdges">
       {#each coinRects as r (`${r.x}-${r.y}`)}
         <rect x={r.x} y={r.y} width={r.w} height="1" fill={r.fill} />
       {/each}
@@ -293,28 +310,47 @@
 
   .coin__art {
     display: block;
-    width: 44px;
-    height: 44px;
+    width: 48px;
+    height: 48px;
     /*
-      The flip. `steps(1, end)` is what keeps it 8-bit: interpolating the scale
-      smoothly reads as a rubber disc, where jumping between four fixed widths
-      reads as a sprite sheet — which is how the arcade original did it.
+      The flip, stepped rather than interpolated — a smooth scale reads as a
+      rubber disc, where jumping between fixed widths reads as a sprite sheet,
+      which is how it was actually drawn.
+
+      **Eight frames, not four.** Four steps is the 2600 read: the coin snaps
+      between wide, half, edge and back, and each jump is visible as a jump.
+      Doubling the frames is the same trick as doubling the coin's palette —
+      still discrete, still no interpolation, but close enough together that the
+      eye reads rotation instead of stutter. This is the ceiling: at sixteen it
+      stops being a sprite sheet and may as well be a transition.
     */
-    animation: coin-flip 0.85s steps(1, end) infinite;
+    animation: coin-flip 0.9s steps(1, end) infinite;
   }
 
   @keyframes coin-flip {
     0% {
       transform: scaleX(1);
     }
+    12.5% {
+      transform: scaleX(0.82);
+    }
     25% {
       transform: scaleX(0.55);
     }
+    37.5% {
+      transform: scaleX(0.3);
+    }
     50% {
-      transform: scaleX(0.12);
+      transform: scaleX(0.1);
+    }
+    62.5% {
+      transform: scaleX(0.3);
     }
     75% {
       transform: scaleX(0.55);
+    }
+    87.5% {
+      transform: scaleX(0.82);
     }
   }
 

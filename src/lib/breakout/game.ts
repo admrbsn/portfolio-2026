@@ -52,6 +52,11 @@ const ROWS = [
 ] as const;
 
 const COLS = 11;
+
+/** Corner radius on every block — brick and paddle. Two device pixels is the
+ *  whole difference between the 8-bit slab this used to draw and the 16-bit one
+ *  it draws now; past three the rack starts reading as rounded UI chips. */
+const BRICK_RADIUS = 2;
 const ROW_COUNT = ROWS.length;
 export const BRICK_TOTAL = COLS * ROW_COUNT;
 
@@ -85,6 +90,7 @@ export class Breakout {
   private field = { x: 0, y: 0, w: 0, h: 0 };
   private brickW = 0;
   private brickH = 0;
+  private gap = 2;
   private gridX = 0;
   private gridY = 0;
   private paddleW = 0;
@@ -94,7 +100,9 @@ export class Breakout {
   private baseSpeed = 400;
 
   // Resolved on layout, never per frame — see `drawBricks`.
-  private rowFills: { face: string; lit: string; dark: string }[] = [];
+  /* `face` is a gradient rather than a colour string — one per row, rebuilt on
+     layout because a canvas gradient is bound to user-space coordinates. */
+  private rowFills: { face: CanvasGradient; lit: string; dark: string }[] = [];
   private bevel = 3;
 
   private bricks: Brick[] = [];
@@ -272,7 +280,11 @@ export class Breakout {
       h: this.h - top - bottom,
     };
 
-    const gap = Math.max(2, Math.round(fw * 0.005));
+    // Held on the instance, not local: `buildGradients` needs the same value to
+    // place each row's gradient, and two copies of this expression drifting
+    // apart would offset every ramp by a pixel or two per row.
+    this.gap = Math.max(2, Math.round(fw * 0.005));
+    const gap = this.gap;
     this.brickW = (this.field.w - gap * (COLS - 1)) / COLS;
     this.brickH = clamp(this.field.h * 0.042, 13, 26);
     this.gridX = this.field.x;
@@ -322,24 +334,35 @@ export class Breakout {
   }
 
   /**
-   * Three flat colours per row — face, lit edge, shadowed edge — resolved once
-   * per layout rather than per frame.
+   * One vertical gradient plus two rim colours per row, resolved once per
+   * layout rather than per frame.
    *
-   * These replaced positional canvas gradients. A vertical ramp reads as a
-   * moulded keycap; a sprite is a flat face with two hard bevel bands, and the
-   * hardness is the whole point. Flat fills are also cheaper: no gradient
-   * objects to allocate, and nothing that has to be rebuilt when the grid moves
-   * — only the bevel width still depends on layout.
+   * **A gradient per row, not per brick.** Canvas gradients are positioned in
+   * user space, and every brick in a row shares a `y` and a height — so one
+   * gradient built at layout serves all nine, and 66 `createLinearGradient`
+   * calls a frame become six calls a resize.
+   *
+   * The flat two-band bevel these replaced was a 2600 sprite, and it went when
+   * the CTA moved to the 16-bit idiom: the decoration and the real rack have to
+   * stay demonstrably one object, so both eras have to change together.
    */
   private buildGradients() {
-    this.rowFills = ROWS.map((row) => ({
-      face: row.color,
-      lit: shade(row.color, 0.45),
-      dark: shade(row.color, -0.4),
-    }));
-    // Never thinner than 2px, or the bevel disappears on a short brick and the
-    // block reads as a plain rectangle again.
-    this.bevel = Math.max(2, Math.round(this.brickH * 0.17));
+    const ctx = this.ctx;
+    this.rowFills = ROWS.map((row, i) => {
+      const y = this.gridY + i * (this.brickH + this.gap);
+      const grad = ctx.createLinearGradient(0, y, 0, y + this.brickH);
+      grad.addColorStop(0, shade(row.color, 0.32));
+      grad.addColorStop(0.46, row.color);
+      grad.addColorStop(1, shade(row.color, -0.28));
+      return {
+        face: grad,
+        lit: shade(row.color, 0.55),
+        dark: shade(row.color, -0.45),
+      };
+    });
+    // The rim is a single device pixel at any size — at two it is a bevel band
+    // again, which is the era this deliberately left.
+    this.bevel = 1;
   }
 
   private buildBricks() {
@@ -691,7 +714,7 @@ export class Breakout {
    */
   private drawBricks() {
     const ctx = this.ctx;
-    const bevel = this.bevel;
+    const rim = this.bevel;
 
     for (const brick of this.bricks) {
       if (!brick.alive) continue;
@@ -703,16 +726,18 @@ export class Breakout {
       const w = Math.round(brick.x + brick.w) - x;
       const h = Math.round(brick.y + brick.h) - y;
 
+      ctx.beginPath();
+      ctx.roundRect(x, y, w, h, BRICK_RADIUS);
       ctx.fillStyle = fill.face;
-      ctx.fillRect(x, y, w, h);
+      ctx.fill();
 
+      // Rim lines inset past the radius, so neither runs into a rounded corner
+      // and leaves a stray pixel outside the fill.
       ctx.fillStyle = fill.lit;
-      ctx.fillRect(x, y, w, bevel);
-      ctx.fillRect(x, y, bevel, h);
+      ctx.fillRect(x + BRICK_RADIUS, y, w - BRICK_RADIUS * 2, rim);
 
       ctx.fillStyle = fill.dark;
-      ctx.fillRect(x, y + h - bevel, w, bevel);
-      ctx.fillRect(x + w - bevel, y, bevel, h);
+      ctx.fillRect(x + BRICK_RADIUS, y + h - rim, w - BRICK_RADIUS * 2, rim);
     }
   }
 
@@ -733,22 +758,29 @@ export class Breakout {
     const y = Math.round(this.paddleY);
     const w = Math.round(this.paddleW);
     const h = Math.round(this.paddleH);
-    const bevel = Math.max(2, Math.round(h * 0.22));
+
+    // Rebuilt per frame, unlike the bricks': the paddle moves, so its gradient
+    // cannot be cached against a fixed y the way a static row's can. One
+    // gradient a frame is nothing; sixty-six would not be.
+    const grad = ctx.createLinearGradient(0, y, 0, y + h);
+    grad.addColorStop(0, '#9bffd0');
+    grad.addColorStop(0.46, '#3dff9e');
+    grad.addColorStop(1, '#16b273');
 
     ctx.save();
     ctx.shadowColor = 'rgba(61, 255, 158, 0.55)';
     ctx.shadowBlur = 18;
-    ctx.fillStyle = '#3dff9e';
-    ctx.fillRect(x, y, w, h);
+    ctx.beginPath();
+    ctx.roundRect(x, y, w, h, BRICK_RADIUS);
+    ctx.fillStyle = grad;
+    ctx.fill();
     ctx.restore();
 
-    ctx.fillStyle = '#c4ffe2';
-    ctx.fillRect(x, y, w, bevel);
-    ctx.fillRect(x, y, bevel, h);
+    ctx.fillStyle = '#ddfff0';
+    ctx.fillRect(x + BRICK_RADIUS, y, w - BRICK_RADIUS * 2, 1);
 
-    ctx.fillStyle = '#12c877';
-    ctx.fillRect(x, y + h - bevel, w, bevel);
-    ctx.fillRect(x + w - bevel, y, bevel, h);
+    ctx.fillStyle = '#0e8f5c';
+    ctx.fillRect(x + BRICK_RADIUS, y + h - 1, w - BRICK_RADIUS * 2, 1);
   }
 
   private drawBall() {

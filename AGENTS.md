@@ -109,31 +109,36 @@ from that array rather than hardcoding a hex, or the decoration drifts from the
 game it advertises. The narrow-hue accent rule in `global.css` does not apply
 here and only here.
 
-**The section is the 1978 Atari box, rebuilt.** Orange ground (`#ff8924`), the
-wordmark in Baumans over a hard offset shadow in a *darker orange* (the
-original's shadow is not black, which is why the lettering reads as printed
-rather than embossed), two lines of red subhead, a numeral block and a spec
-block either side of a bordered art window. Every value is sampled off the
-artwork rather than eyeballed. This file's whole palette is literals by design —
-`check:tokens` allow-lists the component for exactly that reason.
+**The section is the Atari cartridge label, rebuilt** — the *black* one, not the
+orange box. Atari shipped both, and the orange was only ever the reference for
+the composition: a slab of flat orange on a page whose whole surface is
+near-black read as an unrelated object rather than as one sitting on it. The
+label is the same layout on a ground the page already has.
+
+Near-black ground with a warm lift falling out of the top edge — deliberately
+almost nothing, so the panel reads as lit from above rather than as a hole cut
+in the page. Push that gradient any further and the section starts competing
+with the hero, which is the one thing on the site allowed a real wash.
+
+The wordmark is Baumans in the cartridge's own yellow (`#fffe00`, sampled) over
+a hard offset shadow in a **darker yellow**, never black: black behind yellow
+reads as an outline, where a darker tint of the ink reads as the mark sitting
+slightly off the label. Then two lines of white subhead, a numeral block and a
+spec block either side of a bordered art window. This file's whole palette is
+literals by design — `check:tokens` allow-lists the component for that reason.
 
 **What is deliberately not borrowed is the branding.** The Atari fuji, the ATARI
 wordmark and the CX2622 part number are a real company's marks, and stamping
 them on a personal site is impersonation rather than homage. The composition is
 the reference, not the identity; the colophon strip names this site instead.
 
-**Colour behind the section only works because it is contained.** A four-field
-background glow, a rainbow title gradient and a rainbow launch button were all
-tried and cut when this section was black — against a rack that is already six
-saturated hues, more colour behind, above and below left nothing quiet enough to
-read it by. That objection is answered by the box, not overturned by it: the
-orange lives inside a bordered panel and the rack lives inside a *second*
-bordered window on a dark ground, so the six hues never sit loose on the orange.
-Take either border away and the earlier failure comes straight back.
-
-The button stays a brushed-silver coin slot — square corners, hard pixel bevel,
-zero blur anywhere in it. One blurred shadow and it stops reading as 8-bit and
-starts reading as a skeuomorphic button.
+**The rack still needs its own window.** A four-field background glow, a rainbow
+title gradient and a rainbow launch button were all tried and cut — against a
+rack already carrying six saturated hues, more colour behind, above and below
+left nothing quiet enough to read the section by. What answers that here is
+containment, not the ground being dark: the rack sits in a bordered panel of its
+own, one step darker than the label around it. Take that border away and the six
+hues float loose again.
 
 The player illustration is painted **over** the bricks and cropped by the
 window's bottom edge; that crop is what sells him as coming *through* the wall
@@ -179,11 +184,20 @@ background cost. Anything animated added here must join that gate. Reduced
 motion parks the ball mid-stage rather than hiding it, so the composition still
 reads as a game in progress.
 
-The rally lives **inside the art window**, not loose in the section. It crossed
-the whole thing while the section was black; on the orange ground the same
-squares read as specks of dirt on printed card — and the box itself has no ball
-flying across its artwork. It is ordered before the player so it passes behind
-him; over his face it reads as a blemish rather than as depth.
+The rally lives **inside the art window**, not loose in the section — the box has
+no ball flying across its artwork, and confined here it is doing the thing it
+was always for, in the only place a ball belongs. It is ordered before the
+player so it passes behind him; over his face it reads as a blemish rather than
+as depth.
+
+The **coin cursor** (`Cursor.svelte`) moved with everything else: a 16×16 pixel
+map in seven tones rather than 14×14 in four, and an eight-frame flip rather
+than four. Both extra halves are the same trick — the added tones are all
+*intermediates* so the gold ramps into the face instead of stepping into it, and
+the added frames sit close enough together that the eye reads rotation instead
+of stutter. It is still pixel-snapped, still `crispEdges`, still `steps(1, end)`:
+**16-bit is a bigger palette, not a blurrier one.** Sixteen frames would stop
+being a sprite sheet and may as well be a transition.
 
 Two deliberate eager font costs, both for this one below-the-fold section: Tiny5
 (`--font-arcade`, latin, ~9KB) for every small line, and Baumans
@@ -193,26 +207,47 @@ display face here without first moving both into the game's own lazily-loaded
 stylesheet** — the justification for keeping them eager is that the CTA renders
 them, and that budget is now spent.
 
-**Every block on both sides is the same object.** The CTA's rack, the canvas
-bricks and the paddle all render as a square, flat-filled block with a hard
-two-tone bevel — lit along the top and left, shadowed along the bottom and
-right, drawn light-first so the dark bands own the bottom-left and top-right
-corners (the standard pixel-art mitre). The ball and its trail are raw squares.
+**Every block on both sides is the same object, and the whole section is now
+16-bit rather than 8-bit.** The CTA's rack, the canvas bricks and the paddle all
+render as a vertical ramp across the face, a bright one-pixel rim along the top,
+a dark one along the bottom, and a two-pixel corner radius.
 
-What this replaced: rounded corners plus a vertical gradient, which read as a
-moulded keycap. A flat face with two hard bands reads as a sprite, and the
-hardness is the point — **no blur and no gradient anywhere in the block
-treatment**, on either side. One soft edge and it stops being pixel art.
+This reverses an earlier decision, and the reversal is the point worth keeping:
+these used to be flat faces with hard two-pixel bevel bands, drawn light-first
+so the dark bands owned the standard pixel-art mitre — a 2600 sprite, on the
+argument that **no blur and no gradient anywhere** is what stops pixel art
+becoming skeuomorphism. That argument was right for the era it was making. The
+section moved eras, so both sides moved together — softening only the decoration
+would have made the preview a lie about the game it opens. **That coupling is
+the durable rule**: change one and change the other in the same commit.
 
-Two consequences in `game.ts`:
+Three things carry the new treatment, and dropping any one lands in flat-vector
+territory rather than in either era:
 
-- `buildGradients()` no longer builds canvas gradients; it resolves three flat
-  colours per row (face / lit / dark) plus a bevel width. Flat fills allocate
-  nothing, so the only thing still tied to layout is the bevel width. `brickGap`
-  became dead when the positional gradients went and was removed.
-- **Brick coordinates are rounded at draw time.** A bevel two or three pixels
-  wide is exactly the thing a half-pixel offset turns to mush, and the layout
-  maths is fractional.
+- the **ramp** stays inside the hue (mixed toward white and black, never a
+  second hue), or the rack stops reading as six rows of one material;
+- the **rim lines** are one device pixel and opaque — at two they are a bevel
+  band again;
+- the **radius** is two pixels. Past three the rack reads as rounded UI chips.
+
+The ball and its trail are still raw squares, and the coin button's press is
+still stepped: a coin mech has no in-between state whatever the era.
+
+Three consequences in `game.ts`:
+
+- `buildGradients()` builds canvas gradients again — **one per row, not one per
+  brick.** Canvas gradients live in user space and every brick in a row shares a
+  `y` and a height, so one gradient at layout serves all eleven, and 66
+  `createLinearGradient` calls a frame become six a resize. The paddle is the
+  exception: it moves, so its gradient is rebuilt per frame, which is one call
+  and not sixty-six.
+- The brick gap is held on the instance (`this.gap`) rather than being a local
+  in `layout()`. `buildGradients` needs the same value to place each row's
+  gradient, and two copies of that expression drifting apart would offset every
+  ramp by a pixel or two per row.
+- **Brick coordinates are still rounded at draw time**, and the rim lines are
+  inset past the radius so neither runs into a rounded corner and leaves a stray
+  pixel outside the fill.
 
 Two invariants inside the game:
 

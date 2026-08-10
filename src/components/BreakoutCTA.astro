@@ -232,30 +232,38 @@ const SPEC = [
 
 <style>
   /*
-    The box's own ink, sampled off the 1978 artwork rather than eyeballed:
-    ground #ff8924, red #dc010b, a warm off-white for the wordmark, and a
-    *darker orange* for its drop shadow — the original's shadow is not black,
-    which is why the lettering reads as printed rather than as embossed.
+    **The cartridge, not the box.** Atari shipped both, and the two have
+    different grounds: the 1978 box is flat orange, the cartridge label is
+    black with the wordmark in a pure saturated yellow (#fffe00, sampled). The
+    orange was only ever the reference for the *composition* — on a page whose
+    whole surface is near-black it read as a slab of unrelated colour rather
+    than as an object on it. The black label is the same layout on a ground the
+    page already has.
+
+    The gradient is deliberately almost nothing: a warm lift falling out of the
+    top edge, so the panel reads as lit from above rather than as a flat hole
+    cut in the page. Push it any further and the section starts competing with
+    the hero, which is the one thing on the site allowed to carry a wash.
 
     This section is the documented off-brand island, so these are literals by
     design; `check:tokens` allow-lists this file for exactly that reason.
   */
   .cart {
-    --box: #ff8924;
-    --box-red: #dc010b;
-    --box-white: #fff9f1;
-    --box-shade: #c96d1c;
-    --box-edge: #17110b;
+    --box-ink: #fffe00;
+    --box-white: #f4f1ea;
+    --box-dim: rgb(244 241 234 / 0.62);
+    --box-shade: #6b6a04;
+    --box-edge: rgb(255 255 255 / 0.14);
 
     position: relative;
-    width: min(56rem, 100%);
-    background: var(--box);
-    /* Square, and a thick hard edge — a printed box has a trimmed edge, not a
-       radius. `--radius-ui` deliberately does not reach here. */
+    width: min(64rem, 100%);
+    background:
+      radial-gradient(115% 70% at 50% -8%, #262220 0%, transparent 62%),
+      linear-gradient(180deg, #141312 0%, #0a0a09 100%);
+    /* A hairline rather than the box's thick trimmed edge: on black, a 3px
+       black border is invisible and a 3px light one reads as a UI panel. */
     border-radius: 0;
-    box-shadow:
-      0 0 0 3px var(--box-edge),
-      0 0 0 6px rgb(255 255 255 / 0.06);
+    box-shadow: 0 0 0 1px var(--box-edge);
     overflow: hidden;
   }
 
@@ -273,18 +281,18 @@ const SPEC = [
     font-family: var(--font-arcade);
     font-size: 0.9375rem;
     letter-spacing: 0.06em;
-    color: var(--box-edge);
-    opacity: 0.75;
+    color: var(--box-dim);
   }
 
   /*
-    The wordmark. Baumans set tight and wide, in the box's warm white, over a
-    hard offset shadow in the darker orange.
+    The wordmark. Baumans in the cartridge's yellow, over a hard offset shadow
+    in a darker olive of the same hue.
 
     `text-shadow` with **zero blur** — the original is flat printed ink and one
     soft shadow turns it into a 2005 web header. The offset is the only depth
-    cue, and it goes down-right because that is where the box's own light
-    leaves it.
+    cue. The shadow is a *darker yellow*, never black: black behind yellow reads
+    as an outline, where a darker tint of the ink itself reads as the mark
+    sitting slightly off the label.
   */
   .wordmark {
     margin-top: 0.15rem;
@@ -294,8 +302,11 @@ const SPEC = [
     line-height: 0.92;
     letter-spacing: 0.01em;
     text-transform: uppercase;
-    color: var(--box-white);
-    text-shadow: 4px 4px 0 var(--box-shade);
+    color: var(--box-ink);
+    /* Offset in `em`, not px: the wordmark clamps across a 2.4x range, and a
+       fixed 4px shadow that reads as a print offset at 104px reads as a smear
+       at 44px. */
+    text-shadow: 0.05em 0.05em 0 var(--box-shade);
   }
 
   /*
@@ -327,7 +338,7 @@ const SPEC = [
     line-height: 1.15;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    color: var(--box-red);
+    color: var(--box-white);
   }
 
   .subhead + .subhead {
@@ -353,12 +364,12 @@ const SPEC = [
      columns broke every one of them onto a second line. */
   @media (min-width: 48rem) {
     .band {
-      grid-template-columns: minmax(0, 0.72fr) minmax(0, 1.5fr) minmax(0, 1fr);
+      grid-template-columns: minmax(0, 0.5fr) minmax(0, 2.4fr) minmax(0, 0.8fr);
     }
   }
 
   .count {
-    color: var(--box-red);
+    color: var(--box-ink);
     text-align: center;
   }
 
@@ -392,7 +403,7 @@ const SPEC = [
     line-height: 1.45;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    color: var(--box-red);
+    color: var(--box-dim);
     text-align: center;
   }
 
@@ -405,10 +416,9 @@ const SPEC = [
   /* The art window ------------------------------------------------------- */
 
   /*
-    The bordered panel the illustration and the rack share. Its dark ground is
-    what the six brick hues are legible against — on the bare orange they fought
-    it, which is the whole reason the earlier "colour behind the section"
-    attempts were cut.
+    The panel the illustration and the rack share. Slightly darker than the
+    label around it, with a hairline edge — on a black ground the window has to
+    be found by its border rather than by its fill.
 
     `isolation: isolate` so the player's stacking stays local to this panel and
     cannot climb over the copy above it.
@@ -417,17 +427,19 @@ const SPEC = [
     position: relative;
     isolation: isolate;
     /*
-      The rack sits at roughly a quarter down, not at the top. That is where the
+      The rack sits at roughly a fifth down, not at the top. That is where the
       box prints its brick rows, and it is what leaves the figure something to
       come *through* — pinned to the top edge, he passes under the wall instead
       and the whole point is lost.
     */
-    padding: 22% clamp(0.75rem, 2vw, 1.15rem) 0;
-    background: #12100f;
-    box-shadow: 0 0 0 3px var(--box-edge);
+    padding: 18% clamp(0.75rem, 2vw, 1.25rem) 0;
+    background: radial-gradient(120% 100% at 50% 0%, #16151a 0%, #08080a 70%);
+    box-shadow: 0 0 0 1px var(--box-edge);
     /* A ratio rather than a height, so the panel keeps its proportion as the
-       column narrows. */
-    aspect-ratio: 4 / 3;
+       column narrows. Wider than the box's own 4:3 window: the rack is nine
+       bricks across and the figure has to clear them, and at 4:3 both were
+       being squeezed to fit a square-ish frame. */
+    aspect-ratio: 16 / 10;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -436,28 +448,48 @@ const SPEC = [
   .wall {
     display: grid;
     grid-template-columns: repeat(9, 1fr);
-    gap: 4px;
+    gap: 6px;
   }
 
+  /*
+    **16-bit, not 8-bit.** These bricks used to be a flat face with two hard
+    two-pixel bevel bands — a 2600 sprite, drawn light-first so the dark bands
+    owned the standard pixel-art mitre. That treatment is gone here *and* in
+    `game.ts`, deliberately and together: the CTA's rack and the canvas rack
+    have to stay demonstrably one object, and softening only the decoration
+    would make the preview a lie about the game it opens.
+
+    What replaced it is the later console idiom — a vertical ramp across the
+    face, a bright one-pixel rim along the top, a dark one along the bottom, a
+    small radius, and a real soft drop shadow underneath. Three things carry it,
+    and dropping any one of them lands back in flat-vector territory rather than
+    in either era:
+
+    - the **ramp** has to stay inside the hue (a `color-mix` toward white and
+      black, never a second hue), or the rack stops reading as six rows of one
+      material;
+    - the **rim lines** are 1px and opaque — at 2px they become a bevel again;
+    - the **shadow** is the only blur in here, and it belongs to the brick, not
+      to the light: tight, barely offset, and dark enough to lift the slab off
+      the playfield.
+  */
   .wall > i {
     /* Aspect rather than a fixed height: the rack has to keep its slab
        proportion as the art window narrows, and a 22px brick in a 240px-wide
        panel reads as a stripe. */
-    aspect-ratio: 5 / 2;
-    /*
-      Square, flat, and bevelled on all four sides — the same block the canvas
-      draws, so the decoration and the real rack are demonstrably one object.
-
-      Lit along the top and left, shadowed along the bottom and right. The
-      gradient this replaced read as a moulded keycap; a flat face with two hard
-      bands reads as a sprite, and the hardness is the whole point. Every value
-      is spread-only — one blurred shadow and it stops being pixel art.
-    */
-    background: var(--c);
+    aspect-ratio: 4 / 1.7;
+    border-radius: 2px;
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--c) 74%, white) 0%,
+      var(--c) 46%,
+      color-mix(in srgb, var(--c) 68%, black) 100%
+    );
     box-shadow:
-      inset 3px 3px 0 color-mix(in srgb, var(--c) 55%, white),
-      inset -3px -3px 0 color-mix(in srgb, var(--c) 60%, black);
-    opacity: 0.85;
+      inset 0 1px 0 color-mix(in srgb, var(--c) 40%, white),
+      inset 0 -1px 0 color-mix(in srgb, var(--c) 45%, black),
+      0 2px 3px rgb(0 0 0 / 0.45);
+    opacity: 0.92;
     animation: wall-churn 8s linear infinite;
     animation-delay: var(--d);
     /* Held until the section is actually on screen — see the observer below.
@@ -472,15 +504,21 @@ const SPEC = [
 
   /* Knocked out. Kept in the grid as an empty socket rather than removed, so
      the rack still reads as a rack with a hole in it — drop the element and the
-     surviving bricks close ranks and the damage disappears. No bevel: an empty
-     slot is a recess, not a slab. */
+     surviving bricks close ranks and the damage disappears. A recess, so its
+     ramp and rim run the other way: dark at the top, light at the foot. */
   .wall > i[data-gone] {
-    background: rgb(255 255 255 / 0.035);
-    /* The socket keeps a bevel too, inverted — a recess is a block pressed in,
-       so its lit and shadowed edges swap sides. */
+    /*
+      Lifted well clear of the playfield's own black. On the orange ground a
+      socket only had to be darker than the card; here the panel is already
+      near-black, and at the alpha this started on the wedge stopped reading as
+      *damage* and started reading as rows that were never printed. The notch is
+      the whole picture of the mechanic, so the empty slots have to stay findable.
+    */
+    background: linear-gradient(180deg, rgb(0 0 0 / 0.6) 0%, rgb(255 255 255 / 0.07) 100%);
     box-shadow:
-      inset 3px 3px 0 rgb(0 0 0 / 0.5),
-      inset -3px -3px 0 rgb(255 255 255 / 0.04);
+      inset 0 1px 0 rgb(0 0 0 / 0.7),
+      inset 0 -1px 0 rgb(255 255 255 / 0.1),
+      inset 0 0 0 1px rgb(255 255 255 / 0.05);
     opacity: 1;
     animation: none;
   }
@@ -538,7 +576,7 @@ const SPEC = [
       92% of the height he crosses the lower rows at every size, which is the
       composition — the crop at his feet is what sells him as coming through.
     */
-    height: 92%;
+    height: 104%;
     width: auto;
     max-width: none;
     transform: translateX(-50%);
@@ -560,8 +598,7 @@ const SPEC = [
     font-size: 0.8125rem;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: var(--box-edge);
-    opacity: 0.7;
+    color: var(--box-dim);
   }
 
   /*
@@ -631,14 +668,22 @@ const SPEC = [
   }
 
   /*
-    A coin slot, not a key. Brushed-silver faceplate with a hard pixel bevel and
-    a real slit milled into it — the thing the coin cursor is being offered to.
+    A coin slot, not a key. Brushed-silver faceplate with a real slit milled
+    into it — the thing the coin cursor is being offered to.
 
-    Square corners and zero blur throughout: every edge is a step. One blurred
-    shadow anywhere in here and it stops reading as 8-bit and starts reading as
-    a skeuomorphic button, which is the opposite of the point. The outer rings
-    are stacked spread-only shadows, so the whole chunky frame costs no extra
-    elements.
+    **16-bit, matching the rack.** It used to be square-cornered with a
+    stepped two-pixel bevel and zero blur anywhere, on the argument that one
+    soft shadow turns 8-bit into skeuomorphism. That argument is sound and it is
+    no longer the argument being made: the whole section moved to the later
+    console idiom, and a hard-stepped plate beside gradient-faced bricks reads
+    as two objects from two machines.
+
+    What changed, and what did not: it keeps the milled slit, the two-tone
+    frame, and the plate thickness that gives the press somewhere to go. It
+    gains a small radius, a smoother ramp with more stops, softened rim lines,
+    and one blurred shadow under the plate. It does **not** gain a glow, a
+    gradient border, or an eased transition — the press still snaps in steps,
+    because a coin mech has no in-between state whatever the era.
   */
   .play {
     position: relative;
@@ -648,29 +693,34 @@ const SPEC = [
     margin: clamp(1.5rem, 4vw, 2.25rem) auto 0;
     font-size: 1.1rem;
     letter-spacing: 0.08em;
-    padding: 0.8em 1.6em;
+    padding: 0.85em 1.7em;
     border: 0;
-    border-radius: 0;
-    color: #14181c;
+    border-radius: 4px;
+    color: #10141a;
+    /* More stops than the plate needs to look metal, because the extra pair is
+       what puts a highlight *band* across the top third rather than a single
+       ramp from light to dark. */
     background: linear-gradient(
       to bottom,
-      #f2f5f7 0%,
-      #d3dae0 34%,
-      #b0b8bf 58%,
-      #8d959d 100%
+      #fbfdfe 0%,
+      #e3e9ee 18%,
+      #c3ccd4 46%,
+      #aab4bd 62%,
+      #8e98a1 100%
     );
     box-shadow:
-      /* pixel bevel, cut into the plate */
-      inset 0 3px 0 rgb(255 255 255 / 0.85),
-      inset 3px 0 0 rgb(255 255 255 / 0.32),
-      inset -3px 0 0 rgb(0 0 0 / 0.22),
-      inset 0 -3px 0 rgb(0 0 0 / 0.3),
-      /* chunky two-tone frame */
-      0 0 0 3px #626b73,
-      0 0 0 6px #20252a,
+      inset 0 1px 0 rgb(255 255 255 / 0.95),
+      inset 1px 0 0 rgb(255 255 255 / 0.4),
+      inset -1px 0 0 rgb(0 0 0 / 0.18),
+      inset 0 -1px 0 rgb(0 0 0 / 0.25),
+      /* two-tone frame, thinner than the stepped one it replaced */
+      0 0 0 2px #5b656e,
+      0 0 0 4px #1b2026,
       /* the plate's own thickness, so pressing it has somewhere to go */
-      0 9px 0 0 #20252a;
-    /* Stepped, not eased: the press should snap between two states. */
+      0 7px 0 0 #1b2026,
+      /* the one blur: the plate's shadow on the label behind it */
+      0 12px 18px -6px rgb(0 0 0 / 0.65);
+    /* Stepped, not eased: a coin mech has no in-between state. */
     transition:
       transform 80ms steps(2, end),
       box-shadow 80ms steps(2, end),
@@ -678,31 +728,35 @@ const SPEC = [
   }
 
   .play:hover {
-    filter: brightness(1.07);
+    filter: brightness(1.06);
   }
 
   .play:active {
-    transform: translateY(6px);
+    transform: translateY(5px);
     box-shadow:
-      inset 0 3px 0 rgb(255 255 255 / 0.5),
-      inset 3px 0 0 rgb(255 255 255 / 0.2),
-      inset -3px 0 0 rgb(0 0 0 / 0.28),
-      inset 0 -3px 0 rgb(0 0 0 / 0.36),
-      0 0 0 3px #626b73,
-      0 0 0 6px #20252a,
-      0 3px 0 0 #20252a;
+      inset 0 1px 0 rgb(255 255 255 / 0.6),
+      inset 1px 0 0 rgb(255 255 255 / 0.25),
+      inset -1px 0 0 rgb(0 0 0 / 0.24),
+      inset 0 -1px 0 rgb(0 0 0 / 0.3),
+      0 0 0 2px #5b656e,
+      0 0 0 4px #1b2026,
+      0 2px 0 0 #1b2026,
+      0 5px 10px -4px rgb(0 0 0 / 0.6);
   }
 
-  /* The slit. Vertical, because that is the way a coin goes in. */
+  /* The slit. Vertical, because that is the way a coin goes in — and recessed
+     with a soft inner shadow now rather than a hard black rectangle, so it
+     reads as milled depth rather than as a painted-on mark. */
   .play__slot {
-    width: 0.34em;
-    height: 1.4em;
+    width: 0.36em;
+    height: 1.45em;
     flex: none;
-    background: #0d1013;
+    border-radius: 2px;
+    background: linear-gradient(to bottom, #05070a 0%, #171d24 100%);
     box-shadow:
-      inset 0 0 0 1px #000,
-      0 0 0 2px rgb(255 255 255 / 0.55),
-      0 0 0 3px rgb(0 0 0 / 0.35);
+      inset 0 1px 2px rgb(0 0 0 / 0.9),
+      0 0 0 1px rgb(255 255 255 / 0.6),
+      0 1px 2px rgb(255 255 255 / 0.35);
   }
 
   /* While the chunk is in flight. */
