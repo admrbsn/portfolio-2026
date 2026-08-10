@@ -22,7 +22,7 @@ const work = defineCollection({
       /*
         There is deliberately no per-case `accent`. Case studies used to carry
         their own OKLCH hue (Tribute teal, Peterson's green, V3 amber), which
-        meant the brand green/yellow was absent from exactly the pages doing the
+        meant the brand accent was absent from exactly the pages doing the
         most persuading. Everything now reads the global --color-accent and
         --color-accent-warm.
       */

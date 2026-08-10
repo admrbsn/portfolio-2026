@@ -22,30 +22,48 @@ the page.
 | `--color-surface` | `oklch(0.16 0.004 240)` | The page |
 | `--color-surface-lift` | `oklch(0.21 0.006 240)` | Raised fills |
 | `--color-line` | `oklch(1 0 0 / 0.14)` | Every hairline |
-| `--color-accent` | `oklch(0.8 0.15 138)` | Brand green, 10.9:1 |
-| `--color-accent-warm` | `oklch(0.86 0.15 108)` | Gradient tails only, never body text |
-| `--color-status` | `oklch(0.84 0.14 140)` | Availability, 12.4:1 |
+| `--color-accent` | `oklch(0.76 0.14 22)` | Brand coral, 8.5:1 |
+| `--color-accent-warm` | `oklch(0.83 0.1 50)` | Gradient tails only, never body text |
+| `--color-status` | `oklch(0.8 0.11 26)` | Availability, 10:1 |
 
-Four rules, each of which cost something to learn:
+Five rules, each of which cost something to learn:
 
-**Every accent stop must be inside sRGB.** `--color-accent` was
+**Every accent stop must be inside sRGB.** An earlier `--color-accent` was
 `oklch(0.84 0.19 168)`, whose red channel resolves to **-0.065** — the browser
 clamps it to zero and paints `#00f0b2`, the most saturated green-cyan the display
-can make, not the colour written down. At these lightnesses the green-cyan hues
-fall out of gamut around C 0.15, so the family is held at **C 0.14–0.15**. Before
-changing any stop, check it converts without a negative channel. Chroma past the
-gamut edge is not more vibrant — it is clipped, and it clips inconsistently
-across hues, which is exactly how a palette drifts out of family.
+can make, not the colour written down. Before changing any stop, check it
+converts without a negative channel. Chroma past the gamut edge is not more
+vibrant — it is clipped, and it clips inconsistently across hues, which is
+exactly how a palette drifts out of family.
 
-**Mint is a light blue-green; the fix for it is hue, not chroma.** Fixing the
-clipping (H 168 → 174) removed the electric edge but still read minty. The accent
-is now **H 138**, a yellow-green leaning toward `<NoiseGradient>`'s khaki
-highlight (H 100) rather than its teal blob (H 178). That was chosen by rendering
-H 138/150/162 against the live hero, not by reasoning about it.
+**On warm hues, lower the lightness to gain chroma.** This is the whole tuning
+story of the current accent and the single most useful thing on this page.
+sRGB's warm quadrant is its *smallest*, because the red channel saturates at 255
+long before the other two run out — so the ceiling falls steeply as lightness
+rises. Measured at H 22: **C 0.155 at L 0.74, C 0.125 at L 0.78, C 0.10 at
+L 0.82.** The green accent this replaced held C 0.15 at L 0.80 without trying.
+Coral cannot, so the lightness came *down* to 0.76 to buy the chroma back.
+Raising L and holding C ships a pale salmon, or clips.
 
-**`--color-accent-warm` is only 30° away.** That is tight, but it is the entire
+That is also why the gradient stops do **not** share one chroma the way the old
+green ramp's did — each sits at its own ceiling. Flattening them either clips the
+dark end or beiges the light end.
+
+**The accent follows the hero wash, not the other way round.** It is tuned to
+`<NoiseGradient>`'s `sunset` coral band, and `--color-accent-warm` to its peach
+highlight, so a gradient tail resolves into a colour already present behind it.
+**Changing the default variant means moving these three tokens with it** — the
+last brand palette left a lone green dot and a green chip on a coral wash, which
+reads as an oversight rather than as an accent.
+
+**`--color-accent-warm` is only 28° away.** That is tight, but it is the entire
 range the gradients have. Don't push the accent warmer without moving the warm
 token too, or both ramps flatten into one colour.
+
+**`--color-status` gives up green-means-go**, knowingly. The label beside it
+reads "Available for work", so the words carry the meaning and the dot only has
+to look lit. If the signal ever has to be unmistakable *without* its label, that
+is the argument for taking green back — not aesthetics.
 
 **Paragraph copy has exactly two roles, and they are set by size.**
 
@@ -81,7 +99,7 @@ editing the number here.
 
 **One accent palette, site-wide.** Case studies used to carry a per-entry hue in
 frontmatter (Tribute teal, Peterson's green, V3 amber). That is gone: the brand
-green/yellow is the only accent anywhere, so the pages doing the most persuading
+coral/peach is the only accent anywhere, so the pages doing the most persuading
 are the ones wearing the brand. Don't reintroduce a per-page hue without a reason
 that survives seeing all five studies side by side.
 

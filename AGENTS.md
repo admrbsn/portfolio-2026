@@ -60,6 +60,10 @@ Read those before touching anything visual. The short version, for orientation:
 - **Two type families** (Google Sans for UI and body, Vidaloka for display),
   **one accent palette** site-wide, **one radius** (`--radius-ui`, 3px). Every
   exception is listed in `tokens.md`; if it is not on that list, it is a mistake.
+- **The accent follows the hero wash.** `--color-accent` / `-warm` / `--color-status`
+  are tuned to `<NoiseGradient>`'s default `sunset` variant. Changing that
+  default means moving those three tokens and both gradient ramps with it, or
+  the page ends up with an orphaned hue.
 - **The three display steps are one ladder** — `--text-display` /
   `--text-title` / `--text-stat`, 80/60/48 at 1440. Move one and you have to
   move the others, or the step above stops reading as the step above.
@@ -324,11 +328,10 @@ appear here.
 
 The hero's wash is **`<NoiseGradient intensity="soft" />`, the same component the
 homepage and `/about` use** — not a copy of it. A hand-rolled copy drifted: it
-was two radials of `--color-accent` and `--color-accent-warm`, the brand green
-and yellow, where the shared wash is a khaki highlight over a teal blob on a teal
-base tint. Same family on paper, visibly different in the frame. `soft` is what
-keeps the two from being identical — same palette, smaller blobs held to the
-corner.
+was two radials of `--color-accent` and `--color-accent-warm` — the accent
+tokens — where the shared wash is a three-blob ramp with its own values. Same
+family on paper, visibly different in the frame. `soft` is what keeps the two
+from being identical — same palette, smaller blobs held to the corner.
 
 **The `cover` renders only as a watermark.** It was tried twice as an image —
 a full-bleed pinned backdrop behind the title, then a full-width band below the
