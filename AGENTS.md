@@ -109,36 +109,53 @@ from that array rather than hardcoding a hex, or the decoration drifts from the
 game it advertises. The narrow-hue accent rule in `global.css` does not apply
 here and only here.
 
-**The section is the Atari cartridge label, rebuilt** — the *black* one, not the
-orange box. Atari shipped both, and the orange was only ever the reference for
-the composition: a slab of flat orange on a page whose whole surface is
-near-black read as an unrelated object rather than as one sitting on it. The
-label is the same layout on a ground the page already has.
-
-Near-black ground with a warm lift falling out of the top edge — deliberately
-almost nothing, so the panel reads as lit from above rather than as a hole cut
-in the page. Push that gradient any further and the section starts competing
-with the hero, which is the one thing on the site allowed a real wash.
+**The section takes the Atari cartridge label's *composition*, and nothing of
+its object.** It went through the orange box and then a bordered black panel
+before landing here, and both intermediate steps failed the same way: a hard
+edge across the page turns the section into an object sitting on the site rather
+than part of it, and caps the whole thing at a width the rack and the figure
+were both fighting. What survives is the layout — masthead, then a numeral block
+and a spec block either side of the illustration — spread across `min(84rem,
+100%)` with no frame at all.
 
 The wordmark is Baumans in the cartridge's own yellow (`#fffe00`, sampled) over
 a hard offset shadow in a **darker yellow**, never black: black behind yellow
 reads as an outline, where a darker tint of the ink reads as the mark sitting
-slightly off the label. Then two lines of white subhead, a numeral block and a
-spec block either side of a bordered art window. This file's whole palette is
-literals by design — `check:tokens` allow-lists the component for that reason.
+slightly off the label. The shadow offset is in `em` — the wordmark clamps
+across a 2.4x range, and a fixed 4px offset that reads as print at 104px reads
+as a smear at 44px. This file's whole palette is literals by design;
+`check:tokens` allow-lists the component for that reason.
 
 **What is deliberately not borrowed is the branding.** The Atari fuji, the ATARI
 wordmark and the CX2622 part number are a real company's marks, and stamping
 them on a personal site is impersonation rather than homage. The composition is
 the reference, not the identity; the colophon strip names this site instead.
 
-**The rack still needs its own window.** A four-field background glow, a rainbow
-title gradient and a rainbow launch button were all tried and cut — against a
-rack already carrying six saturated hues, more colour behind, above and below
-left nothing quiet enough to read the section by. What answers that here is
-containment, not the ground being dark: the rack sits in a bordered panel of its
-own, one step darker than the label around it. Take that border away and the six
-hues float loose again.
+**The section carries a four-field wash, which reverses an older decision.** One
+was tried and cut before, along with a rainbow title and a rainbow button, on
+the grounds that against a rack already carrying six saturated hues nothing was
+left quiet enough to read the section by. That reasoning was about the *rack*,
+and it still holds — so the wash never touches it. The rack sits on a soft
+radial that has fallen to nothing well before its column ends: what it needs is
+something darker *behind* it, which is a different requirement from a frame.
+
+The wash is built from `ROW_COLOURS`, published onto the section as `--row-0..5`
+in the frontmatter rather than restated as six hexes in the CSS. Violet
+upper-left, cyan lower-right, a red bloom behind the masthead, a yellow lift
+under the foot — laid out so the eye crosses the spectrum instead of sitting in
+one colour. **Alpha is the entire tuning surface**, and past ~0.16 it starts
+bleeding into the rack's radial and the old problem comes straight back.
+
+It drifts, very slowly, on `transform` rather than `background-position` —
+animating the positions of four radial gradients repaints the layer every frame
+where a transform composites. `inset: -10%` gives it room to travel without ever
+exposing an edge, and it joins the `[data-visible]` gate like everything else.
+
+The figure's crop is now a **mask**, not an edge. With no window to be cut off
+by, a hard line across his shins read as a mistake; fading him out reads as
+emerging from the dark, which is the story the veil in the game tells anyway.
+Only the bottom 18% is touched and the rack finishes above 60%, so no brick is
+ever caught by it.
 
 The player illustration is painted **over** the bricks and cropped by the
 window's bottom edge; that crop is what sells him as coming *through* the wall
@@ -184,11 +201,10 @@ background cost. Anything animated added here must join that gate. Reduced
 motion parks the ball mid-stage rather than hiding it, so the composition still
 reads as a game in progress.
 
-The rally lives **inside the art window**, not loose in the section — the box has
-no ball flying across its artwork, and confined here it is doing the thing it
-was always for, in the only place a ball belongs. It is ordered before the
-player so it passes behind him; over his face it reads as a blemish rather than
-as depth.
+The rally lives **inside the playfield**, not loose in the section — the box art
+has no ball flying across it, and confined there it is doing the thing it was
+always for, in the only place a ball belongs. It is ordered before the player so
+it passes behind him; over his face it reads as a blemish rather than as depth.
 
 The **coin cursor** (`Cursor.svelte`) moved with everything else: a 16×16 pixel
 map in seven tones rather than 14×14 in four, and an eight-frame flip rather
