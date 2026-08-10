@@ -115,8 +115,16 @@ before landing here, and both intermediate steps failed the same way: a hard
 edge across the page turns the section into an object sitting on the site rather
 than part of it, and caps the whole thing at a width the rack and the figure
 were both fighting. What survives is the layout — masthead, then a numeral block
-and a spec block either side of the illustration — spread across `min(84rem,
+and a spec block either side of the illustration — spread across `min(76rem,
 100%)` with no frame at all.
+
+**Height is the thing to watch here, not width.** Unboxed and full-width the
+section grew to ~1250px, which is a screen and a half of one CTA. It is ~850px
+now, and the reduction came from six places at once rather than one: section
+padding, container width, wordmark cap, the art panel's ratio (16:10 → 16:9),
+the numeral, and every vertical margin in the stack. The art panel is the single
+biggest term — its height is `width ÷ ratio`, so narrowing the container shortens
+it twice over. Trim there first if it grows again.
 
 The wordmark is Baumans in the cartridge's own yellow (`#fffe00`, sampled) over
 a hard offset shadow in a **darker yellow**, never black: black behind yellow

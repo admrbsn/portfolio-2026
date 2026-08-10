@@ -99,7 +99,7 @@ const SPEC = [
   from the game it advertises.
 */}
 <section
-  class="arcade relative overflow-hidden border-t border-line px-gutter py-24"
+  class="arcade relative overflow-hidden border-t border-line px-gutter py-16"
   data-blueprint="Vibe code check"
   aria-labelledby="breakout-title"
   style={ROW_COLOURS.map((c, i) => `--row-${i}:${c}`).join(';')}
@@ -276,7 +276,7 @@ const SPEC = [
        left for it to be the width *of* — the composition is a masthead over a
        three-column band, and both want room. It still stops short of the full
        gutter so the wash has somewhere to fall off. */
-    width: min(84rem, 100%);
+    width: min(76rem, 100%);
   }
 
   .cart__inner {
@@ -284,7 +284,7 @@ const SPEC = [
     z-index: 10;
     /* Vertical only. The horizontal padding existed to hold content off a
        printed edge; without one it just narrows the band for no reason. */
-    padding-block: clamp(0.5rem, 2vw, 1.25rem);
+    padding-block: clamp(0.25rem, 1vw, 0.75rem);
     text-align: center;
   }
 
@@ -372,7 +372,7 @@ const SPEC = [
     margin-top: 0.15rem;
     font-family: var(--font-cartridge);
     font-weight: 400;
-    font-size: clamp(2.75rem, 11vw, 6.5rem);
+    font-size: clamp(2.5rem, 9vw, 5.25rem);
     line-height: 0.92;
     letter-spacing: 0.01em;
     text-transform: uppercase;
@@ -408,7 +408,7 @@ const SPEC = [
 
   .subhead {
     font-family: var(--font-arcade);
-    font-size: clamp(0.9375rem, 2.1vw, 1.375rem);
+    font-size: clamp(0.875rem, 1.7vw, 1.0625rem);
     line-height: 1.15;
     letter-spacing: 0.04em;
     text-transform: uppercase;
@@ -430,7 +430,7 @@ const SPEC = [
     display: grid;
     gap: clamp(1rem, 3vw, 1.75rem);
     align-items: center;
-    margin-top: clamp(1.25rem, 3vw, 2rem);
+    margin-top: clamp(0.75rem, 2vw, 1.25rem);
   }
 
   /*
@@ -467,7 +467,7 @@ const SPEC = [
   .count__num {
     display: block;
     font-family: var(--font-cartridge);
-    font-size: clamp(3rem, 8vw, 4.75rem);
+    font-size: clamp(2.5rem, 5.6vw, 3.5rem);
     line-height: 0.85;
     letter-spacing: -0.02em;
   }
@@ -517,7 +517,7 @@ const SPEC = [
       come *through* — pinned to the top edge, he passes under the wall instead
       and the whole point is lost.
     */
-    padding: 18% clamp(0.75rem, 2vw, 1.25rem) 0;
+    padding: 16% clamp(0.75rem, 2vw, 1.25rem) 0;
     /*
       No border, and a ground with no edge. What the rack needs is something
       *darker behind it*, which is a different requirement from a frame — so
@@ -530,7 +530,7 @@ const SPEC = [
        column narrows. Wider than the box's own 4:3 window: the rack is nine
        bricks across and the figure has to clear them, and at 4:3 both were
        being squeezed to fit a square-ish frame. */
-    aspect-ratio: 16 / 10;
+    aspect-ratio: 16 / 9;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -696,7 +696,7 @@ const SPEC = [
     display: flex;
     justify-content: space-between;
     gap: 1rem;
-    margin-top: clamp(1rem, 2.5vw, 1.5rem);
+    margin-top: clamp(0.75rem, 2vw, 1.25rem);
     padding-top: 0.75rem;
     border-top: 2px solid rgb(0 0 0 / 0.28);
     font-family: var(--font-arcade);
@@ -795,7 +795,7 @@ const SPEC = [
     display: inline-flex;
     align-items: center;
     gap: 1rem;
-    margin: clamp(1.5rem, 4vw, 2.25rem) auto 0;
+    margin: clamp(1rem, 2.5vw, 1.5rem) auto 0;
     font-size: 1.1rem;
     letter-spacing: 0.08em;
     padding: 0.85em 1.7em;
