@@ -433,12 +433,23 @@ const SPEC = [
     margin-top: clamp(1.25rem, 3vw, 2rem);
   }
 
-  /* The spec column is wider than the numeral one: the numeral is two glyphs and
-     a two-word caption, the spec is four phrases that must not wrap. Equal
-     columns broke every one of them onto a second line. */
+  /*
+    **The side columns must be equal, or the middle one is not centred.** They
+    were 0.5fr and 0.8fr — sized to what each block's text needed — which put
+    the art column's centre ~85px left of the container's, so the rack and the
+    figure sat visibly off-axis under a masthead centred on the container. A
+    grid centres its middle track only when the tracks either side of it match.
+
+    So they match, and the *content* absorbs the difference instead: the numeral
+    block is right-aligned and the spec block left-aligned, both hard against
+    the art, so the extra room the numeral doesn't need falls to the outside
+    where nothing is looking. Widening the spec column is not the fix — check
+    the spec lines still sit on one line each after changing this, since that is
+    what the asymmetry was originally buying.
+  */
   @media (min-width: 48rem) {
     .band {
-      grid-template-columns: minmax(0, 0.5fr) minmax(0, 2.4fr) minmax(0, 0.8fr);
+      grid-template-columns: minmax(0, 0.9fr) minmax(0, 2.8fr) minmax(0, 0.9fr);
     }
   }
 
@@ -661,11 +672,16 @@ const SPEC = [
     /*
       Sized off the panel's *height*, not its width. The wall is the width-bound
       element in here; matching him to the same axis meant he shrank whenever
-      the column narrowed and ended up a figurine standing under the rack. At
-      92% of the height he crosses the lower rows at every size, which is the
-      composition — the crop at his feet is what sells him as coming through.
+      the column narrowed and ended up a figurine standing under the rack.
+
+      **Under 100%, always.** He is anchored to the bottom inside an
+      `overflow: hidden` panel, so any value over 100 crops the top of his head
+      — which reads as a mistake, where the fade at his feet reads as depth. 96
+      leaves him a little air above and still crosses the lower rows at every
+      size, which is the composition. To make him bigger, make the panel taller
+      (`aspect-ratio`); do not push this past 100.
     */
-    height: 104%;
+    height: 96%;
     width: auto;
     max-width: none;
     transform: translateX(-50%);
