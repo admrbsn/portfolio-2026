@@ -84,7 +84,7 @@ and the numbers in CI are computed by the same code.
 ## Brand assets
 
 **Favicon** — `public/favicon.svg` is the source of truth. The mark is the
-wordmark's accent dot at icon scale, filled with the compact coral→peach ramp
+wordmark's accent dot at icon scale, filled with the compact green→yellow ramp
 the display type uses for its full stop. **No tile behind it**: in a row of
 square favicons a bare circle is the thing that reads as different, and
 transparency lets it sit on whatever the browser's tab strip is doing. An

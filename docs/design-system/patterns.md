@@ -188,16 +188,16 @@ what made it feel secondary in the first place.
 
 ## Gradient text, and animating it
 
-Two utilities, both coral→peach, both `background-clip: text` over real text:
+Two utilities, both green→yellow, both `background-clip: text` over real text:
 
 - `.accent-gradient` — long runs (headlines, a highlighted word). Its 120deg ramp
   needs width to reach the warm end.
 - `.stat-gradient` — stat figures. Same idea, retuned: a stat is four or five
-  glyphs, which lands entirely inside `.accent-gradient`'s coral and reads as
+  glyphs, which lands entirely inside `.accent-gradient`'s green and reads as
   flat colour, so this one starts warmer and finishes inside the box.
 
 **Pick by run length, not by taste.** Across a 24px disc (`VibeCodingDiagram`'s
-number discs and icon tiles) `.accent-gradient` never leaves its coral — those
+number discs and icon tiles) `.accent-gradient` never leaves its green — those
 use the `.stat-gradient` ramp via `--vcd-fill`.
 
 **To animate one in, stack it — don't transition it.** `background-image` is not

@@ -131,42 +131,45 @@
      so the frame stays consistent over any backdrop. */
   --color-line: oklch(1 0 0 / 0.14);
 
-  /* The brand coral, seated in the same family as the hero wash's own coral band.
+  /* The brand green, seated in the same family as the hero wash.
 
-     **Keep it inside sRGB**, and note that the constraint bites far harder here
-     than it did on the green this replaced. Greens occupy the largest region of
-     sRGB; the warm quadrant is the smallest, because the red channel saturates
-     at 255 long before the other two run out. The old accent held C 0.15 at
-     L 0.80 comfortably. At H 22 the ceiling at L 0.80 is C 0.10 — so the
-     lightness came *down* to 0.76 to buy back enough chroma to read as a colour
-     rather than as a pale salmon. That trade is the whole tuning story of this
-     token: **on warm hues, lower L to gain C.** Raising L and holding C clips
-     the red channel and ships a colour that is not the one in the file.
+     **Keep it inside sRGB.** An earlier value, `oklch(0.84 0.19 168)`, was out
+     of gamut — its red channel resolved to -0.065 and got clamped to zero, so it
+     rendered as the most saturated green-cyan the display could make (#00f0b2)
+     rather than the colour written down. That clipping is what made it read
+     electric-mint next to a wash whose own teal tops out at C 0.12.
 
-     Previously `oklch(0.8 0.15 138)`, a yellow-green matched to the teal wash.
-     It became the last green thing in the frame once the wash moved to the
-     sunset ramp, and one orphaned hue reads as an oversight rather than as an
-     accent. 8.5:1 on --color-surface, so it still clears AA comfortably as small
-     link text. */
-  --color-accent: oklch(0.76 0.14 22);
-  /* The warm end, on the hero wash's own peach highlight, so gradient tails
-     resolve into a colour already present in the backdrop. 28° from the accent
-     — deliberately tight, and it is the whole room the ramps have. Don't push
-     the accent any warmer without moving this too, or the gradients flatten out
-     entirely. Secondary: gradient tails, never body text. */
-  --color-accent-warm: oklch(0.83 0.1 50);
+     H 174 fixed the clipping but still read minty: mint is a *light blue-green*,
+     and the fix for that is hue, not chroma. This sits at H 138 — a yellow-green
+     that leans toward <NoiseGradient>'s khaki highlight (H 100) rather than its
+     teal blob (H 178), chosen against the live hero. 10.9:1 on --color-surface,
+     so it still clears AA comfortably as small link text.
+
+     **Greens have room and warm hues do not**, which is the one thing worth
+     carrying forward from the coral this reverted to green from. sRGB's warm
+     quadrant is its smallest — the red channel saturates at 255 long before the
+     other two — so the chroma ceiling falls steeply as lightness rises: measured
+     at H 22, C 0.155 at L 0.74 but only C 0.10 at L 0.82. This green holds C 0.15
+     at L 0.80 without trying. If the family is ever taken warm again, the rule is
+     lower the lightness to buy the chroma back; raising L and holding C ships a
+     pale salmon, or clips. */
+  --color-accent: oklch(0.8 0.15 138);
+  /* The warm end, on the hero wash's own khaki highlight, so gradient tails
+     resolve into a colour already present in the backdrop. Only 30° from the
+     accent now that the accent is itself yellow-green — that is deliberately
+     tight, but it is the whole room the ramps have. Don't push the accent any
+     warmer without moving this too, or the gradients flatten out entirely.
+     Secondary: gradient tails, never body text. */
+  --color-accent-warm: oklch(0.86 0.15 108);
   /* Availability indicator. Kept as its own token so the signal can be retuned
      independently, but pulled into the accent's family — the dot and the brand
-     mark share a nav, and two unrelated hues there read as a mistake. Slightly
-     lighter than the accent so it still registers as "lit". 10:1.
+     mark share a nav, and two different greens there read as a mistake.
+     Slightly lighter than the accent so it still registers as "lit". 12.6:1.
 
-     **This gives up green-means-go**, which was a real thing to spend. It is
-     spent knowingly: the label beside it reads "Available for work", so the
-     words carry the meaning and the dot only has to look lit. A lone green dot
-     in an otherwise coral frame was the single most obviously-left-behind mark
-     on the page. If the signal ever needs to be unmistakable without its label,
-     that is the argument for taking green back — not aesthetics. */
-  --color-status: oklch(0.8 0.11 26);
+     Green also means go, which is worth having back: the label beside it reads
+     "Available for work", so the words carry the meaning either way, but a green
+     dot needs no reading at all. */
+  --color-status: oklch(0.84 0.14 140);
 
   /* Motion — shared between CSS and GSAP so the two never disagree. */
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
@@ -294,18 +297,18 @@
   /* The two accent ramps. `--gradient-accent` is built for a headline's width;
      `--gradient-accent-compact` starts warmer and finishes inside the box, for
      runs of four or five glyphs — a stat figure, a number disc, an icon tile.
-     Pick by run length: across 24px the long ramp never leaves its coral. */
+     Pick by run length: across 24px the long ramp never leaves its green. */
   --gradient-accent: linear-gradient(
     120deg,
-    oklch(0.74 0.15 358),
+    oklch(0.77 0.14 160),
     var(--color-accent) 45%,
-    oklch(0.84 0.09 46)
+    oklch(0.86 0.15 112)
   );
   --gradient-accent-compact: linear-gradient(
     110deg,
     var(--color-accent) 0%,
-    oklch(0.79 0.12 34) 45%,
-    oklch(0.83 0.1 48) 100%
+    oklch(0.83 0.15 125) 45%,
+    oklch(0.87 0.15 108) 100%
   );
 }
 
@@ -353,18 +356,20 @@
 
      **Keep the hue span narrow, and every stop inside sRGB.** Both ramps used
      to run cyan→green→yellow, roughly 88° of hue, which on a two-word phrase
-     reads as a rainbow swipe rather than a sheen on the brand colour. The long
-     ramp is now 48° (rose → coral → peach, sitting either side of
-     `--color-accent`) and the compact one 26°. If a ramp ever needs more range,
-     widen the lightness, not the hue.
+     reads as a rainbow swipe rather than a sheen on the brand colour. Both are
+     now ~48°, sitting either side of `--color-accent`. If a ramp ever needs
+     more range, widen the lightness, not the hue.
 
-     Chroma is **not** flat across these stops, and that is deliberate rather
-     than sloppy. On the old green ramp it could be held at 0.13-0.14 throughout,
-     because greens have room. In the warm quadrant the sRGB ceiling falls as
-     lightness rises — roughly C 0.15 at L 0.74, C 0.10 at L 0.82 — so each stop
-     sits at its own maximum instead. Flattening them to a single figure either
-     clips the dark end (a hard electric edge partway along the ramp) or
-     desaturates the light end into beige.
+     Chroma is held at 0.13-0.14 throughout for the same reason `--color-accent`
+     is: past that, these hues fall out of sRGB at these lightnesses and the
+     browser clamps a channel, which reads as a hard electric edge partway
+     along the ramp.
+
+     That flat chroma is a *green* luxury and would not survive going warm. The
+     warm quadrant's ceiling falls steeply as lightness rises (roughly C 0.15 at
+     L 0.74, C 0.10 at L 0.82), so a coral version of these ramps needs every
+     stop at its own maximum instead — worth knowing before anyone tries it
+     again.
 
      The descendant selector matters: SplitText rewraps the hero heading and
      moves the period's text into a child element, which would leave the span
@@ -379,11 +384,11 @@
     color: transparent;
   }
 
-  /* The same coral→peach idea, retuned for stat figures.
+  /* The same green→yellow idea, retuned for stat figures.
 
      `.accent-gradient` is built for long runs of text — a full headline — so
      its 120deg ramp only reaches the warm end after a good deal of width. A
-     stat is four or five glyphs, which lands entirely inside the coral and
+     stat is four or five glyphs, which lands entirely inside the green and
      reads as flat colour. This starts warmer and finishes the ramp inside the
      box, so the warm end is actually visible at "98%". */
   .stat-gradient {

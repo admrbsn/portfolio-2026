@@ -61,7 +61,7 @@ Read those before touching anything visual. The short version, for orientation:
   **one accent palette** site-wide, **one radius** (`--radius-ui`, 3px). Every
   exception is listed in `tokens.md`; if it is not on that list, it is a mistake.
 - **The accent follows the hero wash.** `--color-accent` / `-warm` / `--color-status`
-  are tuned to `<NoiseGradient>`'s default `sunset` variant. Changing that
+  are tuned to `<NoiseGradient>`'s default `teal` variant. Changing that
   default means moving those three tokens and both gradient ramps with it, or
   the page ends up with an orphaned hue.
 - **The three display steps are one ladder** — `--text-display` /

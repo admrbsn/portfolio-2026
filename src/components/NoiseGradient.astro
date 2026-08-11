@@ -6,10 +6,10 @@
 //
 // `variant` swaps only the palette — every variant but `violet` shares the same
 // geometry, which is why the blob overrides below key off `:not(.violet)`:
-//   sunset   — the brand: peach → coral → steel blue, three hues (default).
-//              `--color-accent` is tuned to its coral band, so this one is not
-//              freely swappable the way the rest are — see below.
-//   teal     — the previous brand wash: khaki highlight falling into emerald
+//   teal     — the brand: khaki highlight falling into emerald (default).
+//              `--color-accent` is tuned to it, so this one is not freely
+//              swappable the way the rest are — see below.
+//   sunset   — peach → coral → steel blue, off the reference poster (three hues)
 //   solstice — amber highlight falling into deep ocean blue
 //   fuchsia  — hot pink highlight falling into deep purple
 //   acid     — lime highlight falling into deep violet
@@ -25,13 +25,13 @@
 // Passing `variant` at a call site changes that one hero only, which is the
 // right way to try a palette before committing to it.
 //
-// **The default is now half of a pair.** `--color-accent`, `--color-accent-warm`
-// and `--color-status` in global.css are tuned to `sunset`'s coral and peach, so
+// **The default is half of a pair.** `--color-accent`, `--color-accent-warm` and
+// `--color-status` in global.css are tuned to `teal`'s khaki and emerald, so
 // swapping the default alone leaves every link, focus ring, status dot and
-// gradient in the wrong family — which is exactly the orphaned-hue problem that
-// moving off `teal` was meant to fix. Trial a palette per call site freely;
-// promoting one to the default means moving those three tokens and both ramps
-// with it.
+// gradient in the wrong family — an orphaned hue reads as an oversight rather
+// than as an accent. Trial a palette per call site freely; promoting one to the
+// default means moving those three tokens and both ramps with it. That round
+// trip has been made once already, out to `sunset` and back.
 //
 // All of them are built the same way: a light highlight blob, a darker
 // saturated blob under it, and a diagonal tint. Keep the highlight around
@@ -49,7 +49,7 @@ interface Props {
   intensity?: 'full' | 'soft';
 }
 
-const { variant = 'sunset', intensity = 'full' } = Astro.props;
+const { variant = 'teal', intensity = 'full' } = Astro.props;
 ---
 
 {/*
