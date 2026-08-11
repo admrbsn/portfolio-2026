@@ -139,25 +139,48 @@ wordmark and the CX2622 part number are a real company's marks, and stamping
 them on a personal site is impersonation rather than homage. The composition is
 the reference, not the identity; the colophon strip names this site instead.
 
-**The section carries a four-field wash, which reverses an older decision.** One
-was tried and cut before, along with a rainbow title and a rainbow button, on
-the grounds that against a rack already carrying six saturated hues nothing was
-left quiet enough to read the section by. That reasoning was about the *rack*,
-and it still holds — so the wash never touches it. The rack sits on a soft
-radial that has fallen to nothing well before its column ends: what it needs is
-something darker *behind* it, which is a different requirement from a frame.
+**The section carries a wash, which reverses an older decision.** One was tried
+and cut before, along with a rainbow title and a rainbow button, on the grounds
+that against a rack already carrying six saturated hues nothing was left quiet
+enough to read the section by. That reasoning was about the *rack*, and it still
+holds — so the wash never touches it. The rack sits on a soft radial that has
+fallen to nothing well before its column ends: what it needs is something darker
+*behind* it, which is a different requirement from a frame.
 
-The wash is built from `ROW_COLOURS`, published onto the section as `--row-0..5`
-in the frontmatter rather than restated as six hexes in the CSS. Violet
-upper-left, cyan lower-right, a red bloom behind the masthead, a yellow lift
-under the foot — laid out so the eye crosses the spectrum instead of sitting in
-one colour. **Alpha is the entire tuning surface**, and past ~0.16 it starts
-bleeding into the rack's radial and the old problem comes straight back.
+**Two fields, both along the top edge, one each side** — violet left, red right,
+the two ends of `ROW_COLOURS` so the pair spans the rack's range rather than
+picking two neighbours out of it. It started as four; the extra pair sat at the
+lower right and under the foot, and they were the ones to cut. The section's own
+content thins out down there — a fading figure, a button, a rule — so colour
+behind it had nothing to sit under and read as haze rather than as light.
+Dropping them also lets the foot go properly black, which is what the colophon
+rule needs to register against.
+
+The hues come from `ROW_COLOURS`, published onto the section as `--row-0..5` in
+the frontmatter rather than restated as hexes in the CSS. **Alpha is the entire
+tuning surface**, and past ~0.16 it starts bleeding into the rack's radial and
+the old problem comes straight back.
 
 It drifts, very slowly, on `transform` rather than `background-position` —
-animating the positions of four radial gradients repaints the layer every frame
-where a transform composites. `inset: -10%` gives it room to travel without ever
-exposing an edge, and it joins the `[data-visible]` gate like everything else.
+animating radial-gradient positions repaints the layer every frame where a
+transform composites. `inset: -10%` gives it room to travel without ever
+exposing an edge, and with both fields now hard against the top the drift is
+kept downward-neutral so neither can crest out of frame. It joins the
+`[data-visible]` gate like everything else.
+
+**The wordmark is a gradient, and that forces `drop-shadow` over `text-shadow`.**
+It ramps `--row-2` into `--row-1` — the rack's yellow row into its orange one,
+so the mark is lit by two of the bricks below it rather than by a colour
+invented beside them. Clipping a gradient to text means
+`-webkit-text-fill-color: transparent`, and a text-shadow paints *behind* the
+glyph, so it shows straight through the transparent fill as a smear.
+`drop-shadow` works on the composited alpha instead, and at 0 blur it is still
+the hard printed offset. Two consequences: the ™ needs its own solid fill (a
+clipped background paints against the *parent's* box, so an inline child
+inherits the transparent fill and nothing to fill it with — the same trap
+`.accent-gradient > *` works around in `global.css`), and the shadow colour is a
+dark tint of the ramp's **warm** end, because it sits under the bottom of the
+letterforms where the ramp has already reached orange.
 
 The figure's crop is now a **mask**, not an edge. With no window to be cut off
 by, a hard line across his shins read as a mistake; fading him out reads as
@@ -254,8 +277,21 @@ territory rather than in either era:
   band again;
 - the **radius** is two pixels. Past three the rack reads as rounded UI chips.
 
-The ball and its trail are still raw squares, and the coin button's press is
-still stepped: a coin mech has no in-between state whatever the era.
+The coin button's press is still stepped: a coin mech has no in-between state
+whatever the era.
+
+**The CTA's rally ball is round and lit; the canvas ball is still a square, and
+that split is deliberate.** The bricks are bound by the same-object rule above —
+the CTA rack previews the real rack, so both had to move together. The ball is
+not: the rally is decoration, and the canvas ball is documented separately as a
+raw block, "as the 1976 cabinet drew it". If the square ever reads as a leftover
+on clicking play, matching it is a two-line change in `drawBall()` — but do it
+because they look wrong in sequence, not because the bricks set a precedent.
+
+The CTA ball's highlight is offset (`at 34% 30%`), which is the same light the
+bricks' top rim implies. A centred radial reads as a glowing dot rather than as
+a lit sphere. The trail dots inherit the whole treatment and only shrink and
+fade, so the tail is the same object at distance rather than a simpler one.
 
 Three consequences in `game.ts`:
 

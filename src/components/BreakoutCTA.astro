@@ -269,7 +269,11 @@ const SPEC = [
     --box-ink: #fffe00;
     --box-white: #f4f1ea;
     --box-dim: rgb(244 241 234 / 0.62);
-    --box-shade: #6b6a04;
+    /* The wordmark's offset shadow. A darker tint of the ramp's *warm* end, not
+       of its yellow one: the shadow sits under the bottom of the letterforms,
+       which is where the ramp has already reached orange, and an olive-yellow
+       shadow there read as dirt rather than as depth. */
+    --box-shade: color-mix(in srgb, var(--row-1) 40%, black);
 
     position: relative;
     /* Wide. The 64rem cap was the box's, and with the box gone there is nothing
@@ -289,19 +293,26 @@ const SPEC = [
   }
 
   /* The wash --------------------------------------------------------------
-     Four soft fields in the rack's own hues, laid out so the eye crosses the
-     spectrum rather than sitting in one colour: violet upper-left, cyan
-     lower-right, a red bloom behind the masthead, a yellow lift under the foot.
+     **Two fields, both along the top edge — one each side.** It started as four,
+     with a cyan bloom at the lower right and a yellow lift under the foot, and
+     the bottom pair were the problem: the section's own content thins out down
+     there (a fading figure, a button, a rule), so colour behind it had nothing
+     to sit under and read as haze rather than as light. Above the masthead it
+     reads as two lamps over a stage. Dropping them also lets the foot go
+     properly black, which is what the colophon rule needs to register against.
+
+     Violet left, red right — the two ends of `ROW_COLOURS`, so the pair spans
+     the rack's own range rather than picking two neighbours out of it.
 
      **Alpha is the entire tuning surface, and it is tuned low on purpose.** The
-     failure this repeats is real — a four-field glow was tried and cut when the
-     rack sat loose on the page, because six saturated hues on a coloured ground
-     leave nothing quiet to read by. What changed is that the rack now has its
-     own bordered window, so the wash never touches it. Everything above ~0.16
-     starts bleeding back into that window's edge and the old problem returns.
+     failure this repeats is real — a glow here was tried and cut when the rack
+     sat loose on the page, because six saturated hues on a coloured ground leave
+     nothing quiet to read by. What changed is that the rack has its own darker
+     ground now, so the wash never touches it. Past ~0.16 it starts bleeding into
+     that radial and the old problem returns.
 
      Painted at `z-0` under `.cart__inner` (z-10), so it is behind the type and
-     the art window both. */
+     the playfield both. */
   .glow {
     position: absolute;
     inset: -10%;
@@ -309,28 +320,19 @@ const SPEC = [
     pointer-events: none;
     background:
       radial-gradient(
-        58% 48% at 14% 20%,
-        color-mix(in srgb, var(--row-5) 15%, transparent) 0%,
+        52% 44% at 12% 14%,
+        color-mix(in srgb, var(--row-5) 16%, transparent) 0%,
         transparent 68%
       ),
       radial-gradient(
-        54% 46% at 88% 76%,
-        color-mix(in srgb, var(--row-4) 12%, transparent) 0%,
+        50% 42% at 88% 12%,
+        color-mix(in srgb, var(--row-0) 12%, transparent) 0%,
         transparent 66%
-      ),
-      radial-gradient(
-        46% 38% at 62% 4%,
-        color-mix(in srgb, var(--row-0) 10%, transparent) 0%,
-        transparent 64%
-      ),
-      radial-gradient(
-        70% 40% at 44% 104%,
-        color-mix(in srgb, var(--row-2) 8%, transparent) 0%,
-        transparent 62%
       );
     /* Held still until the section is on screen, like everything else animated
        in here. `inset: -10%` gives the drift somewhere to travel without ever
-       exposing an edge. */
+       exposing an edge — and with both fields now hard against the top, the
+       drift is kept downward-neutral so neither can crest out of frame. */
     animation: glow-drift 26s ease-in-out infinite alternate;
     animation-play-state: paused;
     will-change: transform;
@@ -345,7 +347,7 @@ const SPEC = [
      every frame where a transform composites. */
   @keyframes glow-drift {
     to {
-      transform: translate3d(2.5%, -2%, 0) scale(1.08);
+      transform: translate3d(2.5%, 1.5%, 0) scale(1.06);
     }
   }
 
@@ -359,14 +361,20 @@ const SPEC = [
   }
 
   /*
-    The wordmark. Baumans in the cartridge's yellow, over a hard offset shadow
-    in a darker olive of the same hue.
+    The wordmark. Baumans, ramped from the rack's own yellow row into its orange
+    row — `--row-2` to `--row-1`, so the mark is literally lit by two of the
+    bricks below it rather than by a colour invented beside them.
 
-    `text-shadow` with **zero blur** — the original is flat printed ink and one
-    soft shadow turns it into a 2005 web header. The offset is the only depth
-    cue. The shadow is a *darker yellow*, never black: black behind yellow reads
-    as an outline, where a darker tint of the ink itself reads as the mark
-    sitting slightly off the label.
+    Vertical, and weighted to hold the yellow through the top third before
+    falling: a linear 50/50 ramp lands mid-orange across the cap height and the
+    mark stops reading as yellow at all.
+
+    **The offset shadow has to be `drop-shadow`, not `text-shadow`.** Clipping a
+    gradient to text means `-webkit-text-fill-color: transparent`, and a
+    text-shadow paints *behind* the glyph — so it shows straight through the
+    transparent fill as a dirty smear instead of sitting under it.
+    `drop-shadow` works on the composited alpha, which is the gradient-filled
+    shape, and at 0 blur it is still the hard printed offset the label has.
   */
   .wordmark {
     margin-top: 0.15rem;
@@ -376,11 +384,29 @@ const SPEC = [
     line-height: 0.92;
     letter-spacing: 0.01em;
     text-transform: uppercase;
-    color: var(--box-ink);
-    /* Offset in `em`, not px: the wordmark clamps across a 2.4x range, and a
-       fixed 4px shadow that reads as a print offset at 104px reads as a smear
-       at 44px. */
-    text-shadow: 0.05em 0.05em 0 var(--box-shade);
+    background-image: linear-gradient(
+      180deg,
+      var(--row-2) 0%,
+      var(--row-2) 34%,
+      var(--row-1) 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    /* Offset in `em`, not px: the wordmark clamps across a 2.1x range, and a
+       fixed 4px shadow that reads as a print offset at 84px reads as a smear
+       at 40px. */
+    filter: drop-shadow(0.05em 0.05em 0 var(--box-shade));
+  }
+
+  /* The mark takes a solid fill of its own. A clipped background paints against
+     the *parent's* box, so an inline child inherits the transparent fill and
+     nothing to fill it with — the same trap `.accent-gradient > *` works around
+     in global.css. */
+  .wordmark .tm {
+    -webkit-text-fill-color: var(--row-2);
+    color: var(--row-2);
   }
 
   /*
@@ -728,15 +754,33 @@ const SPEC = [
     negative (start mid-flight, not parked at the edge) and the lag makes it
     less negative, which is what puts a dot behind the head rather than ahead.
   */
+  /*
+    **Round, lit, and no longer a block.** The 2600 ball is a square, and this
+    was one on that authority — the note used to run "hard-edged segments
+    shrinking in steps read as a sprite trail where soft round dots read as
+    motion blur." That was true of a flat white square beside a flat-bevelled
+    rack. Beside a rack with ramped faces and rounded corners it was the last
+    8-bit object left in the frame, and it read as a stray pixel rather than as
+    the ball.
+
+    The gradient is off-centre (`at 34% 30%`) so the highlight sits up and to
+    the left, which is the same light the bricks' top rim implies. A centred
+    radial reads as a glowing dot rather than as a lit sphere.
+
+    The trail dots inherit all of it and only shrink and fade, so the tail is
+    the same object at distance rather than a different, simpler one.
+  */
   .ball {
     position: absolute;
     left: 0;
     top: 0;
     width: var(--size);
     height: var(--size);
-    /* White again, now that it lives against the playfield's black rather than
-       the orange ground. */
-    background: #fff;
+    border-radius: 50%;
+    background: radial-gradient(circle at 34% 30%, #fff 0%, #f4f7ff 42%, #a9b6cf 100%);
+    /* Tight and unoffset: the ball is its own light source, so this is a bloom
+       rather than a shadow. Anything wider turns the rally into four smudges. */
+    box-shadow: 0 0 calc(var(--size) * 0.6) rgb(255 255 255 / 0.35);
     opacity: var(--alpha);
     animation:
       ball-x 5.6s linear infinite alternate,
