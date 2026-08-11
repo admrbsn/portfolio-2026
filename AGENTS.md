@@ -139,37 +139,26 @@ wordmark and the CX2622 part number are a real company's marks, and stamping
 them on a personal site is impersonation rather than homage. The composition is
 the reference, not the identity; the colophon strip names this site instead.
 
-**The section carries a wash, which reverses an older decision.** One was tried
-and cut before, along with a rainbow title and a rainbow button, on the grounds
-that against a rack already carrying six saturated hues nothing was left quiet
-enough to read the section by. That reasoning was about the *rack*, and it still
-holds — so the wash never touches it. The rack sits on a soft radial that has
-fallen to nothing well before its column ends: what it needs is something darker
-*behind* it, which is a different requirement from a frame.
+**There is deliberately no background wash on this section**, and that is the
+end of a long argument rather than an oversight. Four builds were tried and all
+four cut: a four-field glow when the rack still sat loose on the page, a
+violet/red pair, a red/yellow pair, and a warm orange/gold pair with the hues
+pre-mixed toward white. The last one was the closest and still went.
 
-**Two fields, both along the top edge, one each side** — orange left, gold right,
-the rack's two warm rows, so the light comes from the same ink as the wordmark
-and the count. Where the tails cross they make a warmer orange, which is not a
-third field but the overlap itself.
+The reason is worth keeping because it is not obvious. **A colour at the alpha
+this section can afford is a dark version of itself, and dark warm is brown.**
+`#ffd83d` at 15% over `#0a0a09` composites to `#2f2911` — olive, full stop. No
+amount of alpha tuning fixes it because the problem is luminance, not hue;
+mixing toward white first helps and does not solve it. Red fails worst, being
+furthest down the luminance scale, which is why it only ever appears in the rack
+at full strength.
 
-**The hues are mixed toward white before the alpha goes on, and that is the
-whole trick.** A saturated hue at low alpha over near-black *is* a dark version
-of itself, and the eye reads dark yellow as olive and dark red as maroon:
-`#ffd83d` at 15% over `#0a0a09` composites to `#2f2911`, which is brown, full
-stop. No amount of alpha tuning fixes it, because the problem is luminance, not
-hue. Mixing ~60% toward white first lifts the composite into a range that reads
-as *warm light* rather than as tinted dirt. Two earlier passes — violet/red,
-then red/yellow — both failed on this and looked like rust and olive.
+What the section actually wanted was **texture, not colour** — the CRT layer
+below. If a wash is ever proposed here again, that is the counter-proposal.
 
-Red is deliberately not one of the lamps. It is the row furthest down the
-luminance scale, so it browns first and hardest; it stays in the rack, at full
-strength, where it belongs.
-
-It started as four fields; the extra pair sat at the lower right and under the
-foot, and they were the ones to cut. The section's own content thins out down
-there — a fading figure, a button, a rule — so colour behind it had nothing to
-sit under and read as haze rather than as light. Dropping them also lets the foot
-go properly black, which is what the colophon rule needs to register against.
+The rack still needs something darker behind it, but that requirement was never
+a frame and is not a wash either: it is a soft radial on `.art` with no edge,
+which is contrast and nothing more.
 
 **`.crt` sits over everything**, at `z-20` above `.cart__inner` — scanlines plus
 one slow refresh roll. Over the content rather than behind it is the entire
@@ -213,17 +202,9 @@ masthead, and the button in front of the figure. That is the right way round
 both times: the masthead is a label on the scene rather than a caption above it,
 and a launch button occluded by an illustration is a usability problem.
 
-The hues come from `ROW_COLOURS`, published onto the section as `--row-0..5` in
-the frontmatter rather than restated as hexes in the CSS. **Alpha is the entire
-tuning surface**, and past ~0.16 it starts bleeding into the rack's radial and
-the old problem comes straight back.
-
-It drifts, very slowly, on `transform` rather than `background-position` —
-animating radial-gradient positions repaints the layer every frame where a
-transform composites. `inset: -10%` gives it room to travel without ever
-exposing an edge, and with both fields now hard against the top the drift is
-kept downward-neutral so neither can crest out of frame. It joins the
-`[data-visible]` gate like everything else.
+`ROW_COLOURS` is still published onto the section as `--row-0..5` in the
+frontmatter — `--box-ramp` and `--box-shade` are built from it, so the wordmark
+and the count are lit by the same ink the rack is painted with.
 
 **The wordmark and the count share one ramp**, `--box-ramp`: `--row-2` into
 `--row-1`, the rack's yellow row into its orange one, so both marks are lit by

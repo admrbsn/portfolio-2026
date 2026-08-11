@@ -93,10 +93,10 @@ const SPEC = [
 ---
 
 {/*
-  `--row-0..5` publish the rack's own palette to the CSS below, so the section
-  wash is built from `ROW_COLOURS` rather than from six hardcoded hexes beside
-  it. Same rule as everything else in here: one array, or the decoration drifts
-  from the game it advertises.
+  `--row-0..5` publish the rack's own palette to the CSS below, so `--box-ramp`
+  (the wordmark and the count) and `--box-shade` are built from `ROW_COLOURS`
+  rather than from hexes restated beside it. Same rule as everything else in
+  here: one array, or the decoration drifts from the game it advertises.
 */}
 <section
   class="arcade relative overflow-hidden border-t border-line px-gutter py-16"
@@ -104,12 +104,6 @@ const SPEC = [
   aria-labelledby="breakout-title"
   style={ROW_COLOURS.map((c, i) => `--row-${i}:${c}`).join(';')}
 >
-  {/*
-    The section wash. Its own element rather than a pseudo-element: this section
-    already spends `::before` on `[data-blueprint]`'s caption.
-  */}
-  <div class="glow" aria-hidden="true"></div>
-
   {/*
     The CRT layer, over everything. Scanlines plus one slow refresh roll — the
     cabinet this section is pretending to be, stated once and quietly.
@@ -128,11 +122,17 @@ const SPEC = [
     composition at a width the rack and the figure were both fighting.
 
     What survives the box is the thing the box was actually for: **the rack
-    still needs its own window.** A background glow here was tried and cut once
-    before, on the grounds that against six saturated hues nothing was left
-    quiet enough to read the section by. That is still true of the *rack* and
-    still false of everything else, so the art window keeps its border and its
-    darker ground, and the wash goes behind everything outside it.
+    still needs something darker behind it.** That is now a soft radial on
+    `.art` with no edge at all, rather than a frame — the requirement was never
+    a border, it was contrast.
+
+    **There is deliberately no background wash on this section.** Three were
+    built and all three were cut: a four-field version when the rack sat loose
+    on the page, a violet/red pair, and a warm orange/gold pair. Every one of
+    them read as haze over near-black rather than as light, because a colour at
+    the alpha this section can afford *is* a dark version of itself, and dark
+    warm is brown. What the section actually wanted was the CRT layer above —
+    texture, not colour. Reach for the raster before reaching for a gradient.
   */}
   <div class="cart mx-auto">
     <div class="cart__inner">
@@ -303,7 +303,8 @@ const SPEC = [
     /* Wide. The 64rem cap was the box's, and with the box gone there is nothing
        left for it to be the width *of* — the composition is a masthead over a
        three-column band, and both want room. It still stops short of the full
-       gutter so the wash has somewhere to fall off. */
+       gutter, which is what keeps the section reading as a composition rather
+       than as content pushed to the page edges. */
     width: min(76rem, 100%);
   }
 
@@ -314,86 +315,6 @@ const SPEC = [
        printed edge; without one it just narrows the band for no reason. */
     padding-block: clamp(0.25rem, 1vw, 0.75rem);
     text-align: center;
-  }
-
-  /* The wash --------------------------------------------------------------
-     **Two fields, both along the top edge — one each side.** It started as four,
-     with a cyan bloom at the lower right and a yellow lift under the foot, and
-     the bottom pair were the problem: the section's own content thins out down
-     there (a fading figure, a button, a rule), so colour behind it had nothing
-     to sit under and read as haze rather than as light. Above the masthead it
-     reads as two lamps over a stage. Dropping them also lets the foot go
-     properly black, which is what the colophon rule needs to register against.
-
-     **Orange left, yellow right** — the rack's two warm rows, so the fields are
-     lit by the same ink as the wordmark and the count. Where the tails cross
-     they make a warmer orange, which is not a third field but the overlap
-     itself.
-
-     **The hues are mixed toward white before the alpha goes on, and that is not
-     a style choice — it is what stops them going brown.** A saturated hue at low
-     alpha over near-black *is* a dark version of itself, and the eye reads dark
-     yellow as olive and dark red as maroon: `#ffd83d` at 15% over `#0a0a09`
-     composites to `#2f2911`, which is brown, full stop. No amount of alpha
-     tuning fixes that because the hue is not the problem — the luminance is.
-     Mixing ~60% toward white first raises the composite into a range the eye
-     reads as *warm light* rather than as tinted dirt, and it is why these can
-     stay subtle without going muddy.
-
-     Red was tried here and dropped for exactly that reason: it is the row
-     furthest down the luminance scale, so it browns first and hardest. It
-     survives in the rack, where it sits at full strength.
-
-     **Alpha is a tuning surface but not the only one, and it is tuned low.** The
-     failure this repeats is real — a glow here was tried and cut when the rack
-     sat loose on the page, because six saturated hues on a coloured ground leave
-     nothing quiet to read by. What changed is that the rack has its own darker
-     ground now, so the wash never touches it. Past ~0.16 it starts bleeding into
-     that radial and the old problem returns.
-
-     Painted at `z-0` under `.cart__inner` (z-10), so it is behind the type and
-     the playfield both. */
-  .glow {
-    /* The lit versions of the two warm rows. Declared here rather than inline so
-       the "mix toward white first" step is one decision, not two. */
-    --lamp-warm: color-mix(in srgb, var(--row-1) 66%, white);
-    --lamp-gold: color-mix(in srgb, var(--row-2) 62%, white);
-
-    position: absolute;
-    inset: -10%;
-    z-index: 0;
-    pointer-events: none;
-    background:
-      radial-gradient(
-        56% 46% at 10% 12%,
-        color-mix(in srgb, var(--lamp-warm) 30%, transparent) 0%,
-        transparent 70%
-      ),
-      radial-gradient(
-        54% 44% at 90% 10%,
-        color-mix(in srgb, var(--lamp-gold) 26%, transparent) 0%,
-        transparent 68%
-      );
-    /* Held still until the section is on screen, like everything else animated
-       in here. `inset: -10%` gives the drift somewhere to travel without ever
-       exposing an edge — and with both fields now hard against the top, the
-       drift is kept downward-neutral so neither can crest out of frame. */
-    animation: glow-drift 26s ease-in-out infinite alternate;
-    animation-play-state: paused;
-    will-change: transform;
-  }
-
-  .arcade[data-visible] .glow {
-    animation-play-state: running;
-  }
-
-  /* Transform, not background-position: the fields are radial gradients on a
-     full-bleed layer, and animating their positions repaints the whole thing
-     every frame where a transform composites. */
-  @keyframes glow-drift {
-    to {
-      transform: translate3d(2.5%, 1.5%, 0) scale(1.06);
-    }
   }
 
   /* The CRT layer -------------------------------------------------------- */
@@ -1105,13 +1026,9 @@ const SPEC = [
   }
 
   @media (prefers-reduced-motion: reduce) {
-    /* The wash and the raster stay, they just stop moving — both are
-       composition. The roll is the one thing here that is *only* motion, so it
-       goes entirely rather than parking somewhere arbitrary down the tube. */
-    .glow {
-      animation: none;
-    }
-
+    /* The raster stays — it is composition. The roll is the one thing here that
+       is *only* motion, so it goes entirely rather than parking somewhere
+       arbitrary down the tube. */
     .crt::after {
       display: none;
     }
