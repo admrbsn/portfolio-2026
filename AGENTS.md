@@ -174,14 +174,37 @@ subheads and anything heavier costs their legibility for a texture nobody should
 consciously notice. No blend mode: `multiply` over a near-black section does
 nothing, `overlay` lifts the blacks to grey.
 
-The roll is one band, nearly transparent, 9s to cross — on a section most people
-scroll past it may never complete a pass, which is the intent. Faster or brighter
-and it stops reading as a screen and starts reading as a loading shimmer. It
-lives on `.crt::after` so the raster stays still underneath; animating the parent
-would drag the scanlines down with it. **Its `translateY` end value is tied to
-the band's height** (357% ≈ 100/28), so changing one means changing the other.
-Reduced motion drops the roll entirely and keeps the scanlines — the raster is
-composition, the roll is only motion.
+**Two roll bands and nine tracking lines**, all on unrelated clocks. The bands
+are `.crt::before` / `.crt::after` — one wide and slow (9s), one narrow and
+faster (13.7s), and the durations sharing no factor is the entire reason there
+are two: a single band is an event, where two drifting in and out of phase is
+what an unlocked vertical hold actually looks like. Give the second a round
+multiple of the first and the pair beats on a fixed cycle, which reads as a loop.
+Both live on pseudo-elements so the raster stays still underneath; animating
+`.crt` itself would drag the scanlines along. **Each band's `translateY` end is
+tied to its own height** — 357% ≈ 100/28 and 833% ≈ 100/12 — so changing one
+means changing the other.
+
+The tracking lines (`TICKS`) are seeded from the same LCG as the rack, and
+**their draws must stay below the wall's**: appending is safe, inserting re-rolls
+every brick gap and churn delay. They vary on four axes rather than one, because
+the thing being imitated is a *fault*, and a uniform fault reads as a design.
+A minority are dark rather than bright — a real dropout eats signal as often as
+it adds it, and a screen of only bright lines reads as sparkle. Delays are
+negative so the set is already mid-sweep on the first frame; arriving at a blank
+tube that starts misbehaving once you look at it is the tell.
+
+They are **small absolutely-positioned strips, not full-height layers.** The
+obvious build is one section-sized layer per line with the hairline drawn inside,
+which is what the roll bands do — but nine of those is nine composited surfaces
+at roughly 1300×730, and an animated transform promotes each. Travel is `120vh`,
+deliberately longer than the section, so every line spends part of its cycle off
+the bottom before wrapping: they come and go instead of orbiting.
+
+Reduced motion drops both bands and all nine lines and keeps the scanlines — the
+raster is composition, the rest is only motion, and a *frozen* hairline across
+the wordmark reads as a rendering fault, which is the one way this effect can
+genuinely mislead someone.
 
 **The masthead and the button overlap the figure, and that overlap is scoped to
 `md` and up.** From `md` the band's first row is the illustration, so a negative

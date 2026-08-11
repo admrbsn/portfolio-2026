@@ -68,6 +68,38 @@ const wall = Array.from({ length: WALL_TOTAL }, (_, i) => ({
 }));
 
 /*
+ * CRT tracking lines — thin bands sweeping the tube at unrelated speeds, the
+ * artefact an ageing set shows when its vertical hold is going.
+ *
+ * **These draws must stay below the wall's.** They share the one seeded LCG, so
+ * moving this block above `gone`/`order` re-rolls every brick gap and every
+ * churn delay in the rack. Appending is safe; inserting is not.
+ *
+ * Randomised on four axes rather than one, because the thing being imitated is
+ * a *fault*, and a fault that is uniform reads as a design. Speeds are
+ * deliberately not harmonically related — with round durations the lines meet
+ * up on a cycle and the eye starts predicting them.
+ *
+ * A minority are dark rather than bright: a real dropout bar eats signal as
+ * often as it adds it, and a screen of nothing but bright lines reads as
+ * sparkle instead of interference.
+ *
+ * Delays are negative so the set is already mid-sweep on the first frame — the
+ * section is below the fold, and arriving to a blank tube that only starts
+ * misbehaving once you look at it is the tell.
+ */
+const TICKS = Array.from({ length: 9 }, () => {
+  const dark = rand() < 0.3;
+  return {
+    dark,
+    h: 1 + Math.floor(rand() * 3),
+    alpha: (dark ? 0.14 : 0.05) + rand() * (dark ? 0.1 : 0.07),
+    dur: 5 + rand() * 11,
+    delay: -(rand() * 18),
+  };
+});
+
+/*
  * Box-art copy. The 1978 Atari box is the layout: wordmark, two lines of
  * subhead, a big numeral block on the left, a spec block on the right, the
  * illustration through the middle.
@@ -113,7 +145,17 @@ const SPEC = [
     figure and the type it reads as all of them being *on* the same tube.
     `pointer-events: none` keeps the coin slot clickable through it.
   */}
-  <div class="crt" aria-hidden="true"></div>
+  <div class="crt" aria-hidden="true">
+    {
+      TICKS.map((t) => (
+        <span
+          class="tick"
+          data-dark={t.dark ? '' : undefined}
+          style={`--h:${t.h}px;--a:${t.alpha.toFixed(3)};--dur:${t.dur.toFixed(2)}s;--delay:${t.delay.toFixed(2)}s`}
+        />
+      ))
+    }
+  </div>
 
   {/*
     No box. This was a bordered panel with a printed ground, which is what a
@@ -374,7 +416,33 @@ const SPEC = [
     will-change: transform;
   }
 
-  .arcade[data-visible] .crt::after {
+  /*
+    The second roll: narrower, fainter, and on a duration that shares no factor
+    with the first. **That is the entire reason it exists.** One band is an
+    event; two bands at unrelated speeds drift in and out of phase, which is
+    what an unlocked vertical hold actually looks like — sometimes they pass
+    together and brighten, mostly they don't. Give this a round multiple of 9s
+    and the pair beats on a fixed cycle, which reads as a loop.
+  */
+  .crt::before {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    height: 12%;
+    background: linear-gradient(
+      to bottom,
+      transparent 0%,
+      rgb(255 255 255 / 0.03) 55%,
+      transparent 100%
+    );
+    animation: crt-roll-fast 13.7s linear infinite;
+    animation-play-state: paused;
+    will-change: transform;
+  }
+
+  .arcade[data-visible] .crt::after,
+  .arcade[data-visible] .crt::before {
     animation-play-state: running;
   }
 
@@ -388,6 +456,61 @@ const SPEC = [
     }
     to {
       transform: translateY(357%);
+    }
+  }
+
+  /* Same arithmetic against a 12% band: 100/12 ≈ 833%. */
+  @keyframes crt-roll-fast {
+    from {
+      transform: translateY(-100%);
+    }
+    to {
+      transform: translateY(833%);
+    }
+  }
+
+  /*
+    The tracking lines. Each is a full-width hairline that sweeps the tube on its
+    own clock — see the frontmatter for how the four axes are seeded.
+
+    **Small elements, not full-height layers.** The obvious build is one
+    section-sized layer per line with the hairline drawn inside it, which is what
+    `.crt::after` does — but seven of those is seven composited surfaces at
+    roughly 1300x730, and an animated transform promotes each one. A 3px-tall
+    absolutely-positioned strip costs a sliver of the same.
+
+    **Travel is `120vh`, deliberately longer than the section.** It means every
+    line spends part of its cycle off the bottom before wrapping, so they come
+    and go instead of orbiting — which is the difference between a fault and a
+    carousel. `overflow: hidden` on the section clips both ends.
+  */
+  .tick {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: var(--h);
+    background: rgb(255 255 255 / var(--a));
+    transform: translateY(-4rem);
+    animation: tick-sweep var(--dur) linear var(--delay) infinite;
+    animation-play-state: paused;
+  }
+
+  /* Dropout rather than interference — see the frontmatter note. */
+  .tick[data-dark] {
+    background: rgb(0 0 0 / var(--a));
+  }
+
+  .arcade[data-visible] .tick {
+    animation-play-state: running;
+  }
+
+  @keyframes tick-sweep {
+    from {
+      transform: translateY(-4rem);
+    }
+    to {
+      transform: translateY(120vh);
     }
   }
 
@@ -1026,10 +1149,14 @@ const SPEC = [
   }
 
   @media (prefers-reduced-motion: reduce) {
-    /* The raster stays — it is composition. The roll is the one thing here that
-       is *only* motion, so it goes entirely rather than parking somewhere
-       arbitrary down the tube. */
-    .crt::after {
+    /* The raster stays — it is composition. The roll and the tracking lines are
+       the things here that are *only* motion, so they go entirely rather than
+       parking somewhere arbitrary down the tube. A frozen hairline across the
+       wordmark reads as a rendering fault, which is the one way this effect can
+       actually mislead someone. */
+    .crt::after,
+    .crt::before,
+    .tick {
       display: none;
     }
 
