@@ -168,10 +168,29 @@ exposing an edge, and with both fields now hard against the top the drift is
 kept downward-neutral so neither can crest out of frame. It joins the
 `[data-visible]` gate like everything else.
 
-**The wordmark is a gradient, and that forces `drop-shadow` over `text-shadow`.**
-It ramps `--row-2` into `--row-1` — the rack's yellow row into its orange one,
-so the mark is lit by two of the bricks below it rather than by a colour
-invented beside them. Clipping a gradient to text means
+**The wordmark and the count share one ramp**, `--box-ramp`: `--row-2` into
+`--row-1`, the rack's yellow row into its orange one, so both marks are lit by
+two of the bricks below them rather than by a colour invented beside them. Held
+at 34% rather than an even 50/50 — a linear ramp lands mid-orange across the cap
+height and the mark stops reading as yellow at all. It is one custom property
+precisely because two copies drifting apart is the kind of thing nobody notices
+until the two blocks are side by side.
+
+**Anything using it must set the background on the children too**, not just the
+block: a clipped background paints against the element's own box, so a
+block-level child with a transparent fill has nothing to fill it with and comes
+out hollow. `.count, .count > *` and `.wordmark .tm` both exist for that, and it
+is the same trap `.accent-gradient > *` handles in `global.css`. The consequence
+is that each part gets its own full ramp rather than one spanning the group,
+which is the right way round for the count — a single ramp over the whole block
+would land the caption entirely in orange, and it is small enough to need the
+yellow end.
+
+The count deliberately takes **no `drop-shadow`**. At 3.5rem the offset reads as
+print register; at the caption's 15px it is mud.
+
+**The gradient forces `drop-shadow` over `text-shadow`.** Clipping a gradient to
+text means
 `-webkit-text-fill-color: transparent`, and a text-shadow paints *behind* the
 glyph, so it shows straight through the transparent fill as a smear.
 `drop-shadow` works on the composited alpha instead, and at 0 blur it is still

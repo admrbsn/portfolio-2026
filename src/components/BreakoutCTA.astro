@@ -275,6 +275,18 @@ const SPEC = [
        shadow there read as dirt rather than as depth. */
     --box-shade: color-mix(in srgb, var(--row-1) 40%, black);
 
+    /* The one ramp, shared by the wordmark and the count. Held at 34% rather
+       than an even 50/50: a linear ramp lands mid-orange across the cap height
+       and the mark stops reading as yellow at all. Two copies of this drifting
+       apart is exactly the kind of thing nobody notices until the two blocks
+       are side by side. */
+    --box-ramp: linear-gradient(
+      180deg,
+      var(--row-2) 0%,
+      var(--row-2) 34%,
+      var(--row-1) 100%
+    );
+
     position: relative;
     /* Wide. The 64rem cap was the box's, and with the box gone there is nothing
        left for it to be the width *of* — the composition is a masthead over a
@@ -384,12 +396,7 @@ const SPEC = [
     line-height: 0.92;
     letter-spacing: 0.01em;
     text-transform: uppercase;
-    background-image: linear-gradient(
-      180deg,
-      var(--row-2) 0%,
-      var(--row-2) 34%,
-      var(--row-1) 100%
-    );
+    background-image: var(--box-ramp);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -479,8 +486,36 @@ const SPEC = [
     }
   }
 
+  /*
+    The count takes the wordmark's ramp, so the two yellow marks in the frame
+    are demonstrably the same object at two sizes rather than two yellows that
+    happen to be close.
+
+    **Both the block and its children carry the background.** A clipped
+    background paints against the element's own box, and a block-level child
+    with a transparent fill has nothing to fill it with — so the numeral and the
+    caption would come out hollow if only the parent had it. Same pattern, same
+    reason, as `.accent-gradient > *` in global.css.
+
+    The consequence is that each part gets its *own* full ramp rather than one
+    ramp spanning the group: the numeral runs yellow to orange across its own
+    cap height, the caption across its two small lines. That is the right way
+    round — one ramp over the whole block would land the caption entirely in
+    orange, and it is small enough that it needs the yellow end to stay legible.
+
+    No `drop-shadow` here, unlike the wordmark. At 3.5rem the offset reads as a
+    deliberate print register; at the caption's 15px it is mud.
+  */
+  .count,
+  .count > * {
+    background-image: var(--box-ramp);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+
   .count {
-    color: var(--box-ink);
     text-align: center;
   }
 
