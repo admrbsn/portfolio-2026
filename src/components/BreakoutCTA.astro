@@ -93,11 +93,20 @@ const TICKS = Array.from({ length: 9 }, () => {
   return {
     dark,
     h: 1 + Math.floor(rand() * 3),
-    // Roughly 40% under where these started. A tracking line you *notice* is a
-    // line; one you catch out of the corner of your eye is interference, and
-    // interference is the thing being imitated. Keep the same five draws in the
-    // same order if this is retuned — the sequence is shared with the rack.
-    alpha: (dark ? 0.08 : 0.03) + rand() * (dark ? 0.06 : 0.045),
+    /*
+      Roughly a *quarter* of where these started, across two passes down. The
+      ceiling on a moving line is far lower than on a static one: motion is what
+      the eye picks out, so a sweeping hairline at an alpha that would be
+      invisible standing still is still perfectly legible travelling. Anything
+      bright enough to read as a line at rest reads as a scratch in motion.
+
+      Unlike `RASTER` these are solid strips, not a duty-cycled pattern, so this
+      number *is* the brightness — do not compare the two ranges directly.
+
+      Keep the same five draws in the same order if this is retuned; the
+      sequence is shared with the rack.
+    */
+    alpha: (dark ? 0.038 : 0.014) + rand() * (dark ? 0.03 : 0.022),
     dur: 5 + rand() * 11,
     delay: -(rand() * 18),
   };
@@ -456,8 +465,8 @@ const SPEC = [
     background: linear-gradient(
       to bottom,
       transparent 0%,
-      rgb(255 255 255 / 0.022) 45%,
-      rgb(255 255 255 / 0.032) 60%,
+      rgb(255 255 255 / 0.011) 45%,
+      rgb(255 255 255 / 0.016) 60%,
       transparent 100%
     );
     animation: crt-roll 9s linear infinite;
@@ -482,7 +491,7 @@ const SPEC = [
     background: linear-gradient(
       to bottom,
       transparent 0%,
-      rgb(255 255 255 / 0.02) 55%,
+      rgb(255 255 255 / 0.01) 55%,
       transparent 100%
     );
     animation: crt-roll-fast 13.7s linear infinite;

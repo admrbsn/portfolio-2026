@@ -201,6 +201,15 @@ at roughly 1300×730, and an animated transform promotes each. Travel is `120vh`
 deliberately longer than the section, so every line spends part of its cycle off
 the bottom before wrapping: they come and go instead of orbiting.
 
+**Everything that moves here sits at about a quarter of where it started**, over
+three passes down, and the ceiling on a moving line really is that much lower
+than on a static one. Motion is what the eye picks out, so a sweeping hairline at
+an alpha that would be invisible standing still is perfectly legible travelling —
+and anything bright enough to read as a line at rest reads as a *scratch* in
+motion. Judge these in the browser, never from the number: the ticks are solid
+strips where `RASTER` is a duty-cycled pattern, so their alpha ranges are not
+comparable even though both are "the lines".
+
 Reduced motion drops both bands and all nine lines and keeps the scanlines — the
 raster is composition, the rest is only motion, and a *frozen* hairline across
 the wordmark reads as a rendering fault, which is the one way this effect can
