@@ -147,14 +147,41 @@ holds — so the wash never touches it. The rack sits on a soft radial that has
 fallen to nothing well before its column ends: what it needs is something darker
 *behind* it, which is a different requirement from a frame.
 
-**Two fields, both along the top edge, one each side** — violet left, red right,
-the two ends of `ROW_COLOURS` so the pair spans the rack's range rather than
-picking two neighbours out of it. It started as four; the extra pair sat at the
-lower right and under the foot, and they were the ones to cut. The section's own
-content thins out down there — a fading figure, a button, a rule — so colour
-behind it had nothing to sit under and read as haze rather than as light.
-Dropping them also lets the foot go properly black, which is what the colophon
-rule needs to register against.
+**Two fields, both along the top edge, one each side** — red left, yellow right,
+and **the orange between them is not a third field**: it is where the two tails
+cross. The rack's top three rows are red, orange, yellow in that order, so
+lighting the section with the outer two and letting the middle fall out of the
+overlap is both cheaper and more honest than painting all three. An earlier pair
+used violet, which is in `ROW_COLOURS` too but is the row furthest from the ink —
+the wordmark, the count and the top of the rack are all yellow-through-red, and a
+cool field over them read as a second scheme rather than as light on this one.
+Warm hues also carry less at the same alpha on black, which is why these sit a
+couple of points higher and still read quieter.
+
+It started as four fields; the extra pair sat at the lower right and under the
+foot, and they were the ones to cut. The section's own content thins out down
+there — a fading figure, a button, a rule — so colour behind it had nothing to
+sit under and read as haze rather than as light. Dropping them also lets the foot
+go properly black, which is what the colophon rule needs to register against.
+
+**The masthead and the button overlap the figure, and that overlap is scoped to
+`md` and up.** From `md` the band's first row is the illustration, so a negative
+`margin-top` slides his head up behind the subheads (~13px — at 48 his hair
+crossed the middle of "GAME PROGRAM" and took `ME PRO` with it; an illustration
+may graze a descender, not eat a word), and a negative margin on `.play` lifts
+the coin slot to where he actually stops, since the panel's masked bottom leaves
+~95px of dead space under him. **Below `md` the band is one column and both
+margins land between different things entirely** — the same values drove `66`
+through "GAME PROGRAM" and buried "Clear all 66 to win" behind the faceplate. Any
+spacing tuned against the figure has to be scoped to the layout that puts the
+figure there.
+
+Paint order settles who is in front for free: the figure is `position: absolute`
+inside a stacking context and `.play` is `position: relative`, so both land in
+step 8 above the in-flow subhead text — the figure passes in *front* of the
+masthead, and the button in front of the figure. That is the right way round
+both times: the masthead is a label on the scene rather than a caption above it,
+and a launch button occluded by an illustration is a usability problem.
 
 The hues come from `ROW_COLOURS`, published onto the section as `--row-0..5` in
 the frontmatter rather than restated as hexes in the CSS. **Alpha is the entire

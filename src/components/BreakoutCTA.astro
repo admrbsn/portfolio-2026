@@ -125,10 +125,11 @@ const SPEC = [
   */}
   <div class="cart mx-auto">
     <div class="cart__inner">
-      {/* Masthead — the cartridge label's own order: small line, then the
-          wordmark, then the two subhead lines. */}
-      <p class="eyebrow">Need a break?</p>
-
+      {/* Masthead. The cartridge prints a small line above the wordmark
+          ("game program™") and this carried a "Need a break?" in that slot —
+          cut, because it was the third line of small type in a stack that
+          already has two below the wordmark, and the only one saying nothing
+          the button does not. */}
       <h2 id="breakout-title" class="wordmark">
         Breakout<span class="tm" aria-hidden="true">&#8482;</span>
       </h2>
@@ -313,8 +314,20 @@ const SPEC = [
      reads as two lamps over a stage. Dropping them also lets the foot go
      properly black, which is what the colophon rule needs to register against.
 
-     Violet left, red right — the two ends of `ROW_COLOURS`, so the pair spans
-     the rack's own range rather than picking two neighbours out of it.
+     **Red left, yellow right — and the orange between them is not a third
+     field.** It is where the two tails cross. The rack's top three rows are red,
+     orange, yellow in that order, so lighting the section with its outer two and
+     letting the middle one fall out of the overlap is both cheaper and more
+     honest than painting all three: the blend lands wherever the fields actually
+     meet, rather than wherever a third gradient was told to sit.
+
+     This replaced a violet/red pair. Violet is in `ROW_COLOURS` too, but it is
+     the row furthest from the ink — the wordmark, the count and the top of the
+     rack are all yellow-through-red, and a cool field over them read as a
+     second scheme rather than as light on this one.
+
+     Warm hues also carry less at the same alpha on black than violet did, which
+     is why these sit a couple of points higher and still read quieter.
 
      **Alpha is the entire tuning surface, and it is tuned low on purpose.** The
      failure this repeats is real — a glow here was tried and cut when the rack
@@ -332,14 +345,14 @@ const SPEC = [
     pointer-events: none;
     background:
       radial-gradient(
-        52% 44% at 12% 14%,
-        color-mix(in srgb, var(--row-5) 16%, transparent) 0%,
-        transparent 68%
+        56% 46% at 10% 12%,
+        color-mix(in srgb, var(--row-0) 18%, transparent) 0%,
+        transparent 70%
       ),
       radial-gradient(
-        50% 42% at 88% 12%,
-        color-mix(in srgb, var(--row-0) 12%, transparent) 0%,
-        transparent 66%
+        54% 44% at 90% 10%,
+        color-mix(in srgb, var(--row-2) 15%, transparent) 0%,
+        transparent 68%
       );
     /* Held still until the section is on screen, like everything else animated
        in here. `inset: -10%` gives the drift somewhere to travel without ever
@@ -364,13 +377,6 @@ const SPEC = [
   }
 
   /* Masthead ------------------------------------------------------------- */
-
-  .eyebrow {
-    font-family: var(--font-arcade);
-    font-size: 0.9375rem;
-    letter-spacing: 0.06em;
-    color: var(--box-dim);
-  }
 
   /*
     The wordmark. Baumans, ramped from the rack's own yellow row into its orange
@@ -459,10 +465,25 @@ const SPEC = [
     printed *beside* the illustration and stacking them keeps that reading order
     — the art must not end up above the thing that counts it.
   */
+  /*
+    **The margin is negative, and the gap it closes is not the one it looks
+    like.** Measured, the subheads already sat 36px off the top of his head —
+    what read as a gap was the top of the panel itself, where his hair is dark
+    and sparse against black and the eye finds no edge. Trimming positive
+    spacing could not fix that; only overlap could.
+
+    So the band rides up under the masthead. Paint order does the rest for
+    free: the figure is `position: absolute` and the panel is a stacking
+    context, so both land in step 8 and cover the in-flow subhead text above
+    them. He passes in front of the type, which is the intent — the masthead is
+    a label on the scene, not a caption above it.
+  */
   .band {
     display: grid;
     gap: clamp(1rem, 3vw, 1.75rem);
     align-items: center;
+    /* Positive below `md` — see the note on the negative value in the media
+       query below. */
     margin-top: clamp(0.75rem, 2vw, 1.25rem);
   }
 
@@ -483,6 +504,23 @@ const SPEC = [
   @media (min-width: 48rem) {
     .band {
       grid-template-columns: minmax(0, 0.9fr) minmax(0, 2.8fr) minmax(0, 0.9fr);
+
+      /*
+        **The overlap is a three-column device and must not survive the stack.**
+        Here the band's first row is the illustration, so a negative margin
+        slides his head up behind the subheads, which is the intent. Below `md`
+        the band is one column and its first row is the *count* — the same
+        negative margin drove `66` straight through "GAME PROGRAM". Any spacing
+        tuned against the figure has to be scoped to the layout that puts the
+        figure there.
+
+        ~13px of overlap, and not as much as it will take: at -48px his hair
+        crossed the middle of "GAME PROGRAM" and took `ME PRO` with it. The line
+        is content, not texture — an illustration may graze a descender, not eat
+        a word. If this moves again, measure it: the head wants to land just
+        inside the last subhead's bottom edge.
+      */
+      margin-top: clamp(-1.875rem, -2vw, -0.5rem);
     }
   }
 
@@ -874,6 +912,8 @@ const SPEC = [
     display: inline-flex;
     align-items: center;
     gap: 1rem;
+    /* Positive below `md` — see the note on the negative value in the media
+       query below. */
     margin: clamp(1rem, 2.5vw, 1.5rem) auto 0;
     font-size: 1.1rem;
     letter-spacing: 0.08em;
@@ -909,6 +949,27 @@ const SPEC = [
       transform 80ms steps(2, end),
       box-shadow 80ms steps(2, end),
       filter 140ms ease;
+  }
+
+  /*
+    Same scoping as the band's overlap, and for the same reason. From `md` the
+    element directly above the button is the illustration, whose bottom 18% is
+    masked away — so it has faded to nothing well before the panel's edge and
+    left ~95px of dead panel under him. This lifts the slot to where he actually
+    stops.
+
+    Below `md` the element above the button is the *spec list*, and the same
+    negative margin buried "Clear all 66 to win" behind the faceplate.
+
+    `.play` is `position: relative`, so it paints in step 8 like the panel and
+    lands *above* the figure rather than behind him — the right way round here
+    where it is the wrong way round for the masthead. A launch button occluded
+    by an illustration is a usability problem, not a composition.
+  */
+  @media (min-width: 48rem) {
+    .play {
+      margin-top: clamp(-5rem, -5.5vw, -1rem);
+    }
   }
 
   .play:hover {
