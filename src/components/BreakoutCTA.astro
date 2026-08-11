@@ -111,6 +111,17 @@ const SPEC = [
   <div class="glow" aria-hidden="true"></div>
 
   {/*
+    The CRT layer, over everything. Scanlines plus one slow refresh roll — the
+    cabinet this section is pretending to be, stated once and quietly.
+
+    Above the content rather than behind it, which is the whole point: a screen
+    effect that only touches the background is wallpaper. Over the rack, the
+    figure and the type it reads as all of them being *on* the same tube.
+    `pointer-events: none` keeps the coin slot clickable through it.
+  */}
+  <div class="crt" aria-hidden="true"></div>
+
+  {/*
     No box. This was a bordered panel with a printed ground, which is what a
     cartridge label is — but a hard edge across the page turned the section into
     an object sitting on the site rather than part of it, and capped the whole
@@ -314,22 +325,26 @@ const SPEC = [
      reads as two lamps over a stage. Dropping them also lets the foot go
      properly black, which is what the colophon rule needs to register against.
 
-     **Red left, yellow right — and the orange between them is not a third
-     field.** It is where the two tails cross. The rack's top three rows are red,
-     orange, yellow in that order, so lighting the section with its outer two and
-     letting the middle one fall out of the overlap is both cheaper and more
-     honest than painting all three: the blend lands wherever the fields actually
-     meet, rather than wherever a third gradient was told to sit.
+     **Orange left, yellow right** — the rack's two warm rows, so the fields are
+     lit by the same ink as the wordmark and the count. Where the tails cross
+     they make a warmer orange, which is not a third field but the overlap
+     itself.
 
-     This replaced a violet/red pair. Violet is in `ROW_COLOURS` too, but it is
-     the row furthest from the ink — the wordmark, the count and the top of the
-     rack are all yellow-through-red, and a cool field over them read as a
-     second scheme rather than as light on this one.
+     **The hues are mixed toward white before the alpha goes on, and that is not
+     a style choice — it is what stops them going brown.** A saturated hue at low
+     alpha over near-black *is* a dark version of itself, and the eye reads dark
+     yellow as olive and dark red as maroon: `#ffd83d` at 15% over `#0a0a09`
+     composites to `#2f2911`, which is brown, full stop. No amount of alpha
+     tuning fixes that because the hue is not the problem — the luminance is.
+     Mixing ~60% toward white first raises the composite into a range the eye
+     reads as *warm light* rather than as tinted dirt, and it is why these can
+     stay subtle without going muddy.
 
-     Warm hues also carry less at the same alpha on black than violet did, which
-     is why these sit a couple of points higher and still read quieter.
+     Red was tried here and dropped for exactly that reason: it is the row
+     furthest down the luminance scale, so it browns first and hardest. It
+     survives in the rack, where it sits at full strength.
 
-     **Alpha is the entire tuning surface, and it is tuned low on purpose.** The
+     **Alpha is a tuning surface but not the only one, and it is tuned low.** The
      failure this repeats is real — a glow here was tried and cut when the rack
      sat loose on the page, because six saturated hues on a coloured ground leave
      nothing quiet to read by. What changed is that the rack has its own darker
@@ -339,6 +354,11 @@ const SPEC = [
      Painted at `z-0` under `.cart__inner` (z-10), so it is behind the type and
      the playfield both. */
   .glow {
+    /* The lit versions of the two warm rows. Declared here rather than inline so
+       the "mix toward white first" step is one decision, not two. */
+    --lamp-warm: color-mix(in srgb, var(--row-1) 66%, white);
+    --lamp-gold: color-mix(in srgb, var(--row-2) 62%, white);
+
     position: absolute;
     inset: -10%;
     z-index: 0;
@@ -346,12 +366,12 @@ const SPEC = [
     background:
       radial-gradient(
         56% 46% at 10% 12%,
-        color-mix(in srgb, var(--row-0) 18%, transparent) 0%,
+        color-mix(in srgb, var(--lamp-warm) 30%, transparent) 0%,
         transparent 70%
       ),
       radial-gradient(
         54% 44% at 90% 10%,
-        color-mix(in srgb, var(--row-2) 15%, transparent) 0%,
+        color-mix(in srgb, var(--lamp-gold) 26%, transparent) 0%,
         transparent 68%
       );
     /* Held still until the section is on screen, like everything else animated
@@ -373,6 +393,80 @@ const SPEC = [
   @keyframes glow-drift {
     to {
       transform: translate3d(2.5%, 1.5%, 0) scale(1.06);
+    }
+  }
+
+  /* The CRT layer -------------------------------------------------------- */
+
+  /*
+    **Scanlines at a 3px pitch, one device pixel dark.** Pitch is the only value
+    that matters: at 2px the pattern beats against the display's own grid and
+    moirés on any fractional zoom, and at 4px+ it stops reading as a raster and
+    starts reading as stripes. Alpha is deliberately far below where it "looks
+    right" in isolation — this crosses the wordmark and the pixel subheads, and
+    anything heavier costs their legibility for a texture nobody is meant to
+    notice.
+
+    Held to `screen`-safe darkness rather than a blend mode: `multiply` over a
+    section that is already near-black does nothing at all, and `overlay` lifts
+    the blacks into grey.
+  */
+  .crt {
+    position: absolute;
+    inset: 0;
+    /* Above `.cart__inner` (10) — see the note at the element. */
+    z-index: 20;
+    pointer-events: none;
+    background-image: repeating-linear-gradient(
+      to bottom,
+      transparent 0 2px,
+      rgb(0 0 0 / 0.15) 2px 3px
+    );
+  }
+
+  /*
+    The refresh roll: one soft band easing down the tube, the artefact every
+    photograph of a CRT has. It is the "fun" half of this and the half most
+    likely to be overdone — it is a *single* band, it is nearly transparent, and
+    it takes 9s to cross, so on a section most visitors scroll past it may never
+    complete a pass. A faster or brighter roll stops reading as a screen and
+    starts reading as a loading shimmer.
+
+    Its own pseudo-element so the scanlines stay static underneath: animating
+    the parent would drag the raster down with the band.
+  */
+  .crt::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    height: 28%;
+    background: linear-gradient(
+      to bottom,
+      transparent 0%,
+      rgb(255 255 255 / 0.035) 45%,
+      rgb(255 255 255 / 0.05) 60%,
+      transparent 100%
+    );
+    animation: crt-roll 9s linear infinite;
+    animation-play-state: paused;
+    will-change: transform;
+  }
+
+  .arcade[data-visible] .crt::after {
+    animation-play-state: running;
+  }
+
+  /* A percentage translate resolves against the *band's* height, not the
+     section's — and the band is 28% of it. 357% is 100/28, i.e. exactly one
+     section height, so the band leaves the bottom edge as cleanly as it entered
+     the top. Change the band's height and this number has to change with it. */
+  @keyframes crt-roll {
+    from {
+      transform: translateY(-100%);
+    }
+    to {
+      transform: translateY(357%);
     }
   }
 
@@ -1011,9 +1105,15 @@ const SPEC = [
   }
 
   @media (prefers-reduced-motion: reduce) {
-    /* The wash stays, it just stops moving — it is composition, not motion. */
+    /* The wash and the raster stay, they just stop moving — both are
+       composition. The roll is the one thing here that is *only* motion, so it
+       goes entirely rather than parking somewhere arbitrary down the tube. */
     .glow {
       animation: none;
+    }
+
+    .crt::after {
+      display: none;
     }
 
     .wall > i,

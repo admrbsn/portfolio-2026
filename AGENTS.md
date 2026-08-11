@@ -147,22 +147,52 @@ holds — so the wash never touches it. The rack sits on a soft radial that has
 fallen to nothing well before its column ends: what it needs is something darker
 *behind* it, which is a different requirement from a frame.
 
-**Two fields, both along the top edge, one each side** — red left, yellow right,
-and **the orange between them is not a third field**: it is where the two tails
-cross. The rack's top three rows are red, orange, yellow in that order, so
-lighting the section with the outer two and letting the middle fall out of the
-overlap is both cheaper and more honest than painting all three. An earlier pair
-used violet, which is in `ROW_COLOURS` too but is the row furthest from the ink —
-the wordmark, the count and the top of the rack are all yellow-through-red, and a
-cool field over them read as a second scheme rather than as light on this one.
-Warm hues also carry less at the same alpha on black, which is why these sit a
-couple of points higher and still read quieter.
+**Two fields, both along the top edge, one each side** — orange left, gold right,
+the rack's two warm rows, so the light comes from the same ink as the wordmark
+and the count. Where the tails cross they make a warmer orange, which is not a
+third field but the overlap itself.
+
+**The hues are mixed toward white before the alpha goes on, and that is the
+whole trick.** A saturated hue at low alpha over near-black *is* a dark version
+of itself, and the eye reads dark yellow as olive and dark red as maroon:
+`#ffd83d` at 15% over `#0a0a09` composites to `#2f2911`, which is brown, full
+stop. No amount of alpha tuning fixes it, because the problem is luminance, not
+hue. Mixing ~60% toward white first lifts the composite into a range that reads
+as *warm light* rather than as tinted dirt. Two earlier passes — violet/red,
+then red/yellow — both failed on this and looked like rust and olive.
+
+Red is deliberately not one of the lamps. It is the row furthest down the
+luminance scale, so it browns first and hardest; it stays in the rack, at full
+strength, where it belongs.
 
 It started as four fields; the extra pair sat at the lower right and under the
 foot, and they were the ones to cut. The section's own content thins out down
 there — a fading figure, a button, a rule — so colour behind it had nothing to
 sit under and read as haze rather than as light. Dropping them also lets the foot
 go properly black, which is what the colophon rule needs to register against.
+
+**`.crt` sits over everything**, at `z-20` above `.cart__inner` — scanlines plus
+one slow refresh roll. Over the content rather than behind it is the entire
+point: a screen effect that only touches the background is wallpaper, where over
+the rack, the figure and the type it reads as all of them being on the same tube.
+`pointer-events: none` keeps the coin slot clickable through it.
+
+**The scanline pitch is 3px and that is not arbitrary.** At 2px the pattern beats
+against the display grid and moirés on any fractional zoom; at 4px and up it
+stops reading as a raster and starts reading as stripes. Alpha is far below where
+it looks right in isolation, because it crosses the wordmark and the pixel
+subheads and anything heavier costs their legibility for a texture nobody should
+consciously notice. No blend mode: `multiply` over a near-black section does
+nothing, `overlay` lifts the blacks to grey.
+
+The roll is one band, nearly transparent, 9s to cross — on a section most people
+scroll past it may never complete a pass, which is the intent. Faster or brighter
+and it stops reading as a screen and starts reading as a loading shimmer. It
+lives on `.crt::after` so the raster stays still underneath; animating the parent
+would drag the scanlines down with it. **Its `translateY` end value is tied to
+the band's height** (357% ≈ 100/28), so changing one means changing the other.
+Reduced motion drops the roll entirely and keeps the scanlines — the raster is
+composition, the roll is only motion.
 
 **The masthead and the button overlap the figure, and that overlap is scoped to
 `md` and up.** From `md` the band's first row is the illustration, so a negative
