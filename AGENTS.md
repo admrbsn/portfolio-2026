@@ -206,6 +206,27 @@ raster is composition, the rest is only motion, and a *frozen* hairline across
 the wordmark reads as a rendering fault, which is the one way this effect can
 genuinely mislead someone.
 
+**`RASTER` fixes an asymmetry in the scanlines themselves.** `.crt`'s lines are
+*dark*, so they only register over something lit — the figure, the rack, the
+type. The empty two-thirds of the section stayed perfectly flat, which made the
+tube look like it was only switched on where the content was. `RASTER` is the
+inverse: nine static patches of faint *light* lines, seeded and sparse, so the
+black carries some raster too.
+
+Their positions are whole multiples of 3px to match `.crt`'s pitch — a patch off
+that grid reads as a second raster laid over the first — and they are offset one
+pixel inside it so the light lines fall in the gaps between the dark ones rather
+than cancelling them. The horizontal mask is what makes them spots rather than
+rectangles; no vertical fade is needed, because a patch's top and bottom land
+exactly on a line boundary and the raster feathers itself.
+
+**Alpha here has to be read against the duty cycle.** The pattern lights one
+pixel in three, so a patch's average brightness is roughly alpha/3 — a first pass
+at 0.022–0.05 worked out to 0.007–0.017 and was invisible on any display not in a
+dark room. The current 0.05–0.105 lands around 0.02 average. They are static on
+purpose: nine sweeping lines already carry the motion, and nine more animated
+layers would be cost for nothing.
+
 **The masthead and the button overlap the figure, and that overlap is scoped to
 `md` and up.** From `md` the band's first row is the illustration, so a negative
 `margin-top` slides his head up behind the subheads (~13px — at 48 his hair

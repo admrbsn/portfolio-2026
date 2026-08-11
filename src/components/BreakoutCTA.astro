@@ -93,9 +93,50 @@ const TICKS = Array.from({ length: 9 }, () => {
   return {
     dark,
     h: 1 + Math.floor(rand() * 3),
-    alpha: (dark ? 0.14 : 0.05) + rand() * (dark ? 0.1 : 0.07),
+    // Roughly 40% under where these started. A tracking line you *notice* is a
+    // line; one you catch out of the corner of your eye is interference, and
+    // interference is the thing being imitated. Keep the same five draws in the
+    // same order if this is retuned — the sequence is shared with the rack.
+    alpha: (dark ? 0.08 : 0.03) + rand() * (dark ? 0.06 : 0.045),
     dur: 5 + rand() * 11,
     delay: -(rand() * 18),
+  };
+});
+
+/*
+ * Raster patches — short runs of scanline showing through the *black*, where the
+ * main raster has nothing to darken and so reads as nothing at all.
+ *
+ * That asymmetry is the problem these solve. `.crt`'s lines are dark, so they
+ * only register over something lit: the figure, the rack, the type. The empty
+ * two-thirds of the section stayed perfectly flat, which made the tube look like
+ * it was only switched on where the content was. These are the inverse — faint
+ * *light* lines, in patches, so the black carries some raster too.
+ *
+ * **Positions are in whole multiples of 3px**, matching `.crt`'s pitch, because
+ * a patch off the grid reads as a second raster laid over the first rather than
+ * as more of the same one. They are offset by a pixel inside that grid so the
+ * light lines fall in the gaps between the dark ones instead of cancelling them.
+ *
+ * Static, deliberately: this is texture, and nine sweeping lines are already
+ * carrying the motion. Drawn after `TICKS` so neither the rack nor the lines
+ * move if the count here changes.
+ */
+const RASTER = Array.from({ length: 9 }, () => {
+  const left = rand() * 68;
+  return {
+    top: Math.round(rand() * 230) * 3,
+    h: 12 + Math.floor(rand() * 16) * 3,
+    left,
+    width: Math.min(18 + rand() * 54, 100 - left),
+    /*
+      **Read this against the duty cycle, not on its own.** The pattern lights
+      one pixel in every three, so a patch's average brightness is roughly
+      alpha/3 — the first pass at 0.022–0.05 worked out to 0.007–0.017 and was
+      invisible on any display that is not in a dark room. These land around
+      0.02 average, which is present without being a stripe.
+    */
+    alpha: 0.05 + rand() * 0.055,
   };
 });
 
@@ -146,6 +187,14 @@ const SPEC = [
     `pointer-events: none` keeps the coin slot clickable through it.
   */}
   <div class="crt" aria-hidden="true">
+    {
+      RASTER.map((r) => (
+        <span
+          class="raster"
+          style={`--t:${r.top}px;--h:${r.h}px;--l:${r.left.toFixed(2)}%;--w:${r.width.toFixed(2)}%;--a:${r.alpha.toFixed(3)}`}
+        />
+      ))
+    }
     {
       TICKS.map((t) => (
         <span
@@ -407,8 +456,8 @@ const SPEC = [
     background: linear-gradient(
       to bottom,
       transparent 0%,
-      rgb(255 255 255 / 0.035) 45%,
-      rgb(255 255 255 / 0.05) 60%,
+      rgb(255 255 255 / 0.022) 45%,
+      rgb(255 255 255 / 0.032) 60%,
       transparent 100%
     );
     animation: crt-roll 9s linear infinite;
@@ -433,7 +482,7 @@ const SPEC = [
     background: linear-gradient(
       to bottom,
       transparent 0%,
-      rgb(255 255 255 / 0.03) 55%,
+      rgb(255 255 255 / 0.02) 55%,
       transparent 100%
     );
     animation: crt-roll-fast 13.7s linear infinite;
@@ -484,6 +533,34 @@ const SPEC = [
     and go instead of orbiting — which is the difference between a fault and a
     carousel. `overflow: hidden` on the section clips both ends.
   */
+  /*
+    A patch of raster in the black — see the frontmatter for why these exist at
+    all. Light lines rather than dark, on the same 3px pitch as `.crt`'s own
+    background but offset by a pixel inside it, so they sit in the gaps between
+    the dark lines instead of on top of them.
+
+    The horizontal mask is what makes them "spots" rather than rectangles. No
+    vertical fade needed: the patch's own edges land exactly on a line boundary,
+    so the raster does the feathering for free.
+
+    Static and unanimated. Nine sweeping lines already carry the motion, and
+    seven more animated layers would be cost for nothing.
+  */
+  .raster {
+    position: absolute;
+    top: var(--t);
+    left: var(--l);
+    width: var(--w);
+    height: var(--h);
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0 1px,
+      rgb(255 255 255 / var(--a)) 1px 2px,
+      transparent 2px 3px
+    );
+    mask-image: linear-gradient(to right, transparent 0%, #000 22%, #000 78%, transparent 100%);
+  }
+
   .tick {
     position: absolute;
     left: 0;
