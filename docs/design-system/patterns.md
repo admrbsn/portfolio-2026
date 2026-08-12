@@ -16,22 +16,41 @@ the nav; `px-gutter` puts it on the rail.**
 The **dead-space hatch** is still homepage/about only — it trails a ruled block,
 and case studies have none.
 
-`.page-rails` paints two **dashed** verticals at `--spacing-gutter` over a
-full-bleed **dot field**, all as *backgrounds*, so they sit behind all content.
+`.page-rails` paints two **dashed** verticals at `--spacing-gutter` as
+backgrounds, over a **dot field** on `::before`, so both sit behind all content.
 Contained sections sit flush inside the rails; full-bleed sections paint over
 them.
 
-**Layer order is the whole rule.** The rails come first in the stack so they
-paint over the dots, the same way they paint over a `[data-dead]` hatch — the
-frame stays continuous wherever it crosses its own paper. Put the dot layer first
-and the rails read as a dotted line rather than a dashed one.
+**Layer order is the whole rule.** The rails paint over the dots, the same way
+they paint over a `[data-dead]` hatch — the frame stays continuous wherever it
+crosses its own paper. That is what `z-index: -1` on the dot layer buys: a
+negative-index pseudo-element paints *below* its own element's background. It
+needs `.page-rails` to stay out of a stacking context of its own, so don't add
+`isolation`, `transform`, `filter` or a positive `z-index` there — the field
+drops behind the body and vanishes.
 
-**The dot field is full width, not confined to the outer gutters.** Squeezed into
-the margin it reads as a decorative border; running under everything it reads as
-the sheet the page is drawn on, and it is what gives the darkest sections (Story,
-Selected work) any texture at all. It tiles for free and nothing above it is
-transparent enough to interfere — the hero wash and every card cover it
-completely.
+The dots are a pseudo-element rather than a third background layer because they
+are **masked** and the rails are not; masks apply per element, not per background
+layer.
+
+**The dot field is masked, not flat** (`--dot-fade`): full strength across the
+middle of the page, ramping to nothing exactly where the rails are. Flat, it ran
+past the rails to the viewport edge, which reads as margin on a wide gutter and
+as a *fringe outside the frame* on a phone's 24px one — the paper has to end
+where the drawing does. And a flat field is loudest where the page is emptiest,
+since texture only competes where nothing else is; ramped, the densest part sits
+under the content column, where the type covers most of it.
+
+The 32/68 plateau is not a detail to trim: a two-stop ramp puts full strength on
+a single centre line and reads as a soft vertical band rather than as a sheet.
+The fade is horizontal only — a field fading down the page would say the sheet
+runs out, and it doesn't.
+
+**It is full width, not confined to the outer gutters.** Squeezed into the margin
+it reads as a decorative border; running under everything it reads as the sheet
+the page is drawn on, and it is what gives the darkest sections (Story, Selected
+work) any texture at all. It tiles for free and nothing above it is transparent
+enough to interfere — the hero wash and every card cover it completely.
 
 What this replaced: 45° hatch filling the outer gutters *below `lg` only*, and
 nothing at all above it. Two textures doing one job, split by a breakpoint, and

@@ -198,10 +198,12 @@ const CHIPS = [
       <div class="sg-hatch" aria-hidden="true"></div>
 
       <p class="sg-note sg-note--spaced">
-        The two surface textures, and they do not mean the same thing. Dots are the paper — full
-        width under <code>.page-rails</code>, saying the surface continues past the page. Hatch (above)
-        says deliberately empty, and only appears where a block stops short of a boundary. The page
-        rails themselves are dashed; every rule drawn inside them stays solid.
+        The two surface textures, and they do not mean the same thing. Dots are the paper, laid
+        under <code>.page-rails</code> and masked (<code>--dot-fade</code>) so the field is at
+        strength across the middle of the page and gone by the time it reaches a rail — the sheet
+        ends where the drawing does. Hatch (above) says deliberately empty, and only appears where a
+        block stops short of a boundary. The page rails themselves are dashed; every rule drawn
+        inside them stays solid. Shown here unmasked, at full ink.
       </p>
 
       <div class="sg-texture">

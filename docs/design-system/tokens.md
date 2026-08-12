@@ -182,7 +182,7 @@ apart.
 | Value | Used by |
 | --- | --- |
 | `--hatch`, `--hatch-line`, `--hatch-fill` | dead-space bands, the work tile placeholder |
-| `--dots`, `--dot-ink`, `--dot-pitch` | the substrate under `.page-rails` |
+| `--dots`, `--dot-ink`, `--dot-pitch`, `--dot-fade` | the substrate under `.page-rails` |
 | `--rule-dash` | the two page rails, and nothing else |
 | `--gradient-accent` | `.accent-gradient` — long runs |
 | `--gradient-accent-compact` | `.stat-gradient`, `--vcd-fill` — four or five glyphs |
@@ -195,8 +195,15 @@ two jobs separate or both stop meaning anything.
 
 `--dot-pitch` (12px) is the tuning knob, not the dot radius: below ~10px the
 field turns into flat noise at reading distance, above ~16px the individual dots
-start reading as content. `--dot-ink` is held *under* `--color-line` — the frame
-has to stay louder than the paper it is drawn on.
+start reading as content. `--dot-ink` is held *under* `--color-line`, and
+*deliberately* is the operative word — the frame has to stay louder than the
+paper it is drawn on, and at the old 0.13 against the rail's 0.14 that margin was
+nothing. A field of thousands of marks at the same ink as two lines does not read
+as recessive however sparse each mark is. 0.1 puts a clear step between them.
+
+`--dot-fade` takes it the rest of the way: the field is masked to full strength
+across the middle of the page and to nothing at the rails, so the paper ends
+where the drawing does. See `patterns.md` for why the plateau matters.
 
 **Dashed is the outer frame; solid is everything inside it.** `--rule-dash`
 belongs to the two page rails. Section rules, grid dividers and card borders all
