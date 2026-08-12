@@ -313,14 +313,36 @@
      rail says "this is the margin of the drawing"; a solid rule says "this
      divides two real things".
 
-     Built as a repeating gradient rather than `border-style: dashed` because
-     the rails are backgrounds on `.page-rails`, not borders — and a gradient is
-     the only way to control the dash rhythm exactly. 5-on/6-off at 1px reads as
-     dashed at arm's length without dissolving into dots. */
-  --rule-dash: repeating-linear-gradient(
+     Built as a gradient rather than `border-style: dashed` because the rails are
+     backgrounds on `.page-rails`, not borders — and a gradient is the only way
+     to control the dash rhythm exactly. 5-on/6-off at 1px reads as dashed at
+     arm's length without dissolving into dots.
+
+     **One dash, tiled by `background-repeat` — never one long
+     `repeating-linear-gradient` stretched over the element.** That is what this
+     was, at `background-size: 1px 100%`, and it is why the rails came out
+     visibly wonky on a phone: irregular dash lengths, stretches that went
+     near-solid, gaps of nothing, and the left and right rails disagreeing with
+     each other down the same page.
+
+     The cause is rasterisation, not CSS. A gradient is drawn into a texture of
+     bounded resolution and then sampled to fill its box, so detail finer than
+     the sampling survives only while the box stays small. `.page-rails` spans
+     the whole document — 11,265px on the homepage at 393px wide, which is 1,024
+     dash periods inside a single gradient — and 5px of ink per period does not
+     survive that. It degrades *more* the taller the page, which is why this read
+     as a mobile bug: the same page is roughly twice as tall in one column.
+
+     Tiled, the browser rasterises an 11px box and repeats it, so the rhythm is
+     exact at any page height and both rails agree. `--rule-dash-period` exists
+     so the tile height and the gradient's own stops cannot drift apart — they
+     are the same number and a mismatch shows up as a limping dash. Any consumer
+     must set `background-size: 1px var(--rule-dash-period)` with a `repeat-y`. */
+  --rule-dash-period: 11px;
+  --rule-dash: linear-gradient(
     to bottom,
     var(--color-line) 0 5px,
-    transparent 5px 11px
+    transparent 5px var(--rule-dash-period)
   );
 
   /* The two accent ramps. `--gradient-accent` is built for a headline's width;
@@ -647,10 +669,12 @@
     background-image:
       var(--rule-dash),
       var(--rule-dash);
-    background-repeat: no-repeat, no-repeat;
+    /* Tiled, not stretched — see `--rule-dash`. A single gradient sized to the
+       element's full height is what made these ragged on a tall page. */
+    background-repeat: repeat-y, repeat-y;
     background-size:
-      1px 100%,
-      1px 100%;
+      1px var(--rule-dash-period),
+      1px var(--rule-dash-period);
     background-position:
       left var(--spacing-gutter) top,
       right var(--spacing-gutter) top;

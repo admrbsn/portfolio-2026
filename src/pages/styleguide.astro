@@ -480,8 +480,10 @@ const CHIPS = [
   .sg-texture__dash {
     height: 5rem;
     background-image: var(--rule-dash);
-    background-repeat: no-repeat;
-    background-size: 1px 100%;
+    /* Tiled at the token's own period, the way `.page-rails` does it. Stretching
+       one gradient over the box instead is the bug documented on `--rule-dash`. */
+    background-repeat: repeat-y;
+    background-size: 1px var(--rule-dash-period);
     background-position: center top;
   }
 
