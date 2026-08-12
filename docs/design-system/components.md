@@ -12,36 +12,6 @@ Everything in `src/components/`. Astro components unless noted.
 | `NoiseGradient.astro` | The hero wash: fixed-palette blobs plus inline-SVG fractal noise. `intensity="full"` (homepage) / `"soft"` (`/about`, case studies). |
 | `ArrowUpRight.astro` | The one shared icon. |
 | `RuleCross.astro` | The two squares where a section's top rule crosses the page rails. First child of any full-width `border-t` inside `.page-rails`; **the host must be `relative`**. |
-| `BpChip.astro` | Selection-chip eyebrow — dashed outline, faint accent fill, a hollow square handle on each vertical edge. Default slot is the label; the `icon` slot takes a stroked glyph. |
-
-**`BpChip` is a caption, not a badge.** Two handles on the mid-edges, never four
-corners and never eight: the mid-edge pair is the lightest mark that still reads
-as a selection, and adding the corners turns it from a label into a screenshot of
-Figma. The handles are absolutely positioned on the chip's own edges, so the chip
-must stay `relative` and must never be given `overflow: hidden`.
-
-Unlike `.bp-sq`, its handles are **unfilled**, and the dashed outline is *masked
-away* behind each one instead. A dash running through a selection handle reads as
-a rendering bug rather than as a handle, and the two ways of clearing it without a
-mask are both worse: an opaque fill punches the hole the way `.bp-sq` does, but
-`.bp-sq` always sits on the flat page surface and this chip rides the hero wash,
-where `--color-surface` read as a solid black tab stuck to the outline; stopping
-the left and right borders short of centre means drawing the outline as six
-background layers and reconciling the dash phase by hand at four corners.
-
-So the outline lives on `::before` (inset 0, `border-radius: inherit`) with a
-three-layer mask — the whole box, minus a square at each handle. **If you ever
-put a `border` back on `.bp-chip` itself, the mask has nothing to act on.**
-
-**The label is a sentence, not a category**, so the chip has to survive wrapping:
-`line-height: 1.35` with `text-wrap: balance`, and vertical padding set against
-that leading so a single-line chip still measures 34px. At 12px with 0.14em
-tracking a good label runs ~360px — wider than the content column below ~360px
-viewport.
-
-Its paint lives in `global.css` beside `.bp-sq`, since it is the same blueprint
-vocabulary. The component exists so the handle pair cannot be forgotten — a chip
-without them is just a dashed box. Lifted from Cloudflare's product eyebrows.
 
 **A `NoiseGradient` palette needs two hues far enough apart to be counted.** The
 blobs stack in the same corner under a 50px blur, so anything spanning less than
@@ -75,7 +45,7 @@ loses twice.
 blobs live off the top-right, so their falloff is what decides how much colour
 lands under the type. `soft` masks a whole diagonal (the headline sits lower
 left in a half-height hero); `full` masks a radial anchored at the **bottom-left
-corner** — the homepage h1, chip and stat figures all sit there, and colour
+corner** — the homepage h1 and stat figures both sit there, and colour
 behind the loudest type in the frame costs contrast and buys nothing. The corner
 going properly black is also what makes the wash read as *lit from the top
 right* rather than as an even tint.

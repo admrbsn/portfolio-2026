@@ -17,7 +17,6 @@ import Leadership from '../components/Leadership.astro';
 import Experience from '../components/Experience.astro';
 import Dribbble from '../components/Dribbble.astro';
 import RuleCross from '../components/RuleCross.astro';
-import BpChip from '../components/BpChip.astro';
 
 // Metrics come straight from the generated bundle.ts. createBundle assembles the
 // runtime bundle from these parts, which is the supported path when the prebuilt
@@ -196,37 +195,15 @@ const story = [
         the overflow-safety that justify-center would lose. `relative z-10`
         keeps it above the decorative backdrop. */}
     <div class="relative z-10 my-auto" data-anim="hero-fade">
-      {/* The eyebrow is what lets the h1 come down a step without the hero
-          going top-light: it gives the block something to start on, so the
-          headline is the second mark on the page rather than the first and only
-          one.
-
-          It is a hook rather than a subtitle, and it deliberately does not
-          explain itself here — the payoff is the Story section two screens
-          down, which opens "It started with shampoo bottles." A reader who
-          scrolls gets a callback; one who doesn't gets a line no other
-          portfolio could run. What it must never become is a restatement of
-          the h1 or a list of categories, which is what the first draft
-          ("Colorado · Design & frontend") was. */}
-      <BpChip class="mb-8" data-anim="reveal">
-        {/* The bottle itself, at 11px. Body and cap only — a stroked outline
-            this small loses any third element, and the silhouette alone is
-            what makes the joke land before the words do. */}
-        <svg slot="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path
-            d="M9.6 2.8h4.8v3.4H9.6z"
-            stroke="currentColor"
-            stroke-width="1.6"
-            stroke-linejoin="round"></path>
-          <path
-            d="M8.8 6.2h6.4a3.2 3.2 0 0 1 3.2 3.2v8.8a3.2 3.2 0 0 1-3.2 3.2H8.8a3.2 3.2 0 0 1-3.2-3.2V9.4a3.2 3.2 0 0 1 3.2-3.2Z"
-            stroke="currentColor"
-            stroke-width="1.6"
-            stroke-linejoin="round"></path>
-        </svg>
-        Still redesigning the shampoo bottle
-      </BpChip>
-
+      {/* No eyebrow above the h1. There was one — a selection chip reading
+          "Still redesigning the shampoo bottle", set up as a hook that paid off
+          two screens down when the Story section opens "It started with shampoo
+          bottles." It was cut, and the callback still works without it: the
+          Story line lands on its own rather than repeating a promise the hero
+          already made. If anything goes back here it has to earn the h1 losing
+          the first mark on the page, and it must not be a restatement of the
+          headline or a list of categories — which is what the draft before the
+          chip ("Colorado · Design & frontend") was. */}
       <h1 class="font-display text-display font-normal text-ink" data-anim="reveal-heading">
         Product Design Leader With Technical Roots<span class="accent-gradient">.</span>
       </h1>

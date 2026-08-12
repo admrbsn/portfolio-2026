@@ -11,7 +11,6 @@
  * page anyone should land on from search.
  */
 import BaseLayout from '../layouts/BaseLayout.astro';
-import BpChip from '../components/BpChip.astro';
 import { contrast, flatten, isInGamut, parseOklch, toHex } from '../lib/color';
 
 /*
@@ -210,27 +209,6 @@ const CHIPS = [
         <div class="sg-texture__dash" aria-hidden="true"></div>
       </div>
 
-      <p class="sg-note sg-note--spaced">
-        The selection chip, <code>&lt;BpChip&gt;</code> — a label drawn as if the region under it were
-        selected in a design tool. Two handles on the mid-edges, never four corners, and the dashed
-        outline is masked away behind each one so no dash runs through a handle.
-      </p>
-
-      <BpChip>
-        <svg slot="icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path
-            d="M9.6 2.8h4.8v3.4H9.6z"
-            stroke="currentColor"
-            stroke-width="1.6"
-            stroke-linejoin="round"></path>
-          <path
-            d="M8.8 6.2h6.4a3.2 3.2 0 0 1 3.2 3.2v8.8a3.2 3.2 0 0 1-3.2 3.2H8.8a3.2 3.2 0 0 1-3.2-3.2V9.4a3.2 3.2 0 0 1 3.2-3.2Z"
-            stroke="currentColor"
-            stroke-width="1.6"
-            stroke-linejoin="round"></path>
-        </svg>
-        Still redesigning the shampoo bottle
-      </BpChip>
     </section>
 
     {/* Radius, spacing, motion ------------------------------------------- */}
