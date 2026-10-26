@@ -6,7 +6,7 @@
 <style>
   * { box-sizing: border-box; margin: 0; }
   html, body { width: 1200px; height: 675px; background: #030712; font-family: Figtree, sans-serif; overflow: hidden; }
-  .stage { position: relative; width: 1200px; height: 675px; background: var(--art) center bottom / cover no-repeat; }
+  .stage { position: relative; width: 1200px; height: 675px; background: var(--left) left bottom / auto var(--scale) no-repeat, var(--right) right bottom / auto var(--scale) no-repeat, var(--ground, #030712); }
   #decor { position: absolute; inset: 0; }
   .head { position: absolute; top: 46px; left: 0; right: 0; text-align: center; color: #fff; }
   .avatar { width: 64px; height: 64px; border-radius: 50%; overflow: hidden; margin: 0 auto 12px; box-shadow: 0 0 0 2px rgba(255,255,255,0.08); }
@@ -44,6 +44,6 @@
     <div class="foot"><div class="check"><div class="box"></div>Subscribe to our newsletter</div><div class="btn">Continue</div></div>
   </div>
 </div>
-<script>document.querySelector('.stage').style.setProperty('--art', `url(${new URLSearchParams(location.search).get('art')})`);</script>
+<script src="scene.js"></script>
 </body>
 </html>

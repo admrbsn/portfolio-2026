@@ -13,9 +13,9 @@
  * stays crisp: `tribute-logo.svg` is the official mark from that same guide,
  * and John's avatar is cropped from gallery-2, the clean product screenshot.
  *
- * `GROUND` must match the art's own navy. The browser window is taller than the
- * art's 16:9, so the strip above it is a flat fill; a value even a few levels
- * off shows as a horizontal seam across the header.
+ * `GROUND` must match the art's own navy: everything outside the two clusters
+ * is a flat fill, and a value even a few levels off shows as a visible box
+ * around each one.
  */
 import { execFileSync } from 'node:child_process';
 import { cpSync, mkdtempSync } from 'node:fs';
@@ -28,9 +28,22 @@ const ASSETS = new URL('../../src/assets/work/recording-flow/', import.meta.url)
 const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const ART = 'birthday-art.jpg';
 const GROUND = '060c1a';
+// Each cluster's height as a % of the frame. At full size (the art filling the
+// frame) the cake and cupcake dwarfed the form card; the clusters are cut out
+// of the flat ground and pinned to their own corners instead, so they can be
+// scaled without sliding in behind the card.
+const SCALE = process.env.SCALE ?? '62';
+// Where to cut: the clusters live in the outer third on each side and the
+// middle is flat ground, so a cut anywhere in it is invisible.
+const SPLIT = 0.34;
 
 const work = mkdtempSync(join(tmpdir(), 'rf-art-'));
-for (const f of ['hero.html', 'g1.html', 'tribute-logo.svg', ART]) cpSync(HERE + f, join(work, f));
+for (const f of ['hero.html', 'g1.html', 'scene.js', 'tribute-logo.svg']) cpSync(HERE + f, join(work, f));
+
+const { width: AW = 0, height: AH = 0 } = await sharp(HERE + ART).metadata();
+const cut = Math.round(AW * SPLIT);
+await sharp(HERE + ART).extract({ left: 0, top: 0, width: cut, height: AH }).png().toFile(join(work, 'art-left.png'));
+await sharp(HERE + ART).extract({ left: AW - cut, top: 0, width: cut, height: AH }).png().toFile(join(work, 'art-right.png'));
 
 const g2 = ASSETS + 'recording-flow-gallery-2.webp';
 await sharp(g2).extract({ left: 668, top: 334, width: 82, height: 82 }).png().toFile(join(work, 'avatar.png'));
@@ -39,7 +52,7 @@ const shoot = (page: string, w: number, h: number, scale: number, out: string) =
   execFileSync(CHROME, [
     '--headless=new', '--disable-gpu', '--hide-scrollbars', '--allow-file-access-from-files',
     `--force-device-scale-factor=${scale}`, `--window-size=${w},${h}`, '--virtual-time-budget=5000',
-    `--screenshot=${out}`, `file://${join(work, page)}?art=${ART}&ground=${GROUND}`,
+    `--screenshot=${out}`, `file://${join(work, page)}?ground=${GROUND}&scale=${SCALE}`,
   ], { stdio: 'ignore' });
 
 // 1200x675 at 2x → 2400x1350, the work tile's 16:9.
