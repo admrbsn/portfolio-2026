@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Adam Robertson">
   <!--
-    The wordmark's accent dot, at icon scale: the same green to yellow ramp the
+    The wordmark's accent dot, at icon scale: the same blue to purple ramp the
     display type uses for its full stop (the compact gradient, tuned for short
     runs, which a 64px circle is exactly).
 
@@ -15,9 +15,9 @@
   -->
   <defs>
     <linearGradient id="dot" x1="6" y1="52" x2="58" y2="12" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#8cd472" />
-      <stop offset="0.45" stop-color="#b1d864" />
-      <stop offset="1" stop-color="#dedb5a" />
+      <stop offset="0" stop-color="#609efa" />
+      <stop offset="0.45" stop-color="#9f9afc" />
+      <stop offset="1" stop-color="#c99cfc" />
     </linearGradient>
   </defs>
   <circle cx="32" cy="32" r="29" fill="url(#dot)" />

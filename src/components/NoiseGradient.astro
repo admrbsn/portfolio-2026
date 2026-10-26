@@ -6,7 +6,9 @@
 //
 // `variant` swaps only the palette — every variant but `violet` shares the same
 // geometry, which is why the blob overrides below key off `:not(.violet)`:
-//   teal     — the brand: khaki highlight falling into emerald (default).
+//   iris     — the brand: bright blue highlight falling into deep purple
+//              (default). `--color-accent` is tuned to it — see below.
+//   teal     — the previous brand: khaki highlight falling into emerald.
 //              `--color-accent` is tuned to it, so this one is not freely
 //              swappable the way the rest are — see below.
 //   sunset   — peach → coral → steel blue, off the reference poster (three hues)
@@ -26,12 +28,12 @@
 // right way to try a palette before committing to it.
 //
 // **The default is half of a pair.** `--color-accent`, `--color-accent-warm` and
-// `--color-status` in global.css are tuned to `teal`'s khaki and emerald, so
-// swapping the default alone leaves every link, focus ring, status dot and
-// gradient in the wrong family — an orphaned hue reads as an oversight rather
-// than as an accent. Trial a palette per call site freely; promoting one to the
-// default means moving those three tokens and both ramps with it. That round
-// trip has been made once already, out to `sunset` and back.
+// `--color-accent-warm` in global.css are tuned to `iris`'s blue and purple, so
+// swapping the default alone leaves every link, focus ring and gradient in the
+// wrong family — an orphaned hue reads as an oversight rather than as an
+// accent. Trial a palette per call site freely; promoting one to the default
+// means moving those tokens and both ramps with it. That has been done three
+// times: `teal` out to `sunset` and back, then `teal` to `iris`.
 //
 // All of them are built the same way: a light highlight blob, a darker
 // saturated blob under it, and a diagonal tint. Keep the highlight around
@@ -45,11 +47,11 @@
 //          stay the loudest thing in frame
 
 interface Props {
-  variant?: 'violet' | 'teal' | 'solstice' | 'acid' | 'neon' | 'fuchsia' | 'sunset';
+  variant?: 'iris' | 'violet' | 'teal' | 'solstice' | 'acid' | 'neon' | 'fuchsia' | 'sunset';
   intensity?: 'full' | 'soft';
 }
 
-const { variant = 'teal', intensity = 'full' } = Astro.props;
+const { variant = 'iris', intensity = 'full' } = Astro.props;
 ---
 
 {/*
@@ -92,7 +94,25 @@ const { variant = 'teal', intensity = 'full' } = Astro.props;
     --tint: transparent;
   }
 
-  /* The brand wash, derived from the reference (khaki highlight #858868,
+  /* The brand wash: bright blue highlight falling into deep purple. Blue and
+     purple sit only ~48° apart, under the 60° floor below, so like `.fuchsia`
+     it leans on lightness to stay two colours: a luminous blue over a genuinely
+     dark purple, 0.22 L apart. Narrow that gap and it collapses into one violet.
+
+     The blue is sRGB-capped — H 252 clips above C 0.15 at L 0.72, and blues
+     have far less headroom than greens did. Lower L, not C, if it needs more. */
+  .iris {
+    --blob-a: oklch(0.72 0.15 252 / 0.58);
+    --blob-b: oklch(0.5 0.17 300 / 0.52);
+    --tint: linear-gradient(
+      115deg,
+      transparent 0%,
+      oklch(0.25 0.08 290 / 0.38) 60%,
+      oklch(0.34 0.11 298 / 0.42) 100%
+    );
+  }
+
+  /* The brand wash before `iris`, derived from the reference (khaki highlight #858868,
      emerald #317163, teal-black base #071212) then pushed bolder and more
      saturated. Source colours are brighter than those samples on purpose:
      these are semi-transparent layers over a near-black base, so they
@@ -117,7 +137,8 @@ const { variant = 'teal', intensity = 'full' } = Astro.props;
      with a light end and a dark end. A first pass at these alternates ran a cyan
      highlight (H 224) over an indigo body (H 268) and read as flat blue, despite
      being two blobs, two gradients and a tint. `.teal` works because it spans
-     78° from khaki to teal — and it is the *floor*, not the target.
+     78° from khaki to teal — and it is the *floor*, not the target. (`.iris`
+     sits under it and survives on lightness, the way `.fuchsia` does.)
 
      Both alternates below span more than twice that, and they hold the rest of
      `.teal`'s construction: light warm-ish highlight, darker saturated body
@@ -266,7 +287,7 @@ const { variant = 'teal', intensity = 'full' } = Astro.props;
     );
   }
 
-  /* Base tint. Only the teal variant uses it — the violet one sits straight on
+  /* Base tint. Every variant but `violet` uses it — that one sits straight on
      the neutral page surface. */
   .tint {
     position: absolute;
@@ -413,6 +434,18 @@ const { variant = 'teal', intensity = 'full' } = Astro.props;
      versions throughout — only the opacity moves, and the tint's ramp starts
      later. A new palette that skips this block silently renders at full
      strength on `/about` and the case studies. */
+  .soft.iris {
+    --blob-a: oklch(0.72 0.15 252 / 0.42);
+    --blob-b: oklch(0.5 0.17 300 / 0.36);
+    --tint: linear-gradient(
+      115deg,
+      transparent 0%,
+      transparent 46%,
+      oklch(0.25 0.08 290 / 0.26) 78%,
+      oklch(0.34 0.11 298 / 0.3) 100%
+    );
+  }
+
   .soft.teal {
     --blob-a: oklch(0.76 0.11 100 / 0.44);
     --blob-b: oklch(0.62 0.12 178 / 0.34);

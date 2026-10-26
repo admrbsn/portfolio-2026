@@ -175,9 +175,9 @@ const glance = [
       {/*
         The same component the homepage and /about use, at `soft` — not a
         hand-rolled copy of it. The copy drifted: it was two radials of
-        `--color-accent` and `--color-accent-warm`, which are the *brand* green
-        and yellow, where the homepage wash is built from a khaki highlight over
-        a teal blob and a teal base tint. Same family on paper, visibly
+        `--color-accent` and `--color-accent-warm`, the *brand* accents, where
+        the homepage wash is built from its own highlight blob, body blob and
+        base tint. Same family on paper, visibly
         different in the frame.
 
         `soft` is what keeps them from being identical: same palette, smaller
@@ -220,8 +220,8 @@ const glance = [
         </h1>
 
         {/* White-with-alpha rather than `--color-ink-dim`. That token sits at
-            hue 160 with a little chroma — invisible at body size, but at
-            `--text-lead` it reads as a faint green cast. Matches how the
+            hue 280 with a little chroma — invisible at body size, but at
+            `--text-lead` it reads as a faint violet cast. Matches how the
             homepage hero handles its own lead. */}
         <p class="mt-7 max-w-3xl text-lead text-ink-lead" data-anim="reveal">{summary}</p>
       </div>
@@ -355,7 +355,7 @@ const glance = [
                 <div class="text-center">
                   {/* Same clamp as <Stat> — at four columns the display ramp
                       overflows the cell for anything longer than "+24%". The
-                      green→yellow ramp is `stat-gradient` from global.css —
+                      blue→purple ramp is `stat-gradient` from global.css —
                       `accent-gradient`'s longer ramp reads flat at this width. */}
                   <dd class="stat-gradient font-display text-[clamp(2rem,4vw,3.5rem)] font-normal leading-[1] tracking-tight">
                     {metric.value}
@@ -573,20 +573,12 @@ const glance = [
   }
 
   /*
-    Brand wash behind the hero type: the warm yellow highlight falling into the
-    green, the same emerald→khaki relationship the homepage hero uses. Not
-    <NoiseGradient /> — that is a heavier, grain-textured treatment sized for a
-    full-viewport hero, and it would fight a block of display type this size.
-
-    Kept low-alpha and pushed into the top-right corner: it sits under
-    display-size text and must not touch contrast.
-  */
   /*
     The cover as a corner watermark.
 
     `luminosity` is the whole trick: the blend takes hue and saturation from
     what is underneath (the hero wash) and only luminance from the image, so a
-    full-colour product screenshot resolves into the page's own green rather
+    full-colour product screenshot resolves into the page's own blue and purple rather
     than sitting on top of it as a foreign rectangle. `grayscale(1)` first, so
     the source's own colour cannot leak through at the edges of the blend.
 

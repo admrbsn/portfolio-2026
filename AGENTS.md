@@ -61,8 +61,9 @@ Read those before touching anything visual. The short version, for orientation:
   **one accent palette** site-wide, **one radius** (`--radius-ui`, 3px). Every
   exception is listed in `tokens.md`; if it is not on that list, it is a mistake.
 - **The accent follows the hero wash.** `--color-accent` / `-warm` / `--color-status`
-  are tuned to `<NoiseGradient>`'s default `teal` variant. Changing that
-  default means moving those three tokens and both gradient ramps with it, or
+  are tuned to `<NoiseGradient>`'s default `iris` variant (bright blue into deep
+  purple; the status dot alone stays green on purpose). Changing that default
+  means moving the accent tokens and both gradient ramps with it, or
   the page ends up with an orphaned hue.
 - **The three display steps are one ladder** — `--text-display` /
   `--text-title` / `--text-stat`, 80/60/48 at 1440. Move one and you have to
@@ -590,7 +591,7 @@ keeping it out from behind the fixed nav).
 
 `luminosity` is the whole trick: hue and saturation come from the hero wash
 underneath and only the image's light and shade survive, so a full-colour
-product screenshot resolves into the page's own green rather than sitting on it
+product screenshot resolves into the page's own blue and purple rather than sitting on it
 as a foreign rectangle. Two rules if you retune it: **grayscale first** (or the
 source's colour leaks at the blend edges), and **keep it below the threshold
 where the UI inside the screenshot becomes legible** — the moment individual
@@ -604,7 +605,7 @@ Two consequences worth knowing before adding it back:
   full-bleed hero image; with no counterpart on the case study page, an
   unpaired name animates the tile out on its own. It is a plain cross-fade now.
 - The hero's colour comes from `.hero-wash`, a low-alpha radial pair of the
-  brand green and warm yellow, plus `.hero-grain` — the same inline-SVG fractal
+  brand blue and purple, plus `.hero-grain` — the same inline-SVG fractal
   noise `<NoiseGradient />` uses, copied rather than imported because that
   component brings its own fixed-palette blobs sized for a full-viewport hero.
   With no cover on the page, the wash is the only thing carrying colour above

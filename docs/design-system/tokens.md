@@ -15,18 +15,18 @@ the page.
 
 | Token | Value | Notes |
 | --- | --- | --- |
-| `--color-ink` | `oklch(0.97 0.005 150)` | Headings, display narrative, `<dd>` values |
+| `--color-ink` | `oklch(0.97 0.005 280)` | Headings, display narrative, `<dd>` values |
 | `--color-ink-lead` | `oklch(1 0 0 / 0.82)` | Lead paragraphs — 12.2:1 |
-| `--color-ink-dim` | `oklch(0.72 0.012 160)` | 7.9:1 on surface |
-| `--color-ink-faint` | `oklch(0.6 0.014 160)` | **5.0:1 — do not darken below L=0.58** |
+| `--color-ink-dim` | `oklch(0.72 0.012 280)` | 7.8:1 on surface |
+| `--color-ink-faint` | `oklch(0.61 0.014 280)` | **5.1:1 — do not darken below L=0.58** |
 | `--color-surface` | `oklch(0.16 0.004 240)` | The page |
 | `--color-surface-lift` | `oklch(0.21 0.006 240)` | Raised fills |
 | `--color-line` | `oklch(1 0 0 / 0.14)` | Every hairline |
-| `--color-accent` | `oklch(0.8 0.15 138)` | Brand green, 10.9:1 |
-| `--color-accent-warm` | `oklch(0.86 0.15 108)` | Gradient tails only, never body text |
-| `--color-status` | `oklch(0.84 0.14 140)` | Availability, 12.4:1 |
+| `--color-accent` | `oklch(0.7 0.15 258)` | Brand blue, 7.2:1 |
+| `--color-accent-warm` | `oklch(0.76 0.15 305)` | Purple — gradient tails only, never body text |
+| `--color-status` | `oklch(0.84 0.14 140)` | Availability, 12.4:1 — **green on purpose** |
 
-Five rules, each of which cost something to learn:
+Rules, each of which cost something to learn:
 
 **Every accent stop must be inside sRGB.** An earlier `--color-accent` was
 `oklch(0.84 0.19 168)`, whose red channel resolves to **-0.065** — the browser
@@ -36,37 +36,34 @@ converts without a negative channel. Chroma past the gamut edge is not more
 vibrant — it is clipped, and it clips inconsistently across hues, which is
 exactly how a palette drifts out of family.
 
-**Mint is a light blue-green; the fix for it is hue, not chroma.** Fixing the
-clipping (H 168 → 174) removed the electric edge but still read minty. The accent
-is **H 138**, a yellow-green leaning toward `<NoiseGradient>`'s khaki highlight
-(H 100) rather than its teal blob (H 178). That was chosen by rendering
-H 138/150/162 against the live hero, not by reasoning about it.
-
-**Greens have room; warm hues do not.** This family was taken out to a coral
-(`oklch(0.76 0.14 22)`) and brought back, and the measurement is the thing worth
-keeping from the trip. sRGB's warm quadrant is its *smallest*, because the red
-channel saturates at 255 long before the other two — so the chroma ceiling falls
-steeply as lightness rises. Measured at H 22: **C 0.155 at L 0.74, C 0.125 at
-L 0.78, C 0.10 at L 0.82.** This green holds C 0.15 at L 0.80 without trying.
-**If the family ever goes warm again, lower the lightness to buy the chroma
-back** — raising L and holding C ships a pale salmon, or clips. It is also why a
-warm version of the ramps cannot share one chroma across their stops the way
-these do.
-
 **The accent follows the hero wash, not the other way round.** It is tuned to
-`<NoiseGradient>`'s default `teal` variant — khaki highlight, emerald body — so a
-gradient tail resolves into a colour already present behind it. **Changing the
-default variant means moving these three tokens with it**, or the page ends up
-with an orphaned hue, which reads as an oversight rather than as an accent.
+`<NoiseGradient>`'s default `iris` variant — bright blue highlight, deep purple
+body — so the accent sits on the highlight (H 258 against H 252) and the warm
+token on the body (H 305 against H 300), and a gradient tail resolves into a
+colour already present behind it. **Changing the default variant means moving
+the accent tokens with it**, or the page ends up with an orphaned hue, which
+reads as an oversight rather than as an accent.
 
-**`--color-accent-warm` is only 30° away.** That is tight, but it is the entire
-range the gradients have. Don't push the accent warmer without moving the warm
-token too, or both ramps flatten into one colour.
+**Blues have far less headroom than greens.** The family has been green
+(`oklch(0.8 0.15 138)`), out to coral and back, and is now blue/purple. The green
+held C 0.15 at L 0.80 without trying; at H 250–260, C 0.15 clips above L ≈ 0.72,
+which is why the accent is darker than the green was and its contrast dropped
+from 10.9:1 to 7.2:1 — still well clear of AA. Purple has more room than blue,
+which is why the ramps rise in lightness toward the purple end. Warm hues are
+tightest of all — **at H 22: C 0.155 at L 0.74, C 0.125 at L 0.78, C 0.10 at
+L 0.82.** Whatever the hue, **lower the lightness to buy chroma back**; raising L
+and holding C clips.
 
-**`--color-status` keeps green-means-go.** It was briefly spent on family
-coherence while the palette was coral — defensible, since the label beside it
-reads "Available for work" and the words carry the meaning. Back on green the dot
-needs no reading at all, which is the better end of that trade.
+**`--color-accent-warm` is 47° from the accent.** The name dates from the yellow
+end of the old ramps; the role — the far end of every gradient — is unchanged.
+Much closer and the ramps flatten into one colour; much further and a two-word
+phrase reads as a rainbow swipe.
+
+**`--color-status` stays green-means-go.** It is the one colour outside the
+accent family, deliberately: the dot needs no reading at all when it is green,
+and it is small enough that it never competes with the brand. It was briefly
+spent on family coherence while the palette was coral, and that was the worse
+end of the trade.
 
 **Paragraph copy has exactly two roles, and they are set by size.**
 
@@ -78,8 +75,8 @@ needs no reading at all, which is the better end of that trade.
 | Display narrative — the story beats, the impact beats — and `<dd>` values | `--color-ink` |
 
 `--color-ink-lead` is **neutral white with alpha, not a tinted grey**:
-`--color-ink-dim` sits at hue 160 with a little chroma, which is invisible at
-body size and reads as a faint green cast once the type is big. That is why lead
+`--color-ink-dim` sits at hue 280 with a little chroma, which is invisible at
+body size and reads as a faint violet cast once the type is big. That is why lead
 copy cannot simply reuse it.
 
 Before this token existed, large paragraphs were split four ways —
@@ -102,7 +99,7 @@ editing the number here.
 
 **One accent palette, site-wide.** Case studies used to carry a per-entry hue in
 frontmatter (Tribute teal, Peterson's green, V3 amber). That is gone: the brand
-green/yellow is the only accent anywhere, so the pages doing the most persuading
+blue/purple is the only accent anywhere, so the pages doing the most persuading
 are the ones wearing the brand. Don't reintroduce a per-page hue without a reason
 that survives seeing all five studies side by side.
 

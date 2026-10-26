@@ -16,7 +16,9 @@ Everything in `src/components/`. Astro components unless noted.
 **A `NoiseGradient` palette needs two hues far enough apart to be counted.** The
 blobs stack in the same corner under a 50px blur, so anything spanning less than
 ~60° composites into one colour with a light end and a dark end. `teal` spans 78°
-(khaki → emerald) and is the floor, not the target; `solstice` spans 165°
+(khaki → emerald) and is the floor, not the target — the default, `iris` (bright
+blue → deep purple, 48°), sits under it and holds together on a 0.22 lightness
+gap instead, the same way `fuchsia` does; `solstice` spans 165°
 (amber → ocean blue) and `acid` 174° (lime → violet). A first pass at an
 alternate ran cyan over indigo — 44° — and read as flat blue despite being two
 blobs, two gradients and a tint.
@@ -66,7 +68,7 @@ bar must be checked against that 310px budget.**
 
 The nav deliberately has **no `mix-blend-mode`**. Difference blending kept a
 monochrome bar legible over any backdrop, but it inverts the green availability
-dot to magenta and the wordmark's accent dot to blue; the scroll-triggered scrim
+dot to magenta and the wordmark's accent dot to orange; the scroll-triggered scrim
 replaces it.
 
 ## Page sections
