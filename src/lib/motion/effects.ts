@@ -24,6 +24,8 @@ export function revealHeading(el: HTMLElement): Teardown {
     aria: 'auto',
   });
 
+  paintPhrase(split.words as HTMLElement[]);
+
   gsap.set(el, { opacity: 1 });
 
   const tween = gsap.from(split.words, {
@@ -45,6 +47,47 @@ export function revealHeading(el: HTMLElement): Teardown {
     // wrappers inside wrappers and the text would drift.
     split.revert();
   };
+}
+
+/**
+ * Re-join a `.phrase-gradient` after SplitText has broken it into words.
+ *
+ * Each word is its own element, so a background clipped to text would restart
+ * per word. Instead every word gets the phrase's ramp at the phrase's full
+ * length, shifted back by how far along the phrase the word starts — measured
+ * in reading order, line after line, which is exactly how an unsplit inline
+ * span lays one background across its fragments. Measured before the reveal
+ * tween runs; `yPercent` only moves words vertically, so x is unaffected.
+ * `split.revert()` drops the inline styles along with the wrappers.
+ */
+function paintPhrase(words: HTMLElement[]) {
+  const tinted = words.filter((w) => w.closest('.phrase-gradient'));
+  if (!tinted.length) return;
+
+  const placed: { word: HTMLElement; at: number }[] = [];
+  let done = 0; // length of all previous lines
+  let line: Element | null = null;
+  let lineLeft = 0;
+  let lineLength = 0;
+
+  for (const word of tinted) {
+    const box = word.getBoundingClientRect();
+    const wordLine = word.closest('.split-line');
+    if (wordLine !== line) {
+      done += lineLength;
+      line = wordLine;
+      lineLeft = box.left;
+    }
+    placed.push({ word, at: done + (box.left - lineLeft) });
+    lineLength = box.right - lineLeft;
+  }
+
+  const total = done + lineLength;
+  for (const { word, at } of placed) {
+    word.classList.add('phrase-word');
+    word.style.backgroundSize = `${total}px 100%`;
+    word.style.backgroundPosition = `${-at}px 0`;
+  }
 }
 
 /* -------------------------------------------------------------------------

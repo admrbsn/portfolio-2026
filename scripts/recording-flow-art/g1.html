@@ -1,0 +1,122 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  html, body { width: 1536px; height: 1024px; background: #4f4f4f; font-family: Figtree, sans-serif; overflow: hidden; }
+  .win { position: absolute; left: 68px; top: 163px; width: 1025px; height: 682px; background: #030712; border-radius: 10px; overflow: hidden; box-shadow: 0 30px 60px -30px rgba(0,0,0,0.6); }
+  .bar { height: 32px; background: #1e1e1e; display: flex; gap: 7px; align-items: center; padding-left: 14px; }
+  .bar i { width: 11px; height: 11px; border-radius: 50%; display: block; }
+  .inner { position: relative; height: 650px; background: var(--ground, #030712) var(--art) center bottom / 100% auto no-repeat; }
+  #decor { position: absolute; inset: 0; }
+  .logo { position: absolute; left: 36px; top: 22px; height: 30px; }
+  .help { position: absolute; right: 36px; top: 26px; color: #fff; font-size: 12.5px; font-weight: 600; display: flex; gap: 6px; align-items: center; }
+  .q { width: 16px; height: 16px; border-radius: 50%; background: #fff; color: #141414; font-size: 11px; font-weight: 700; display: grid; place-items: center; }
+  .head { position: absolute; top: 56px; left: 0; right: 0; text-align: center; color: #fff; }
+  .avatar { width: 64px; height: 64px; border-radius: 50%; overflow: hidden; margin: 0 auto 10px; }
+  .avatar img { width: 112%; height: 112%; margin: -6%; display: block; }
+  .title { font-size: 19px; font-weight: 500; }
+  .sub { margin-top: 3px; font-size: 13px; color: rgba(255,255,255,0.6); }
+  .steps { position: absolute; top: 195px; left: 0; right: 0; display: flex; justify-content: center; gap: 24px; color: rgba(255,255,255,0.75); font-size: 12px; }
+  .steps span { display: flex; align-items: center; gap: 8px; }
+  .steps b { width: 25px; height: 25px; border-radius: 50%; background: #3a3a3a; display: grid; place-items: center; font-weight: 500; font-size: 11px; color: #ddd; }
+  .steps .on { color: #fff; font-weight: 600; }
+  .steps .on b { background: #fff; color: #141414; }
+  .card { position: absolute; left: 239px; top: 245px; width: 548px; background: #fff; border-radius: 4px; padding: 22px 26px; }
+  .card h2 { text-align: center; font-size: 16px; font-weight: 600; color: #111; margin-bottom: 18px; }
+  .label { font-size: 12.5px; font-weight: 500; color: #111; }
+  .label span { color: #8a8a8a; font-weight: 400; }
+  .field { margin-top: 10px; padding-bottom: 9px; border-bottom: 1px solid #d9d9d9; font-size: 12.5px; color: #9a9a9a; display: flex; justify-content: space-between; align-items: center; }
+  .row { margin-bottom: 18px; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .foot { display: flex; justify-content: space-between; align-items: center; margin-top: 30px; }
+  .check { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: #111; font-weight: 500; }
+  .box { width: 15px; height: 15px; border: 1.5px solid #bdbdbd; border-radius: 3px; }
+  .btn { background: #111; color: #fff; font-size: 13px; font-weight: 600; padding: 10px 20px; border-radius: 5px; }
+
+  .phone { position: absolute; left: 1128px; top: 163px; width: 333px; height: 678px; background: #1b1b1b; border-radius: 52px; padding: 14px; box-shadow: 0 30px 60px -30px rgba(0,0,0,0.6); }
+  .screen { position: relative; height: 100%; border-radius: 40px; overflow: hidden; background: var(--ground, #030712); }
+  .island { position: absolute; top: 12px; left: 50%; margin-left: -46px; width: 92px; height: 28px; border-radius: 14px; background: #000; }
+  .p-logo { position: absolute; left: 18px; top: 18px; height: 20px; }
+  .p-help { position: absolute; right: 12px; top: 22px; color: #fff; font-size: 11px; font-weight: 600; display: flex; gap: 4px; align-items: center; }
+  .p-help .q { width: 14px; height: 14px; font-size: 9px; }
+  .p-head { position: absolute; top: 52px; left: 0; right: 0; text-align: center; color: #fff; }
+  .p-head .avatar { width: 64px; height: 64px; margin-bottom: 10px; }
+  .p-head .title { font-size: 18px; }
+  .p-steps { position: absolute; top: 196px; left: 0; right: 0; display: flex; justify-content: center; gap: 10px; font-size: 10.5px; color: rgba(255,255,255,0.55); }
+  .p-steps .on { color: #fff; font-weight: 600; }
+  .p-card { position: absolute; top: 216px; left: 0; right: 0; bottom: 0; background: #fff; padding: 20px 18px; }
+  .p-card h2 { text-align: center; font-size: 16px; font-weight: 600; color: #111; margin-bottom: 18px; }
+  .p-card .row { margin-bottom: 18px; }
+  .p-card .cols { gap: 12px; }
+  .p-card .label { font-size: 12px; }
+  .p-card .field { font-size: 12px; }
+  .p-foot { position: absolute; left: 18px; right: 18px; bottom: 40px; text-align: center; }
+  .p-foot .check { justify-content: center; margin-bottom: 12px; }
+  .p-foot .btn { text-align: center; padding: 11px; }
+  .home { position: absolute; bottom: 8px; left: 50%; margin-left: -64px; width: 128px; height: 4px; border-radius: 2px; background: #111; }
+</style>
+</head>
+<body>
+<div class="win">
+  <div class="bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div>
+  <div class="inner" id="inner">
+    <img class="logo" src="tribute-logo.svg">
+    <div class="help"><span class="q">?</span>Need Help?</div>
+    <div class="head">
+      <div class="avatar"><img src="avatar.png"></div>
+      <div class="title">Birthday Tribute for John</div>
+      <div class="sub">Organized by Paul</div>
+    </div>
+    <div class="steps">
+      <span class="on"><b>1</b>Info</span><span><b>2</b>Video</span><span><b>3</b>Photos</span><span><b>4</b>Gift</span><span><b>5</b>Confirmation</span>
+    </div>
+    <div class="card" id="card">
+      <h2>Let's Get Started!</h2>
+      <div class="row"><div class="label">Full Name</div><div class="field">Enter your full name</div></div>
+      <div class="row"><div class="label">Email</div><div class="field">Enter your email</div></div>
+      <div class="cols">
+        <div><div class="label">Birth Month <span>(Optional)</span></div><div class="field">Select month CHEV</div></div>
+        <div><div class="label">Birth Day <span>(Optional)</span></div><div class="field">Select day CHEV</div></div>
+      </div>
+      <div class="foot"><div class="check"><div class="box"></div>Subscribe to our newsletter</div><div class="btn">Continue</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="phone">
+  <div class="screen">
+    <img class="p-logo" src="tribute-logo.svg">
+    <div class="island"></div>
+    <div class="p-help"><span class="q">?</span>Need Help?</div>
+    <div class="p-head">
+      <div class="avatar"><img src="avatar.png"></div>
+      <div class="title">Birthday Tribute for John</div>
+      <div class="sub">Organized by Paul</div>
+    </div>
+    <div class="p-steps"><span class="on">1 Info</span><span>2 Video</span><span>3 Photos</span><span>4 Gift</span><span>5 Confirmation</span></div>
+    <div class="p-card">
+      <h2>Let's Get Started!</h2>
+      <div class="row"><div class="label">Full Name</div><div class="field">Enter your full name</div></div>
+      <div class="row"><div class="label">Email</div><div class="field">Enter your email</div></div>
+      <div class="cols">
+        <div><div class="label">Birth Month <span>(Optional)</span></div><div class="field">Select month CHEV</div></div>
+        <div><div class="label">Birth Day <span>(Optional)</span></div><div class="field">Select day CHEV</div></div>
+      </div>
+      <div class="p-foot"><div class="check"><div class="box"></div>Subscribe to our newsletter</div><div class="btn">Continue</div></div>
+      <div class="home"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const chev = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
+  document.body.innerHTML = document.body.innerHTML.replaceAll('CHEV', chev);
+  const q = new URLSearchParams(location.search);
+  document.body.style.setProperty('--art', `url(${q.get('art')})`);
+  if (q.get('ground')) document.body.style.setProperty('--ground', '#' + q.get('ground'));
+</script>
+</body>
+</html>

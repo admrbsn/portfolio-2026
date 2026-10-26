@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Adam Robertson">
   <!--
-    The wordmark's accent dot, at icon scale: the same blue to purple ramp the
-    display type uses for its full stop (the compact gradient, tuned for short
-    runs, which a 64px circle is exactly).
+    A circle in the compact blue to purple ramp. It began as the wordmark's
+    accent full stop at icon scale; the wordmark has since dropped the dot,
+    and the circle stays as a standalone mark.
 
     Hex rather than oklch, because this file is rasterised by librsvg via sharp
     and that does not resolve CSS Color 4. The stops are the accent, the ramp's

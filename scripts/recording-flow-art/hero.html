@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  html, body { width: 1200px; height: 675px; background: #030712; font-family: Figtree, sans-serif; overflow: hidden; }
+  .stage { position: relative; width: 1200px; height: 675px; background: var(--art) center bottom / cover no-repeat; }
+  #decor { position: absolute; inset: 0; }
+  .head { position: absolute; top: 46px; left: 0; right: 0; text-align: center; color: #fff; }
+  .avatar { width: 64px; height: 64px; border-radius: 50%; overflow: hidden; margin: 0 auto 12px; box-shadow: 0 0 0 2px rgba(255,255,255,0.08); }
+  .avatar img { width: 112%; height: 112%; margin: -6%; display: block; }
+  .title { font-size: 21px; font-weight: 600; letter-spacing: -0.01em; }
+  .sub { margin-top: 4px; font-size: 13px; color: rgba(255,255,255,0.6); }
+  .card { position: absolute; left: 330px; top: 196px; width: 540px; background: #fff; border-radius: 6px; padding: 26px 30px 26px; box-shadow: 0 30px 80px -30px rgba(0,0,0,0.8); }
+  .card h2 { text-align: center; font-size: 17px; font-weight: 600; color: #111; margin-bottom: 20px; }
+  .label { font-size: 12.5px; font-weight: 500; color: #111; }
+  .label span { color: #8a8a8a; font-weight: 400; }
+  .field { align-items: center; margin-top: 10px; padding-bottom: 9px; border-bottom: 1px solid #d9d9d9; font-size: 12.5px; color: #9a9a9a; display: flex; justify-content: space-between; }
+  .row { margin-bottom: 20px; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .foot { display: flex; justify-content: space-between; align-items: center; margin-top: 30px; }
+  .check { display: flex; align-items: center; gap: 9px; font-size: 12.5px; color: #111; font-weight: 500; }
+  .box { width: 15px; height: 15px; border: 1.5px solid #bdbdbd; border-radius: 3px; }
+  .btn { background: #111; color: #fff; font-size: 13px; font-weight: 600; padding: 11px 22px; border-radius: 5px; }
+</style>
+</head>
+<body>
+<div class="stage">
+    <div class="head">
+    <div class="avatar"><img src="avatar.png"></div>
+    <div class="title">Birthday Tribute for John</div>
+    <div class="sub">Organized by Paul</div>
+  </div>
+  <div class="card" id="card">
+    <h2>Let's Get Started!</h2>
+    <div class="row"><div class="label">Full Name</div><div class="field">Enter your full name</div></div>
+    <div class="row"><div class="label">Email</div><div class="field">Enter your email</div></div>
+    <div class="cols">
+      <div><div class="label">Birth Month <span>(Optional)</span></div><div class="field">Select month <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></div></div>
+      <div><div class="label">Birth Day <span>(Optional)</span></div><div class="field">Select day <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></div></div>
+    </div>
+    <div class="foot"><div class="check"><div class="box"></div>Subscribe to our newsletter</div><div class="btn">Continue</div></div>
+  </div>
+</div>
+<script>document.querySelector('.stage').style.setProperty('--art', `url(${new URLSearchParams(location.search).get('art')})`);</script>
+</body>
+</html>

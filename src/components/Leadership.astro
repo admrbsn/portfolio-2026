@@ -18,7 +18,7 @@ import workspace from '../assets/home/workspace.jpg';
         id="about-me"
         class="mt-6 font-display text-[clamp(2rem,3.4vw,3.25rem)] font-normal leading-[1.05] text-ink"
       >
-        Where design meets code, and teams do their best work<span class="accent-gradient">.</span>
+        Where design meets code, and teams do their best work
       </h2>
     </div>
 
@@ -58,9 +58,13 @@ import workspace from '../assets/home/workspace.jpg';
         by executing faster myself.
       </p>
 
+      {/* `font-semibold` because this is the one place a micro label is dark
+          on light. The site sets `-webkit-font-smoothing: antialiased`, which
+          thins dark-on-light glyphs noticeably, and at 12px with wide tracking
+          the regular weight read as a hairline against the white pill. */}
       <a
         href="/about"
-        class="group mt-8 inline-flex items-center gap-2 self-start rounded-full bg-white px-6 py-3 text-micro uppercase tracking-[0.14em] text-surface transition-colors hover:bg-accent"
+        class="group mt-8 inline-flex items-center gap-2 self-start rounded-full bg-white px-6 py-3 text-micro font-semibold uppercase tracking-[0.14em] text-surface transition-colors hover:bg-accent"
       >
         Learn more about how I lead
         <ArrowUpRight class="transition-transform duration-500 ease-[var(--ease-out-expo)] group-hover:translate-x-1 group-hover:-translate-y-1" />

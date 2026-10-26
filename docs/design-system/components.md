@@ -6,8 +6,8 @@ Everything in `src/components/`. Astro components unless noted.
 
 | Component | Notes |
 | --- | --- |
-| `Nav.astro` | Fixed bar. `transition:persist`, so it is wired once by `nav.ts` and never per page. |
-| `Footer.astro` | Click-to-copy email, socials, copyright. `transition:persist`. |
+| `Nav.astro` | Fixed bar. `transition:persist`, so it is wired once by `nav.ts` and never per page. **Connect** is a disclosure (from `sm` only): the email with copy, plus every footer profile. Closes on outside click, Escape (focus returns to the toggle), tabbing out, the bar retracting, and navigation. |
+| `Footer.astro` | Click-to-copy email, socials, copyright. `transition:persist`. The email and socials live in `src/data/contact.ts`, shared with the nav's Connect panel — edit them there. |
 | `Cursor.svelte` | Custom cursor. `client:idle`. Reads `data-cursor` / `data-cursor-label` off any element. |
 | `NoiseGradient.astro` | The hero wash: fixed-palette blobs plus inline-SVG fractal noise. `intensity="full"` (homepage) / `"soft"` (`/about`, case studies). |
 | `ArrowUpRight.astro` | The one shared icon. |
@@ -68,7 +68,7 @@ bar must be checked against that 310px budget.**
 
 The nav deliberately has **no `mix-blend-mode`**. Difference blending kept a
 monochrome bar legible over any backdrop, but it inverts the green availability
-dot to magenta and the wordmark's accent dot to orange; the scroll-triggered scrim
+dot to magenta; the scroll-triggered scrim
 replaces it.
 
 ## Page sections

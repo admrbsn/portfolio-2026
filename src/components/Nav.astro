@@ -1,15 +1,17 @@
 ---
+import ArrowUpRight from './ArrowUpRight.astro';
+import { email, socials } from '../data/contact';
+
 /*
- * `mobile: false` hides a link below `sm`. The bar has ~310px of content width
+ * Connect hides below `sm`. The bar has ~310px of content width
  * at a 390px viewport and the three links plus the wordmark want ~356px, so
  * something has to go — Connect is the one that can, because the footer carries
  * the same address at display size and every page ends there. Shrinking the
  * type instead was measured: it still overflows at 360-375px.
  */
 const links = [
-  { href: '/#work', label: 'Work', mobile: true },
-  { href: '/about', label: 'About', mobile: true },
-  { href: 'mailto:hi@adamrobertson.co', label: 'Connect', mobile: false },
+  { href: '/#work', label: 'Work' },
+  { href: '/about', label: 'About' },
 ];
 
 const path = Astro.url.pathname;
@@ -39,7 +41,7 @@ const availableForWork = true;
     href="/"
     class="justify-self-start whitespace-nowrap font-wordmark text-[clamp(1rem,4.6vw,1.125rem)] font-medium tracking-tight text-ink sm:text-xl"
   >
-    Adam Robertson<span class="text-accent">.</span>
+    Adam Robertson
   </a>
 
   {/* Centre nav */}
@@ -47,7 +49,7 @@ const availableForWork = true;
     <ul class="flex items-center gap-6 sm:gap-7">
       {
         links.map((link) => (
-          <li class:list={[!link.mobile && 'hidden sm:block']}>
+          <li>
             <a
               href={link.href}
               aria-current={path.startsWith(link.href) ? 'page' : undefined}
@@ -58,6 +60,63 @@ const availableForWork = true;
           </li>
         ))
       }
+      {/* Connect is a disclosure, not a link: the email plus every profile the
+          footer lists, so the one place a visitor is most likely to look for
+          contact details has all of them. The panel is plain markup — with no
+          JS it never opens, and the footer still carries the same list. */}
+      <li class="connect relative hidden sm:block" data-connect>
+        <button
+          type="button"
+          aria-expanded="false"
+          aria-controls="connect-panel"
+          data-connect-toggle
+          class="connect__toggle inline-flex items-center gap-1.5 text-ink-dim transition-colors hover:text-ink aria-expanded:text-ink"
+        >
+          Connect
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" class="connect__chevron h-[0.85em] w-[0.85em]">
+            <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+
+        <div id="connect-panel" class="connect__panel" data-connect-panel>
+          <p class="text-micro uppercase tracking-[0.2em] text-ink-faint">Message me</p>
+          <button
+            type="button"
+            data-connect-copy={email}
+            data-cursor-label="Click to copy"
+            aria-label={`Copy ${email}`}
+            class="connect__email mt-2 block w-full text-left text-ink transition-colors hover:text-accent"
+          >
+            {/* No visible "Copy" label — the custom cursor says it on hover.
+                Feedback is the address itself reading "Copied!" for a beat;
+                the panel's `min-width` is what keeps it from shrinking while
+                the shorter word is up. */}
+            <span data-connect-copy-label aria-live="polite" class="whitespace-nowrap">{email}</span>
+          </button>
+
+          <ul class="connect__socials">
+            {
+              socials.map((s) => (
+                <li>
+                  <a
+                    href={s.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-cursor-label="Visit"
+                    class="connect__social flex items-center gap-3 text-ink-dim transition-colors hover:text-ink"
+                  >
+                    <svg viewBox={s.viewBox} fill="currentColor" aria-hidden="true" class="h-4 w-4 shrink-0">
+                      <path fill-rule={s.fillRule} d={s.icon} />
+                    </svg>
+                    <span class="flex-1">{s.label}</span>
+                    <ArrowUpRight class="connect__arrow" />
+                  </a>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </li>
     </ul>
   </nav>
 
@@ -78,6 +137,14 @@ const availableForWork = true;
     /* Part of the blueprint frame: a persistent bottom rule. Content is padded
        to `px-shell`, inside the rails. */
     border-bottom: 1px solid var(--color-line);
+    /* Blur is always on, not only with the scrim. Before the scrim arrives
+       (the first 140px of scroll) the bar is transparent, and anything passing
+       under it — a hero's blueprint label, a cover watermark — stayed sharp and
+       collided with the nav type. Blur alone keeps the hero wash reading
+       through at the top of the page (it is already a 50px blur, so blurring
+       it again changes nothing) while turning stray type into a smudge. */
+    -webkit-backdrop-filter: blur(18px);
+    backdrop-filter: blur(18px);
     transition:
       transform 500ms var(--ease-out-expo),
       background-color 350ms ease,
@@ -86,40 +153,29 @@ const availableForWork = true;
 
   /*
     No mix-blend-mode here. Difference blending kept a monochrome bar legible
-    over any backdrop, but it inverts the green availability dot to magenta and
-    the accent dot in the wordmark to orange. Explicit colours + the scrim below
-    are the trade for keeping those two colour moments intact.
+    over any backdrop, but it inverts the green availability dot to magenta.
+    Explicit colours + the scrim below are the trade for keeping it intact.
   */
   /* Opaque enough that body copy passing underneath becomes an indistinct
      wash rather than something you can still read. At 72% the page was legible
      through the bar; the blur alone does not hide high-contrast text. */
   .site-nav[data-nav-scrim='on'] {
     background-color: color-mix(in oklab, var(--color-surface) 90%, transparent);
+    -webkit-backdrop-filter: blur(18px) saturate(120%);
     backdrop-filter: blur(18px) saturate(120%);
   }
 
   /*
-    The nav's own vertical rails — and they exist ONLY while the scrim is up.
+    The nav's own vertical rails, always drawn.
 
-    `.page-rails` runs from y=0, so it already paints rails behind the fixed nav.
-    Drawing a second pair unconditionally composited two hairlines on top of each
-    other: `--color-line` is `oklch(1 0 0 / 0.14)`, and two of those stack to
-    ~0.26, which is why the rails read visibly brighter across the nav band than
-    anywhere else on the page.
+    `.page-rails` runs from y=0 and paints rails behind the fixed nav, but the
+    bar's permanent backdrop blur smears a 1px line at `--color-line` alpha into
+    nothing, so the frame would break across the bar without these. Only one
+    rail is ever visible: the blurred one underneath is gone, which is the
+    double-hairline problem (two 0.14 lines stacking to ~0.26) solved for free.
 
-    Once the scrim is on, its 90%-opaque background hides the page rails behind
-    (what leaks through is ~0.014 alpha — nothing), so the nav has to supply its
-    own or the frame breaks across the bar. Gating on the scrim means exactly one
-    rail is ever visible at a given scroll position.
-
-    Drawn as `::after` rather than a background so it can cross-fade with the
-    scrim — `background-image` is not an animatable property, and a hard pop
-    against the scrim's 350ms fade reads as a glitch. `::before` is unavailable:
-    `[data-blueprint]` owns it for the "NAVBAR" label.
-
-    Consequence worth knowing: case study pages carry no `.page-rails`, so up
-    there the nav has no rails until it is scrolled. That is consistent with
-    those pages sitting outside the blueprint frame entirely.
+    `::before` is unavailable: `[data-blueprint]` owns it for the "NAVBAR"
+    label.
   */
   .site-nav::after {
     content: '';
@@ -136,12 +192,6 @@ const availableForWork = true;
     background-position:
       left var(--spacing-gutter) top,
       right var(--spacing-gutter) top;
-    opacity: 0;
-    transition: opacity 350ms ease;
-  }
-
-  .site-nav[data-nav-scrim='on']::after {
-    opacity: 1;
   }
 
   .site-nav[data-nav-state='hidden'] {
@@ -173,8 +223,96 @@ const availableForWork = true;
     }
   }
 
+  /* Connect ----------------------------------------------------------------
+     Hung from the toggle with its content edge on the word's left edge, so the
+     email and the profiles read as a continuation of "Connect" rather than as
+     a box floating near it. Opaque surface and a solid hairline — it is a
+     thing *inside* the blueprint frame, not part of the frame, so it takes the
+     solid rule rather than the dashed one. */
+  .connect__chevron {
+    transition: transform var(--dur-fast) var(--ease-out-expo);
+  }
+
+  .connect__toggle[aria-expanded='true'] .connect__chevron {
+    transform: rotate(180deg);
+  }
+
+  .connect__panel {
+    position: absolute;
+    /* Hangs ~6px below the bar's bottom rule rather than across it. The toggle
+       ends ~22px above that rule at every width Connect is shown (it only
+       exists from `sm`, where the wordmark is already at its final size), so
+       this offset is stable. */
+    top: calc(100% + 1.75rem);
+    /* Pulled left by exactly the panel's inline padding plus its border, so
+       the text inside starts where "Connect" does. */
+    left: calc(-1.25rem - 1px);
+    width: max-content;
+    min-width: 14rem;
+    padding: 1.1rem 1.25rem 0.6rem;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-ui);
+    background: var(--color-surface-lift);
+    box-shadow: 0 24px 60px -20px oklch(0 0 0 / 0.7);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-0.4rem);
+    transition:
+      opacity var(--dur-fast) ease,
+      transform var(--dur-fast) var(--ease-out-expo),
+      visibility 0s linear var(--dur-fast);
+  }
+
+  .connect[data-open] .connect__panel {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    transition:
+      opacity var(--dur-fast) ease,
+      transform var(--dur-fast) var(--ease-out-expo),
+      visibility 0s;
+  }
+
+  .connect__email {
+    padding-bottom: 0.9rem;
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  .connect__email:focus-visible {
+    color: var(--color-accent);
+  }
+
+  .connect__social {
+    padding-block: 0.55rem;
+  }
+
+  .connect__socials {
+    padding-top: 0.4rem;
+  }
+
+  /* The arrow only arrives on hover — five of them at rest is a column of
+     noise beside five labels that already say where they go. */
+  .connect__social :global(.connect__arrow) {
+    opacity: 0;
+    transform: translate(-0.2rem, 0.2rem);
+    transition:
+      opacity var(--dur-fast) ease,
+      transform var(--dur-fast) var(--ease-out-expo);
+  }
+
+  .connect__social:hover :global(.connect__arrow),
+  .connect__social:focus-visible :global(.connect__arrow) {
+    opacity: 1;
+    transform: none;
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .site-nav {
+      transition: none;
+    }
+    .connect__panel,
+    .connect[data-open] .connect__panel,
+    .connect__chevron {
       transition: none;
     }
     .site-nav[data-nav-state='hidden'] {
@@ -185,3 +323,66 @@ const availableForWork = true;
     }
   }
 </style>
+
+<script>
+  /*
+   * The Connect disclosure. The nav is `transition:persist`, and Astro runs a
+   * bundled module script once per document, so this binds exactly once and
+   * survives every client-side navigation along with the markup it drives.
+   */
+  const root = document.querySelector<HTMLElement>('[data-connect]');
+  const toggle = root?.querySelector<HTMLButtonElement>('[data-connect-toggle]');
+  const nav = document.querySelector<HTMLElement>('[data-nav]');
+
+  if (root && toggle) {
+    const setOpen = (open: boolean) => {
+      root.toggleAttribute('data-open', open);
+      toggle.setAttribute('aria-expanded', String(open));
+    };
+    const isOpen = () => root.hasAttribute('data-open');
+
+    toggle.addEventListener('click', () => setOpen(!isOpen()));
+
+    // Outside click and Escape both close it; Escape hands focus back to the
+    // toggle so a keyboard user is not left focused on a hidden panel.
+    document.addEventListener('click', (e) => {
+      if (isOpen() && !root.contains(e.target as Node)) setOpen(false);
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'Escape' || !isOpen()) return;
+      setOpen(false);
+      toggle.focus();
+    });
+    // Tabbing out past the last profile closes it too.
+    root.addEventListener('focusout', (e) => {
+      if (!root.contains(e.relatedTarget as Node | null)) setOpen(false);
+    });
+
+    // The bar retracts on scroll down; an open panel would ride up with it
+    // and come back open later, which reads as stale.
+    if (nav) {
+      new MutationObserver(() => {
+        if (nav.dataset.navState === 'hidden') setOpen(false);
+      }).observe(nav, { attributes: true, attributeFilter: ['data-nav-state'] });
+    }
+    document.addEventListener('astro:before-swap', () => setOpen(false));
+
+    // Copy, with its own label — the footer's handler keys off `[data-copy]`
+    // and writes its feedback into the footer, so this stays separate.
+    const copy = root.querySelector<HTMLButtonElement>('[data-connect-copy]');
+    const label = root.querySelector<HTMLElement>('[data-connect-copy-label]');
+    let reset: ReturnType<typeof setTimeout> | undefined;
+    copy?.addEventListener('click', async () => {
+      let ok = true;
+      try {
+        await navigator.clipboard.writeText(copy.dataset.connectCopy!);
+      } catch {
+        ok = false;
+      }
+      if (!label) return;
+      clearTimeout(reset);
+      label.textContent = ok ? 'Copied!' : 'Press ⌘C to copy';
+      reset = setTimeout(() => (label.textContent = copy.dataset.connectCopy!), 2000);
+    });
+  }
+</script>

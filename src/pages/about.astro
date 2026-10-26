@@ -151,11 +151,13 @@ const inPractice = [
           class="font-display text-[clamp(2.5rem,5.4vw,4.75rem)] font-normal leading-[1.05] tracking-[-0.02em] text-balance text-ink"
           data-anim="reveal-heading"
         >
-          {/* Solid accent, not `.accent-gradient`. That helper clips a gradient
-              to the text box, so across a phrase this long the ramp restarts on
-              every line and reads as a rainbow rather than one emphasis. */}
-          I build teams that ship things
-          <span class="text-accent">no one could build alone</span>.
+          {/* `.phrase-gradient`, not `.accent-gradient`. The latter clips a
+              ramp to each element's own box, and `reveal-heading` splits this
+              into one element per word, so it would restart on every word and
+              read as a rainbow. This one is painted as a single ramp along the
+              phrase in reading order — see `paintPhrase` in effects.ts.
+              Deliberately no full stop. */}
+          I make <span class="phrase-gradient">the room better</span>
         </h1>
 
         <p
@@ -178,7 +180,11 @@ const inPractice = [
     data-blueprint="Point of view"
   >
     <RuleCross />
-    <div class="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[minmax(0,18rem)_1fr] lg:gap-20">
+    {/* No centred `max-w-6xl` here. Every other block on the page hangs off
+        the `px-shell` edge the hero and the nav wordmark share; boxing this one
+        into a centred column indented the heading ~30px off that line at 1440,
+        and further on wider screens. The prose caps its own measure. */}
+    <div class="grid gap-12 lg:grid-cols-[minmax(0,18rem)_1fr] lg:gap-20">
       {/* Matched to the home résumé's sticky intro heading rather than
           `text-title` — this is a column label beside body copy, not a section
           banner, and at title scale it overpowered the prose it introduces. */}

@@ -83,9 +83,10 @@ and the numbers in CI are computed by the same code.
 
 ## Brand assets
 
-**Favicon** — `public/favicon.svg` is the source of truth. The mark is the
-wordmark's accent dot at icon scale, filled with the compact blue→purple ramp
-the display type uses for its full stop. **No tile behind it**: in a row of
+**Favicon** — `public/favicon.svg` is the source of truth. The mark is a
+circle filled with the compact blue→purple ramp. It began as the wordmark's
+accent full stop at icon scale; the wordmark has since dropped the dot, and the
+circle stays as a standalone mark. **No tile behind it**: in a row of
 square favicons a bare circle is the thing that reads as different, and
 transparency lets it sit on whatever the browser's tab strip is doing. An
 earlier version drew the blueprint crossing instead — legible, but at 16px it

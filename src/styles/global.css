@@ -140,7 +140,7 @@
      electric-mint next to a wash whose own teal tops out at C 0.12.
 
      This sits at H 258 — a bright blue on <NoiseGradient>'s `iris` highlight
-     (H 252), so links and the h1's full stop read as part of the light source.
+     (H 252), so links and gradient text read as part of the light source.
      7.2:1 on --color-surface, comfortably clear of AA as small link text.
 
      **Blues have far less headroom than the green this replaced.** The green
@@ -395,8 +395,9 @@
     text-wrap: pretty;
   }
 
-  /* Gradient text, for select accent words and marks (the hero period,
-     "shampoo bottles"). Real text underneath, so it stays accessible.
+  /* Gradient text, for select accent words (the footer email's hover,
+     "compassion" and "intent" on /about). Neither headings nor the wordmark
+     carry an accent full stop any more. Real text underneath, so it stays accessible.
 
      **Keep the hue span narrow, and every stop inside sRGB.** Both ramps used
      to run cyan→green→yellow, roughly 88° of hue, which on a two-word phrase
@@ -410,13 +411,39 @@
      along the ramp. Lightness rises along the ramp (0.70 → 0.77) because purple
      has more headroom than blue — the blue end is the one at its ceiling.
 
-     The descendant selector matters: SplitText rewraps the hero heading and
-     moves the period's text into a child element, which would leave the span
+     The descendant selector matters: SplitText rewraps split headings and
+     moves a span's text into a child element, which would leave the span
      hollow (transparent fill, nothing painted). Styling children too keeps the
      glyph painted whichever element ends up holding the text. */
   .accent-gradient,
   .accent-gradient > * {
     background-image: var(--gradient-accent);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+
+  /* One ramp along a phrase that may wrap across lines — the /about h1's "the
+     room better". Mostly blue, turning to purple only over its last
+     third, so a long emphasis reads as the brand blue with a purple tail
+     rather than as an even two-colour sweep.
+
+     Unsplit (no JS, reduced motion) the span is a plain inline box, and
+     `box-decoration-break: slice` — the default — already lays one background
+     across all its line fragments end to end. Once `reveal-heading` splits it
+     into words, each word gets its own copy sized to the whole phrase and
+     offset to its place in it (`paintPhrase` in effects.ts), which reproduces
+     the same continuous ramp. */
+  .phrase-gradient,
+  .phrase-gradient .phrase-word {
+    background-image: linear-gradient(
+      90deg,
+      var(--color-accent) 0%,
+      var(--color-accent) 30%,
+      oklch(0.72 0.14 280) 72%,
+      var(--color-accent-warm) 100%
+    );
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
