@@ -1,6 +1,7 @@
 ---
 import RuleCross from './RuleCross.astro';
 import ToolHeader from './ToolHeader.astro';
+import RichText from './RichText.astro';
 
 /*
   Impeccable, in depth. The grid is its actual command set, grouped the way
@@ -16,8 +17,8 @@ const groups: { name: string; note: string; cmds: [string, string][] }[] = [
     name: 'Plan',
     note: 'Before code exists',
     cmds: [
-      ['init', 'Writes PRODUCT.md from the codebase'],
-      ['document', 'Writes DESIGN.md'],
+      ['init', 'Writes `PRODUCT.md` from the codebase'],
+      ['document', 'Writes `DESIGN.md`'],
       ['shape', 'Plans the UX before code'],
       ['extract', 'Pulls repeats into the system'],
     ],
@@ -68,16 +69,15 @@ const groups: { name: string; note: string; cmds: [string, string][] }[] = [
   data-blueprint="The Taste Layer"
 >
   <RuleCross />
-  <ToolHeader id="impeccable" eyebrow="Impeccable" title="Taste, as a command" dur="11.9s" delay="7s">
+  <ToolHeader id="impeccable" brand="impeccable" eyebrow="Impeccable" title="Taste, as a command" dur="11.9s" delay="7s">
     <p>
       Agents write competent, forgettable UI by default. Impeccable is a design skill for coding
       agents, built on Anthropic’s frontend-design skill, that gives them a vocabulary for taste:
-      commands I aim at a narrow target, judged against the PRODUCT.md and DESIGN.md it writes for
-      the project.
+      commands I aim at a narrow target, judged against the <code class="code-inline">PRODUCT.md</code>
+      and <code class="code-inline">DESIGN.md</code> it writes for the project.
     </p>
     <p>
-      A narrow target beats a whole page. <span class="font-mono text-[0.875rem] text-ink">/impeccable critique the
-      pricing cards</span> gets a better answer than “make the site nicer” ever will.
+      A narrow target beats a whole page. <code class="code-inline">/impeccable critique the pricing cards</code> gets a better answer than “make the site nicer” ever will.
     </p>
   </ToolHeader>
 
@@ -125,7 +125,7 @@ const groups: { name: string; note: string; cmds: [string, string][] }[] = [
             {g.cmds.map(([c, d]) => (
               <li class="grid grid-cols-[6.25rem_minmax(0,1fr)] items-baseline gap-3">
                 <span class="imp-cmd">{c}</span>
-                <span class="text-[0.8125rem] leading-snug text-ink-dim">{d}</span>
+                <span class="text-[0.8125rem] leading-snug text-ink-dim"><RichText text={d} /></span>
               </li>
             ))}
           </ul>

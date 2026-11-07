@@ -1,6 +1,7 @@
 ---
 import RuleCross from './RuleCross.astro';
 import BrandMark from './BrandMark.astro';
+import RichText from './RichText.astro';
 
 /*
   The Workbench (/how-i-work): a code window driven by a vertical tablist —
@@ -104,7 +105,7 @@ When I pick one, package it as a handoff to Claude Code.`,
   {
     id: 'context',
     title: 'Give it taste before it writes a line',
-    body: 'Impeccable reads the codebase, asks what it can’t infer, and writes PRODUCT.md. Every later pass is judged against it.',
+    body: 'Impeccable reads the codebase, asks what it can’t infer, and writes `PRODUCT.md`. Every later pass is judged against it.',
     file: 'PRODUCT.md',
     lang: 'md',
     code: `# Product
@@ -294,7 +295,7 @@ const panels = steps.map((s) => ({ ...s, lines: highlight(s.code, s.lang) }));
               {String(i + 1).padStart(2, '0')}
             </span>
             <span class="mt-2 block text-[1.0625rem] font-medium text-ink">{p.title}</span>
-            <span class="mt-2 block text-[0.9375rem] leading-relaxed text-ink-dim">{p.body}</span>
+            <span class="mt-2 block text-[0.9375rem] leading-relaxed text-ink-dim"><RichText text={p.body} /></span>
           </button>
         ))
       }

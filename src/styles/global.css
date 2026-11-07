@@ -777,6 +777,22 @@
 }
 
 /* ---------------------------------------------------------------------------
+   Inline code — a filename or a command inside running copy. Mono, a touch
+   smaller than the text around it (mono runs wide), and in ink rather than
+   the paragraph's dim, so `PRODUCT.md` reads as a thing you could type.
+   Rendered by `RichText` from backticks, or written as `<code class>`.
+--------------------------------------------------------------------------- */
+@layer components {
+  .code-inline {
+    font-family: var(--font-mono);
+    font-size: 0.875em;
+    color: var(--color-ink);
+    /* No nowrap: filenames have no spaces and never break anyway, and a long
+       command has to be able to wrap at its spaces on a phone. */
+  }
+}
+
+/* ---------------------------------------------------------------------------
    Agent dot — "an agent is working here". A small accent dot with a slow
    expanding ring, used inline beside anything an agent is doing on
    /how-i-work (the hub's Product agent, the PRD banner, Linear's coding-agent

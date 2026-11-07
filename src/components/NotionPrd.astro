@@ -85,13 +85,20 @@ const notes = [
     <span class="bp-sq bp-sq--b bp-sq--r" aria-hidden="true"></span>
 
     {/* The page */}
-    <div class="relative px-shell-pad py-10 md:py-12" data-anim="reveal">
-      <div class="prd overflow-hidden rounded-ui border border-line bg-surface-lift" aria-hidden="true">
-        <div class="flex items-center gap-2 border-b border-line px-5 py-2.5 font-mono text-[0.6875rem] text-ink-faint">
+    {/*
+      Same rule as the Workbench: at `lg` the page is absolutely inset in its
+      cell, so it adds no height and the row is exactly as tall as the three
+      notes on the right; the page body scrolls. Below `lg` it stacks at its
+      natural height.
+    */}
+    <div class="relative px-shell-pad py-10 md:py-12 lg:p-0" data-anim="reveal">
+      <div class="prd flex flex-col overflow-hidden rounded-ui border border-line bg-surface-lift lg:absolute lg:inset-x-shell-pad lg:inset-y-10" aria-hidden="true">
+        <div class="flex shrink-0 items-center gap-2 border-b border-line px-5 py-2.5 font-mono text-[0.6875rem] text-ink-faint">
           <BrandMark name="notion" class="h-3.5 w-3.5 text-ink-dim" />
           Product / PRDs / Recording flow v2
         </div>
-        <div class="px-6 py-7 md:px-9 md:py-9">
+        {/* The scroller. `data-lenis-prevent`, or Lenis takes the wheel. */}
+        <div class="prd__scroll min-h-0 flex-1 overflow-y-auto overscroll-contain px-6 py-7 md:px-9 md:py-9" data-lenis-prevent>
           <p class="text-[clamp(1.5rem,2.4vw,2rem)] font-semibold leading-tight tracking-[-0.02em] text-ink">Recording flow v2</p>
 
           <dl class="mt-6 grid grid-cols-[7.5rem_minmax(0,1fr)] gap-y-2 text-[0.8125rem]">
@@ -159,6 +166,10 @@ const notes = [
 </section>
 
 <style>
+  .prd__scroll {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-line) transparent;
+  }
   .prd__agent {
     border: 1px dashed color-mix(in oklab, var(--color-accent) 45%, var(--color-line));
     background: color-mix(in oklab, var(--color-accent) 6%, transparent);

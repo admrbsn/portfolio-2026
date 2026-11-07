@@ -1,7 +1,7 @@
 /**
  * Tool marks for /how-i-work, as bare SVG paths.
  *
- * Five come from Simple Icons (`simple-icons`, CC0) and are read at build
+ * Most come from Simple Icons (`simple-icons`, CC0) and are read at build
  * time — this module is only ever imported from component frontmatter, so the
  * package never reaches a client bundle. Three are not in Simple Icons and
  * come from each company's own site, wordmark and fills dropped, so they render
@@ -9,6 +9,7 @@
  *
  * - Relume — the hexagon from the logo relume.io serves in its navbar.
  * - Fern — the leaf from the inline logo in buildwithfern.com's header.
+ * - Impeccable — its two-slab mark, from impeccable.style.
  * - Slack — the octothorpe from slack.com's nav logo. Slack's mark was removed
  *   from Simple Icons at Slack's request; its guidelines allow a one-colour
  *   mark but not recolouring it, so it stays monochrome like everything here.
@@ -18,9 +19,9 @@
  * side would be a logo wall rather than a diagram. Trademarks belong to their
  * owners; they are used here only to name the tools.
  */
-import { siClaude, siFigma, siGithub, siLinear, siNotion, siPosthog } from 'simple-icons';
+import { siClaude, siGithub, siLinear, siNotion, siPosthog } from 'simple-icons';
 
-export type Brand = 'claude' | 'clawd' | 'fern' | 'figma' | 'github' | 'linear' | 'notion' | 'posthog' | 'relume' | 'slack';
+export type Brand = 'claude' | 'clawd' | 'fern' | 'impeccable' | 'figma' | 'github' | 'linear' | 'notion' | 'posthog' | 'relume' | 'slack';
 
 export const brands: Record<Brand, { title: string; path: string; viewBox: string }> = {
   claude: { title: siClaude.title, path: siClaude.path, viewBox: '0 0 24 24' },
@@ -33,11 +34,20 @@ export const brands: Record<Brand, { title: string; path: string; viewBox: strin
     path: 'M2 2H14V6H16V8H14V10H13V12H12V10H11V12H10V10H6V12H5V10H4V12H3V10H2V8H0V6H2Z M4 4H5V6H4Z M11 4H12V6H11Z',
     viewBox: '0 0 16 12',
   },
-  figma: { title: siFigma.title, path: siFigma.path, viewBox: '0 0 24 24' },
+  // Figma — the outline mark (svgrepo 361494, the Radix-style icon) rather than
+  // Simple Icons' filled glyph, which read as a blob at section-header size.
+  figma: { title: 'Figma', path: 'M7.00005 2.04999H5.52505C4.71043 2.04999 4.05005 2.71037 4.05005 3.52499C4.05005 4.33961 4.71043 4.99999 5.52505 4.99999H7.00005V2.04999ZM7.00005 1.04999H8.00005H9.47505C10.842 1.04999 11.95 2.15808 11.95 3.52499C11.95 4.33163 11.5642 5.04815 10.9669 5.49999C11.5642 5.95184 11.95 6.66836 11.95 7.475C11.95 8.8419 10.842 9.95 9.47505 9.95C8.92236 9.95 8.41198 9.76884 8.00005 9.46266V9.95L8.00005 11.425C8.00005 12.7919 6.89195 13.9 5.52505 13.9C4.15814 13.9 3.05005 12.7919 3.05005 11.425C3.05005 10.6183 3.43593 9.90184 4.03317 9.44999C3.43593 8.99814 3.05005 8.28163 3.05005 7.475C3.05005 6.66836 3.43594 5.95184 4.03319 5.5C3.43594 5.04815 3.05005 4.33163 3.05005 3.52499C3.05005 2.15808 4.15814 1.04999 5.52505 1.04999H7.00005ZM8.00005 2.04999V4.99999H9.47505C10.2897 4.99999 10.95 4.33961 10.95 3.52499C10.95 2.71037 10.2897 2.04999 9.47505 2.04999H8.00005ZM5.52505 8.94998H7.00005L7.00005 7.4788L7.00005 7.475L7.00005 7.4712V6H5.52505C4.71043 6 4.05005 6.66038 4.05005 7.475C4.05005 8.28767 4.70727 8.94684 5.5192 8.94999L5.52505 8.94998ZM4.05005 11.425C4.05005 10.6123 4.70727 9.95315 5.5192 9.94999L5.52505 9.95H7.00005L7.00005 11.425C7.00005 12.2396 6.33967 12.9 5.52505 12.9C4.71043 12.9 4.05005 12.2396 4.05005 11.425ZM8.00005 7.47206C8.00164 6.65879 8.66141 6 9.47505 6C10.2897 6 10.95 6.66038 10.95 7.475C10.95 8.28962 10.2897 8.95 9.47505 8.95C8.66141 8.95 8.00164 8.29121 8.00005 7.47794V7.47206Z', viewBox: '0 0 15 15' },
   github: { title: siGithub.title, path: siGithub.path, viewBox: '0 0 24 24' },
   linear: { title: siLinear.title, path: siLinear.path, viewBox: '0 0 24 24' },
   notion: { title: siNotion.title, path: siNotion.path, viewBox: '0 0 24 24' },
   posthog: { title: siPosthog.title, path: siPosthog.path, viewBox: '0 0 24 24' },
+  // Impeccable — the two-slab mark from impeccable.style, as the site serves it
+  // (already single-colour, `currentColor`).
+  impeccable: {
+    title: 'Impeccable',
+    path: 'M5 2.5 L13.5 2.5 L5.5 21.5 L5 21.5 Q2.5 21.5 2.5 19 L2.5 5 Q2.5 2.5 5 2.5 Z M16.5 2.5 L19 2.5 Q21.5 2.5 21.5 5 L21.5 19 Q21.5 21.5 19 21.5 L8.5 21.5 Z',
+    viewBox: '0 0 24 24',
+  },
   fern: {
     title: 'Fern',
     path: 'M22.7885 11.6883C21.2166 10.3594 18.8485 9.82661 16.7497 11.378C16.6531 11.4483 16.5331 11.3283 16.6063 11.2346C17.1039 10.5935 17.6806 9.90272 18.146 9.20898C18.6202 8.49767 19.3286 7.98833 20.1453 7.73952C24.4922 6.42228 23.1866 0 23.1866 0C23.1866 0 16.4716 0.433226 17.3 6.22616C17.4376 7.19506 17.18 8.18153 16.5741 8.95138C15.8306 9.89101 14.967 10.7897 14.3406 11.4395C14.2089 11.5742 13.9864 11.4454 14.0391 11.2639C14.645 9.22361 15.0871 6.06809 12.9882 4.03368L10.0347 1.58069L9.46681 2.33005C7.7778 4.55765 8.2725 7.69854 10.503 9.38461C11.7822 10.3506 12.3618 11.4014 12.2711 12.5548C12.2155 13.2456 11.9022 13.8925 11.4339 14.4048C10.5528 15.3707 9.73026 16.407 9.09505 17.6071C9.00723 17.774 8.75257 17.7096 8.76135 17.5193C8.85209 15.5376 8.66182 11.0707 5.3248 9.47535L1.58968 8.03224L1.29988 8.89576C0.360249 11.6825 1.89704 14.6594 4.68081 15.6049C7.10162 16.4275 7.96515 17.9877 7.38263 20.3265C7.35629 20.4114 6.93477 22.8205 6.99331 23.8889H9.67757C9.76831 22.2321 11.5071 21.1432 13.0146 21.8194C13.439 22.0096 13.8752 22.2819 14.3231 22.6331C16.7234 24.5241 20.2594 24.0762 22.1475 21.673L22.6861 20.988L19.2905 18.5497C16.9605 16.7172 13.8518 17.5456 11.551 19.1146C11.3578 19.2463 11.1119 19.0356 11.2202 18.8248C14.0011 13.3685 17.6162 13.3802 19.0329 14.5921C20.7512 16.0616 23.3535 15.7981 24.8113 14.074L25.2298 13.5793L22.7856 11.6883H22.7885Z',

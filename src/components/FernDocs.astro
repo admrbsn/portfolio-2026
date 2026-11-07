@@ -2,6 +2,7 @@
 import RuleCross from './RuleCross.astro';
 import BrandMark from './BrandMark.astro';
 import ToolHeader from './ToolHeader.astro';
+import RichText from './RichText.astro';
 
 /*
   Fern — dev and API docs. The mock is an API reference page of the kind Fern
@@ -71,7 +72,7 @@ const nav = ['Overview', 'Authentication', 'Tributes', 'Uploads', 'Webhooks'];
 
 const gives = [
   { t: 'One spec, every surface', b: 'The reference, the SDKs and the changelog all regenerate from the spec, so the docs can’t fall behind the API.' },
-  { t: 'Docs agents can read', b: 'Every page has a Markdown twin and an llms.txt index, so an agent reads the reference instead of guessing at it.' },
+  { t: 'Docs agents can read', b: 'Every page has a Markdown twin and an `llms.txt` index, so an agent reads the reference instead of guessing at it.' },
   { t: 'An MCP server for the docs', b: 'Notion’s agent, Claude Code or Cursor can ask the docs directly — which is how the PRD knew the upload limit.' },
   { t: 'The dev wiki, too', b: 'Guides, runbooks and how-tos live beside the reference, versioned with the code they describe.' },
 ];
@@ -182,7 +183,7 @@ const gives = [
           )}
           {(i === 1 || i === 2) && <span class="bp-sq bp-sq--b bp-sq--l hidden lg:block" aria-hidden="true" />}
           <p class="text-[1.0625rem] font-medium text-ink">{g.t}</p>
-          <p class="mt-2 text-[0.9375rem] leading-relaxed text-ink-dim">{g.b}</p>
+          <p class="mt-2 text-[0.9375rem] leading-relaxed text-ink-dim"><RichText text={g.b} /></p>
         </div>
       ))
     }

@@ -13,12 +13,16 @@ import ToolHeader from './ToolHeader.astro';
     by this point the page needs its rhythm broken: real numbers, then the
     four things that make the system a team's rather than mine.
 */
+/*
+  Four figures, so they sit on the same four columns as the artifacts below —
+  each figure directly over its cell. All from the Tribute V3 case study. The
+  "about" for the 25% lives in the label, not as a "~" in the figure.
+*/
 const figures = [
   { v: '3 months', l: 'to rebuild a decade-old platform' },
   { v: 'Team of 4', l: 'from skeptical to one-week sprints' },
-  // No "~" in the figure: Syne draws the tilde as a small raised dot, so it
-  // read as "·25%". The "about" lives in the label instead.
-  { v: '25% → 54%', l: 'onboarding conversion, from about 25%, after the rebuild' },
+  { v: '25% → 54%', l: 'onboarding conversion, from about 25%' },
+  { v: '+19%', l: 'purchases after the rebuild' },
 ];
 
 const artifacts = [
@@ -61,12 +65,21 @@ const artifacts = [
     </p>
   </ToolHeader>
 
-  <dl class="mt-14 grid gap-10 sm:grid-cols-3" data-anim="reveal-batch">
+  {/*
+    Same columns and padding as the ruled grid below (pulled to the rails,
+    `px-shell-pad` per cell), so every figure stands over its cell.
+
+    The sans, not the display face: Syne's numerals are drawn short and sit
+    low against its capitals and lowercase, so "3 months" and "Team of 4"
+    looked misaligned and "25%" read shorter than its % sign. Lining, tabular
+    figures in Instrument Sans share one baseline and one height.
+  */}
+  <dl class="-mx-shell-pad mt-14 grid grid-cols-2 gap-y-10 lg:grid-cols-4" data-anim="reveal-batch">
     {
       figures.map((f) => (
-        <div>
+        <div class="px-shell-pad">
           <dt class="sr-only">{f.l}</dt>
-          <dd class="font-display text-stat text-ink">{f.v}</dd>
+          <dd class="team-fig text-ink">{f.v}</dd>
           <dd class="mt-2 max-w-[16rem] text-[0.9375rem] text-ink-dim">{f.l}</dd>
         </div>
       ))
@@ -116,6 +129,14 @@ const artifacts = [
 </section>
 
 <style>
+  .team-fig {
+    font-size: clamp(1.75rem, 3vw, 2.75rem);
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    font-variant-numeric: lining-nums tabular-nums;
+    white-space: nowrap;
+  }
   .team-art {
     display: inline-block;
     padding: 0.15rem 0.55rem;

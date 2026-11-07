@@ -1,0 +1,14 @@
+---
+/*
+  Copy with inline code. Backticks in the string become `.code-inline` spans —
+  so data-driven copy (step bodies, cell text) can name a file or a command
+  and have it read as code, without each component growing its own parser.
+*/
+interface Props {
+  text: string;
+}
+const { text } = Astro.props;
+const parts = text.split(/(`[^`]+`)/).filter(Boolean);
+---
+
+{parts.map((p) => (p.startsWith('`') ? <code class="code-inline">{p.slice(1, -1)}</code> : p))}
