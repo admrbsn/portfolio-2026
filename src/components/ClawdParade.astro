@@ -1,7 +1,8 @@
 ---
 /*
   The /how-i-work hero's joke, played straight: "Agents do the legwork", so
-  agents, literally, doing legwork. Four Clawds (Claude Code's mascot) march
+  agents, literally, doing legwork. Four agents — Clawd (Claude Code's mascot)
+  and three pixel homages to other assistants' characters — march
   along the hero's bottom edge, each carrying a piece of the work the page is
   about — a PRD, a bug, a ticket, a chart — and loop off one side and back in
   from the other.
@@ -12,7 +13,7 @@
   Breakout CTA, allow-listed in `scripts/check-tokens.ts` for that reason.
 
   Pixel rules, same as the Breakout sprites:
-  - One 16×18 grid per walker (item rows −6…1 above the head, Clawd 0…12),
+  - One 16×20 grid per walker (item rows −8…1 above the head, body 0…12),
     `crispEdges`, scaled by whole pixels only.
   - Walking is two leg frames swapped with `steps(1)` and a one-pixel bob on
     the same clock. Anything eased reads as gliding, not walking.
@@ -25,10 +26,57 @@
   Reduced / failed motion: no march, no legs — the four stand still, spaced
   along the line, which still reads as the joke.
 */
-const BODY = 'M2 2H14V6H16V8H14V10H2V8H0V6H2Z M4 4H5V6H4Z M11 4H12V6H11Z';
-// Legs: frame A has the outer pair down, frame B the inner pair.
-const LEGS_A = 'M3 10H4V12H3Z M5 10H6V11H5Z M10 10H11V11H10Z M12 10H13V12H12Z';
-const LEGS_B = 'M3 10H4V11H3Z M5 10H6V12H5Z M10 10H11V12H10Z M12 10H13V11H12Z';
+/*
+  The cast. Every character is drawn on the same 16-wide grid with its feet
+  on row 12, so they share a baseline and a scale. `layers` paint in order
+  (body first, details over it); `legs` are the two walking frames, swapped by
+  the step clock — characters without legs (the ball, the blob) leave them
+  out and simply hop on the bob.
+
+  Clawd is Claude Code's mascot; the other three are pixel homages to other
+  assistants' characters (a ball with slanted eyes, a beret'd blob, a fluffy
+  hooded waver), redrawn on this grid rather than copied, so the parade reads
+  as "agents" rather than one vendor's.
+*/
+type Layer = { d: string; fill: string };
+// `top`: the character's first row. Its carried item is lifted by
+// (2 − top) rows so it clears the head — Clawd's head starts at row 2.
+type Character = { top: number; layers: Layer[]; legs?: { fill: string; a: string; b: string } };
+const CAST: Record<'clawd' | 'grok' | 'muse' | 'dot', Character> = {
+  clawd: {
+    top: 2,
+    layers: [{ d: 'M2 2H14V6H16V8H14V10H2V8H0V6H2Z M4 4H5V6H4Z M11 4H12V6H11Z', fill: '#d97757' }],
+    legs: {
+      fill: '#d97757',
+      a: 'M3 10H4V12H3Z M5 10H6V11H5Z M10 10H11V11H10Z M12 10H13V12H12Z',
+      b: 'M3 10H4V11H3Z M5 10H6V12H5Z M10 10H11V12H10Z M12 10H13V11H12Z',
+    },
+  },
+  grok: {
+    // One extra row: a white bug on a white ball fuses into one shape.
+    top: -1,
+    layers: [{ d: 'M5 0H11V1H5Z M3 1H13V2H3Z M2 2H14V3H2Z M2 3H14V4H2Z M2 4H14V5H2Z M2 5H14V6H2Z M2 6H14V7H2Z M2 7H14V8H2Z M2 8H14V9H2Z M2 9H14V10H2Z M3 10H13V11H3Z M5 11H11V12H5Z M7 3H8V5H7Z M6 5H7V7H6Z M11 3H12V5H11Z M10 5H11V7H10Z', fill: '#f2f2f4' }],
+  },
+  muse: {
+    top: 0,
+    layers: [
+      { d: 'M5 0H11V1H5Z M3 1H13V2H3Z M2 2H14V3H2Z M2 3H14V4H2Z M2 4H14V5H2Z M2 5H14V6H2Z M2 6H14V7H2Z M2 7H14V8H2Z M2 8H14V9H2Z M3 9H13V10H3Z M14 3H15V6H14Z M15 1H16V4H15Z', fill: '#d9cbb8' },
+      { d: 'M4 3H12V8H4Z', fill: '#f4e9dc' },
+      { d: 'M5 6H6V7H5Z M10 6H11V7H10Z', fill: '#f2a6a0' },
+      { d: 'M6 5H7V6H6Z M9 5H10V6H9Z', fill: '#2a2420' },
+    ],
+    legs: { fill: '#d9cbb8', a: 'M4 10H7V12H4Z M9 10H12V11H9Z', b: 'M4 10H7V11H4Z M9 10H12V12H9Z' },
+  },
+  dot: {
+    top: 0,
+    layers: [
+      { d: 'M4 2H12V3H4Z M2 3H14V4H2Z M1 4H15V5H1Z M1 5H15V6H1Z M2 6H14V7H2Z M1 7H15V8H1Z M1 8H15V9H1Z M2 9H14V10H2Z M3 10H13V11H3Z M4 11H12V12H4Z', fill: '#3d6ef0' },
+      { d: 'M4 1H12V3H4Z M7 0H9V1H7Z', fill: '#4a4a57' },
+      { d: 'M5 1H11V2H5Z', fill: '#6a6a7a' },
+      { d: 'M6 5H7V7H6Z M9 5H10V7H9Z', fill: '#16161a' },
+    ],
+  },
+};
 
 const ITEMS: Record<string, string> = {
   // A PRD: a page with a folded corner and two lines.
@@ -41,7 +89,12 @@ const ITEMS: Record<string, string> = {
   chart: 'M5 0H6V2H5Z M7 -2H8V2H7Z M9 -4H10V2H9Z',
 };
 
-const walkers = ['prd', 'bug', 'ticket', 'chart'];
+const walkers: { who: keyof typeof CAST; item: keyof typeof ITEMS }[] = [
+  { who: 'clawd', item: 'prd' },
+  { who: 'grok', item: 'bug' },
+  { who: 'muse', item: 'ticket' },
+  { who: 'dot', item: 'chart' },
+];
 const CYCLE = 34; // seconds to cross the hero
 // Each walker's signal-loss clock. Unrelated durations, so the parade never
 // glitches in unison — the same rule as every other glitch on the site.
@@ -49,8 +102,9 @@ const ZAPS = [6.7, 9.1, 7.9, 11.3];
 
 /*
   The review station — the headline's second half. Each Clawd hands its item
-  over as it passes and walks on empty-handed; the station flips from NEEDS OK
-  to ✓ OK for a beat. Callback to the fan-out's "Needs OK" further down.
+  over as it passes and walks on empty-handed; the gate lifts just ahead of
+  it (lamp red → green) and drops once it has passed. Callback to the
+  fan-out's "Needs OK" further down.
 
   The station is a *waypoint* in the march, not a point the walker happens to
   cross: the keyframes go START → station at ARRIVE → END. So the hand-off is
@@ -69,7 +123,12 @@ const SPACING = CYCLE / walkers.length; // seconds between walkers
 // Walker i runs i·SPACING ahead, so arrivals land every SPACING seconds at
 // phase (ARRIVE·CYCLE) mod SPACING. The station's own clock is SPACING long
 // and starts its flip on that phase.
-const STATION_PHASE = (ARRIVE * CYCLE) % SPACING;
+// The gate opens LEAD seconds before each arrival, so it is already up when
+// the walker reaches it, and stays up OPEN seconds in all — long enough for
+// the walker to clear the post on the far side before it drops again.
+const LEAD = 2.4;
+const OPEN = 3.6; // = 42.35% of SPACING — the literal in `station-wait` / `station-ok`
+const STATION_PHASE = (((ARRIVE * CYCLE - LEAD) % SPACING) + SPACING) % SPACING;
 ---
 
 <div
@@ -79,34 +138,54 @@ const STATION_PHASE = (ARRIVE * CYCLE) % SPACING;
 >
   <span
     class="station"
-    style={`--spacing: ${SPACING}s; animation-delay: ${STATION_PHASE.toFixed(2)}s`}
+    style={`--spacing: ${SPACING}s; --phase: ${STATION_PHASE.toFixed(2)}s`}
   >
-    <span class="station__wait">Needs OK</span>
-    <span class="station__ok">✓ OK</span>
+    {/* A pixel boom gate, on the walkers' grid and scale. Down with a red
+        lamp while it waits; up with a green one from just before a walker
+        arrives until it has cleared the post. The post sits on the right so
+        the lowered arm reaches back toward the oncoming walker. */}
+    <svg viewBox="0 -8 16 20" width="48" height="60" shape-rendering="crispEdges" class="block">
+      <g class="station__wait">
+        <path class="gate-ink" d="M0 4H2V6H0Z M4 4H6V6H4Z M8 4H10V6H8Z" />
+        <path class="gate-warm" d="M2 4H4V6H2Z M6 4H8V6H6Z M10 4H12V6H10Z" />
+        <path class="gate-stop" d="M14 2H16V4H14Z" />
+      </g>
+      <g class="station__ok">
+        <path class="gate-ink" d="M12 -6H14V-4H12Z M12 -2H14V0H12Z M12 2H14V4H12Z" />
+        <path class="gate-warm" d="M12 -4H14V-2H12Z M12 0H14V2H12Z" />
+        <path class="gate-go" d="M14 2H16V4H14Z" />
+      </g>
+      <path class="gate-post" d="M12 4H14V12H12Z M10 11H16V12H10Z" />
+    </svg>
   </span>
   {
-    walkers.map((item, i) => (
+    walkers.map(({ who, item }, i) => (
       <span
         class="walker"
         style={`animation-delay: ${(-i * CYCLE) / walkers.length}s; --rest: ${18 + i * 20}%`}
       >
         <svg
-          viewBox="0 -6 16 18"
+          viewBox="0 -8 16 20"
           width="48"
-          height="54"
+          height="60"
           class="walker__sprite"
           shape-rendering="crispEdges"
           style={`animation-delay: ${(-i * 0.13).toFixed(2)}s, ${(-i * 2.3).toFixed(1)}s; --zap: ${ZAPS[i]}s`}
         >
           <path
+            transform={`translate(0 ${CAST[who].top - 2})`}
             class="walker__item"
             d={ITEMS[item]}
             fill-rule="evenodd"
             style={`animation-delay: ${(-i * CYCLE) / walkers.length}s`}
           />
-          <path class="walker__body" d={BODY} fill-rule="evenodd" />
-          <path class="walker__legs walker__legs--a" d={LEGS_A} />
-          <path class="walker__legs walker__legs--b" d={LEGS_B} />
+          {CAST[who].layers.map((l) => <path d={l.d} fill={l.fill} fill-rule="evenodd" />)}
+          {CAST[who].legs && (
+            <>
+              <path class="walker__legs walker__legs--a" d={CAST[who].legs!.a} fill={CAST[who].legs!.fill} />
+              <path class="walker__legs walker__legs--b" d={CAST[who].legs!.b} fill={CAST[who].legs!.fill} />
+            </>
+          )}
         </svg>
       </span>
     ))
@@ -122,7 +201,7 @@ const STATION_PHASE = (ARRIVE * CYCLE) % SPACING;
     right: var(--spacing-gutter);
     bottom: 0;
     z-index: 2;
-    height: 54px;
+    height: 60px;
     pointer-events: none;
     container-type: inline-size;
     overflow: hidden;
@@ -163,24 +242,33 @@ const STATION_PHASE = (ARRIVE * CYCLE) % SPACING;
     64%, 100% { opacity: 0; }
   }
 
-  /* The station: dashed, on the line, behind the walkers, its left edge at
-     `--station-x`. */
+  /* The station: a pixel gate on the line, behind the walkers, its left edge
+     at `--station-x`. Colours are tokens, so it stays on-palette even though
+     the walkers beside it aren't. */
   .station {
     position: absolute;
     left: var(--station-x);
     bottom: 0;
     z-index: 0;
-    display: grid;
-    padding: 0.3rem 0.55rem;
-    border: 1px dashed color-mix(in oklab, var(--color-accent-warm) 55%, var(--color-line));
-    border-bottom: 0;
-    border-radius: var(--radius-ui) var(--radius-ui) 0 0;
-    background: var(--color-surface);
-    font-family: var(--font-mono);
-    font-size: 0.625rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    white-space: nowrap;
+  }
+  .gate-post {
+    fill: var(--color-ink-faint);
+  }
+  .gate-ink {
+    fill: var(--color-ink);
+  }
+  .gate-warm {
+    fill: var(--color-accent-warm);
+  }
+  /* The lamp is a traffic signal, so it takes traffic colours rather than
+     the accent pair: red while the arm is down, the status green once it
+     lifts. The red is a literal — the system has no red token, and this
+     file is allow-listed off-brand. */
+  .gate-stop {
+    fill: oklch(0.66 0.21 27);
+  }
+  .gate-go {
+    fill: var(--color-status);
   }
   /* Flush with the lead paragraph's left edge, where the lead sits in the
      fixed 34rem right column. */
@@ -189,28 +277,28 @@ const STATION_PHASE = (ARRIVE * CYCLE) % SPACING;
       --station-x: calc(100cqw - var(--spacing-shell-pad) - 34rem);
     }
   }
-  .station > span {
-    grid-area: 1 / 1;
-    text-align: center;
-  }
   .station__wait {
-    color: var(--color-accent-warm);
     animation: station-wait var(--spacing) steps(1, end) infinite;
-    animation-delay: inherit;
+    /* A variable, not `inherit`: the groups sit inside the SVG, whose own
+       delay is unset. */
+    animation-delay: var(--phase);
   }
   .station__ok {
-    color: var(--color-accent);
     opacity: 0;
     animation: station-ok var(--spacing) steps(1, end) infinite;
-    animation-delay: inherit;
+    /* A variable, not `inherit`: the groups sit inside the SVG, whose own
+       delay is unset. */
+    animation-delay: var(--phase);
   }
+  /* 42.35% = OPEN / SPACING (3.6s of 8.5s). Keyframe offsets can't take a
+     custom property, so keep it in step with OPEN by hand. */
   @keyframes station-wait {
-    0%, 14% { opacity: 0; }
-    14.01%, 100% { opacity: 1; }
+    0%, 42.35% { opacity: 0; }
+    42.36%, 100% { opacity: 1; }
   }
   @keyframes station-ok {
-    0%, 14% { opacity: 1; }
-    14.01%, 100% { opacity: 0; }
+    0%, 42.35% { opacity: 1; }
+    42.36%, 100% { opacity: 0; }
   }
   .walker {
     z-index: 1;
@@ -258,11 +346,8 @@ const STATION_PHASE = (ARRIVE * CYCLE) % SPACING;
     50% { opacity: 1; }
   }
 
-  /* Clawd's own terracotta — the documented exception (see header). */
-  .walker__body,
-  .walker__legs {
-    fill: #d97757;
-  }
+  /* The cast's colours are set per layer in the data (the documented
+     off-brand exception, see header); only the carried items are themed. */
   .walker__item {
     fill: var(--color-ink);
   }
