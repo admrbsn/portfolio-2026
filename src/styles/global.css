@@ -1,13 +1,28 @@
 @import 'tailwindcss';
 
-/* Four families, one job each: Syne (headings), Instrument Sans (all UI and
-   body), JetBrains Mono (small uppercase labels), Instrument Serif italic
+/* Four families, one job each: Mattone (headings), Geist (all UI and body),
+   Geist Mono (small uppercase labels, code), Instrument Serif italic
    (accents). Instrument Serif ships one weight and only its italic is loaded —
-   it is the accent face, never upright. */
-@import '@fontsource-variable/syne/wght.css';
-@import '@fontsource-variable/instrument-sans/wght.css';
+   it is the accent face, never upright.
+
+   Mattone — Nunzio Mazzaferro / Collletttivo, SIL OFL (see
+   src/assets/fonts/mattone/). Self-hosted from the foundry's own release; it
+   is not on npm or Google Fonts. One weight shipped, Bold, declared across
+   the whole weight range so every heading (600, and the hero's 700) resolves
+   to the real drawing rather than a synthesised one. The family also has
+   Regular and Black. It has no → glyph; no display heading sets an arrow as
+   text (the hero stat arrows are SVG). */
+@font-face {
+  font-family: 'Mattone';
+  src: url('../assets/fonts/mattone/mattone-bold.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+/* Geist and Geist Mono (Vercel), a matched pair for body and labels. */
+@import '@fontsource-variable/geist/wght.css';
 @import '@fontsource/instrument-serif/400-italic.css';
-@import '@fontsource-variable/jetbrains-mono/wght.css';
+@import '@fontsource-variable/geist-mono/wght.css';
 /* Arcade face for the Breakout CTA and the game's own chrome. Latin subset
    only (~9KB) and self-hosted like the rest, so it costs one same-origin font
    request that the browser only issues once the CTA renders — it is not
@@ -18,6 +33,8 @@
    second such cost after Tiny5. Don't add a third display face without moving
    both of these into the game's own lazily-loaded stylesheet first. */
 @import '@fontsource/baumans/latin-400.css';
+/* The signal-loss vocabulary (caption flicker, word glitch) — see the file. */
+@import './signal.css';
 
 /* ---------------------------------------------------------------------------
    Design tokens. Tailwind v4 is CSS-first — this @theme block *is* the config,
@@ -26,23 +43,26 @@
 --------------------------------------------------------------------------- */
 @theme {
   /* Type ------------------------------------------------------------------ */
-  /* Instrument Sans does all UI and body work, and the wordmark. A plain,
-     slightly narrow grotesque — it is there to be quiet, so the character on
-     the page comes from the Syne headings and nothing competes with them.
-     Variable 400–700; nothing should ask it for more. Check the tight cells
+  /* Geist does all UI and body work, and the wordmark. A plain, open
+     grotesk — it is there to be quiet, so the character on the page comes
+     from the Mattone headings and nothing competes with them. It also sets
+     every figure (hero stats, team figures): Mattone's numerals are extended
+     and read badly beside icons and mono labels. Check the tight cells
      (the at-a-glance grid, persona traits) first after any type-size change. */
-  --font-sans: 'Instrument Sans Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
 
   /* The one knob for display headings (hero, section headings, work/case
-     titles, stats). Syne, and Syne only here — never body copy.
-
-     **Its width is tied to its weight.** There is no wdth axis: Syne was drawn
-     so that heavier is wider, and by 700–800 it is fully extended. 600 is the
-     setting — the lightest weight that still holds the page against the body,
-     and ~7% narrower than 700 across the hero line. To make it tighter, lower
-     the weight (550 sits between); `font-stretch` does nothing. The weight
-     lives on `.font-display` in the base layer, not in markup. */
-  --font-display: 'Syne Variable', ui-sans-serif, system-ui, sans-serif;
+     titles, stats). Mattone — a wide, heavy display grotesk, picked over Syne,
+     Familjen Grotesk, LT Superior, Cooper Hewitt, Overused Grotesk and three
+     Tunera faces. Never body copy. It is wide: the display ladder was taken
+     down a step for it (hero 80 → 70px), and long titles wrap sooner than
+     they did — check the work index after any size change. */
+  --font-display: 'Mattone', ui-sans-serif, system-ui, sans-serif;
+  /* The display face's numeral height, in em — the homepage hero's × and →
+     icons are sized off it so they centre on the digits. Re-measure with
+     canvas `measureText('2001').actualBoundingBoxAscent` if the face changes
+     (Mattone 0.77; Syne was 0.51). */
+  --display-numeral: 0.77em;
 
   /* Italic accents only — pull quotes, and anywhere a phrase should sound
      spoken rather than stated. One weight, italic. Never a heading, never a
@@ -53,7 +73,7 @@
      meta columns. Never a sentence and never a heading. A mono at 12px with
      wide tracking reads as annotation on the drawing, which is what every one
      of those labels is. */
-  --font-mono: 'JetBrains Mono Variable', ui-monospace, SFMono-Regular, monospace;
+  --font-mono: 'Geist Mono Variable', ui-monospace, SFMono-Regular, monospace;
 
   /* Wordmark (nav brand only). Resolves to the same family as --font-sans and
      is kept separate on purpose: the brand mark should be able to change
@@ -86,19 +106,20 @@
      reproduction of it, and the 5px grid ties the panel to the game it opens. */
   --font-cartridge: 'Baumans', var(--font-arcade);
 
-  /* Display font tuning. Set for Syne at 600 — a wide geometric display face;
-     tight tracking.
+  /* Display font tuning. Set for Mattone Bold — a wide, heavy display
+     grotesk; tight tracking.
 
      **The three display steps are one ladder and they move together.** They sit
-     at a ~1.33 ratio (80 / 60 / 48 at 1440) so the homepage hero, a section
+     at roughly 70 / 60 / 48 at 1440 (the display step was taken from 80 to 70
+     for Mattone, which is wide and heavy enough to need the room) so the homepage hero, a section
      heading and a stat figure are told apart by step rather than by sheer size.
      Retune one and the next one up starts competing with it — dropping the
      display alone once left `--text-title` a single pixel behind the h1 it is
      supposed to sit under.
 
-     Tracking is strongly negative (-0.03 to -0.04em) because Syne is wide and
-     sets loose by default — without pulling it in, a headline reads as a row
-     of separate letters rather than a word.
+     Tracking is strongly negative (-0.03 to -0.04em) because a wide display
+     face sets loose by default — without pulling it in, a headline reads as
+     a row of separate letters rather than a word.
 
      The ladder was cut roughly 30% from where it started (display
      capped at 8.25rem, 8vw). At that size the homepage h1 ran two lines of ~115px and
@@ -106,18 +127,18 @@
      under it — stats, lead, the rule at the foot — read as an afterthought
      attached to a poster. Benchmarked against cloudflare.com, whose h1 measures
      72px at the same 1440 viewport. */
-  --text-display: clamp(2.125rem, 5.6vw, 5rem);
-  --text-display--line-height: 1;
+  --text-display: clamp(1.875rem, 4.9vw, 4.375rem);
+  --text-display--line-height: 1.18;
   --text-display--letter-spacing: -0.04em;
 
   --text-title: clamp(1.875rem, 4.2vw, 3.75rem);
-  --text-title--line-height: 1;
+  --text-title--line-height: 1.1;
   --text-title--letter-spacing: -0.035em;
 
   /* Hero stat figures — display face, sized to sit under the display without
      competing with it. */
   --text-stat: clamp(2rem, 3.4vw, 3rem);
-  --text-stat--line-height: 1;
+  --text-stat--line-height: 1.1;
   --text-stat--letter-spacing: -0.03em;
 
   --text-lead: clamp(1.25rem, 2.2vw, 1.875rem);
@@ -403,7 +424,8 @@
     once. Base layer so any `font-*` weight utility on an element still wins.
   */
   .font-display {
-    /* Syne at 600: narrower than its extended 700/800 cuts. See --font-display. */
+    /* 600 in markup terms; Mattone has one drawing, so 600 and the hero's
+       700 render the same Bold. */
     font-weight: 600;
   }
 
@@ -495,6 +517,13 @@
     background-clip: text;
     -webkit-text-fill-color: transparent;
     color: transparent;
+    /* A clipped background only paints inside the box, and descenders (g, j,
+       y) can hang below it — the tail comes out transparent. Padding extends
+       the paint area; the matching negative margin keeps the layout where it
+       was (SplitText words are inline-block, where padding would otherwise
+       push the line). */
+    padding-bottom: 0.2em;
+    margin-bottom: -0.2em;
   }
 
   /* The same blue→purple idea, retuned for stat figures.

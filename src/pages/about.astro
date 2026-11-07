@@ -136,7 +136,7 @@ const inPractice = [
   title="About · Adam Robertson"
   description="How I lead, how I work, and where I've done it. Product design leader with technical roots, based in Colorado."
 >
-  <div class="page-rails">
+  <div class="page-rails signal-page">
   {/* Hero -------------------------------------------------------------- */}
   {/*
     Two-column hero rather than a full-bleed statement. The h1 used to run at
@@ -151,9 +151,16 @@ const inPractice = [
     <NoiseGradient intensity="soft" />
 
     <div class="relative z-10 my-auto w-full">
-      <div class="grid gap-x-16 gap-y-10 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] lg:items-end">
+      {/*
+        Centred, a statement rather than a split — deliberately unlike
+        /how-i-work's left-aligned, asymmetric hero, so the two pages read as
+        two kinds of page (a point of view; a working document) rather than
+        one template with different words in it. One line for the headline
+        from `md` up, the lead in a narrow measure under it.
+      */}
+      <div class="mx-auto flex max-w-4xl flex-col items-center gap-y-10 text-center">
         <h1
-          class="font-display text-[clamp(2.5rem,5.4vw,4.75rem)] leading-[1.05] tracking-[-0.02em] text-balance text-ink"
+          class="font-display text-[clamp(2rem,4.3vw,3.75rem)] leading-[1.2] tracking-[-0.02em] text-balance text-ink"
           data-anim="reveal-heading"
         >
           {/* `.phrase-gradient`, not `.accent-gradient`. The latter clips a
@@ -162,11 +169,11 @@ const inPractice = [
               read as a rainbow. This one is painted as a single ramp along the
               phrase in reading order — see `paintPhrase` in effects.ts.
               Deliberately no full stop. */}
-          I make the room <span class="phrase-gradient">better</span>
+          I make the <span class="outage outage--b" data-text="room"><span class="outage__tear" data-text="room">room</span></span> <span class="phrase-gradient">better</span>
         </h1>
 
         <p
-          class="max-w-xl text-[clamp(1.0625rem,1.35vw,1.3rem)] leading-[1.55] text-ink-lead"
+          class="max-w-2xl text-[clamp(1.0625rem,1.35vw,1.3rem)] leading-[1.55] text-balance text-ink-lead"
           data-anim="reveal"
         >
           Twenty years in, the most important thing I've learned is that the best design leaders
@@ -195,7 +202,9 @@ const inPractice = [
           banner, and at title scale it overpowered the prose it introduces. */}
       <h2
         id="pov"
-        class="font-display text-[clamp(1.75rem,3vw,2.75rem)] leading-[1.05] text-ink lg:sticky lg:top-[var(--sticky-top)] lg:transition-[top] lg:duration-500 lg:ease-[var(--ease-out-expo)] lg:self-start"
+        data-text="Point of view"
+        style="--signal-dur: 14.9s; --signal-delay: 5s"
+        class="signal font-display text-[clamp(1.75rem,3vw,2.75rem)] leading-[1.12] text-ink lg:sticky lg:top-[var(--sticky-top)] lg:transition-[top] lg:duration-500 lg:ease-[var(--ease-out-expo)] lg:self-start"
         data-anim="reveal-heading"
       >
         Point of view
@@ -246,7 +255,13 @@ const inPractice = [
     data-dead="bottom"
   >
     <RuleCross />
-    <h2 id="principles" class="font-display text-title text-ink" data-anim="reveal-heading">
+    <h2
+      id="principles"
+      class="signal font-display text-title text-ink"
+      data-anim="reveal-heading"
+      data-text="How I lead"
+      style="--signal-dur: 12.1s; --signal-delay: 3s"
+    >
       How I lead
     </h2>
 
@@ -318,7 +333,13 @@ const inPractice = [
     data-dead="bottom"
   >
     <RuleCross />
-    <h2 id="in-practice" class="font-display text-title text-ink" data-anim="reveal-heading">
+    <h2
+      id="in-practice"
+      class="signal font-display text-title text-ink"
+      data-anim="reveal-heading"
+      data-text="In practice"
+      style="--signal-dur: 16.3s; --signal-delay: 8s"
+    >
       In practice
     </h2>
 
@@ -389,7 +410,13 @@ const inPractice = [
     data-blueprint="How the work happens"
   >
     <RuleCross />
-    <h2 id="process" class="font-display text-title text-ink" data-anim="reveal-heading">
+    <h2
+      id="process"
+      class="signal font-display text-title text-ink"
+      data-anim="reveal-heading"
+      data-text="How I work"
+      style="--signal-dur: 11.7s; --signal-delay: 6s"
+    >
       How I work
     </h2>
     <div class="mt-6 max-w-2xl space-y-5 text-ink-dim" data-anim="reveal">
@@ -508,8 +535,14 @@ const inPractice = [
     data-blueprint="The long version"
   >
     <RuleCross />
-    <div class="flex items-end justify-between gap-6">
-      <h2 id="experience" class="font-display text-title text-ink" data-anim="reveal-heading">
+    <div class="flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
+      <h2
+      id="experience"
+      class="signal font-display text-title text-ink"
+      data-anim="reveal-heading"
+      data-text="Experience"
+      style="--signal-dur: 13.1s; --signal-delay: 2s"
+    >
         Experience
       </h2>
       <a

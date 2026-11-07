@@ -106,14 +106,15 @@ that survives seeing all five studies side by side.
 ## Type
 
 Four families, and each has exactly one job. The mono and serif come from
-alyssa-tucker.com; Syne and Instrument Sans were picked here after Bricolage,
-Syne-everywhere and Anybody were all tried and cut:
+alyssa-tucker.com. Mattone was picked for display after a long run of trials
+— Bricolage, Syne, Anybody, Tanklager, Nyght Serif, Paysage, Familjen
+Grotesk, LT Superior (runner-up), Cooper Hewitt and Overused Grotesk:
 
 | Family | Token | Job |
 | --- | --- | --- |
-| **Syne** (variable, 600) | `--font-display` | Every display heading — hero, section headings, work and case titles, stats |
-| **Instrument Sans** (variable, 400–700) | `--font-sans` | All UI, body and the wordmark |
-| **JetBrains Mono** (variable) | `--font-mono` | Every small uppercase label: eyebrows, blueprint captions, meta columns, row numbers |
+| **Mattone** (Bold, self-hosted) | `--font-display` | Every display heading — hero, section headings, work and case titles, stats |
+| **Geist** (variable) | `--font-sans` | All UI, body and the wordmark, and every figure (stats, team numbers) |
+| **Geist Mono** (variable) | `--font-mono` | Every small uppercase label: eyebrows, blueprint captions, meta columns, row numbers |
 | **Instrument Serif**, italic only | `--font-serif` | Accents — pull quotes, a phrase that should sound spoken. Never a heading, never a paragraph |
 
 The two extra faces further down belong to the Breakout island and appear
@@ -121,15 +122,16 @@ nowhere else.
 
 | Token | Value | At 1440 |
 | --- | --- | --- |
-| `--text-display` | `clamp(2.125rem, 5.6vw, 5rem)` / lh 1.04 | 80px |
+| `--text-display` | `clamp(1.875rem, 4.9vw, 4.375rem)` / lh 1.18 | 70px |
 | `--text-title` | `clamp(1.875rem, 4.2vw, 3.75rem)` / lh 0.98 | 60px |
 | `--text-stat` | `clamp(2rem, 3.4vw, 3rem)` / lh 1 | 48px |
 | `--text-lead` | `clamp(1.25rem, 2.2vw, 1.875rem)` / lh 1.35 | 30px |
 | `--text-body` | `clamp(1rem, 1.1vw, 1.125rem)` / lh 1.6 | 16px |
 | `--text-micro` | `0.75rem` / tracking 0.08em | 12px |
 
-**The three display steps are one ladder and they move together.** 80 / 60 / 48
-at 1440 is a ~1.33 ratio, and it is what tells the homepage hero, a section
+**The three display steps are one ladder and they move together.** 70 / 60 / 48
+at 1440 (the display step came down from 80 for Mattone, which is wide and
+heavy), and it is what tells the homepage hero, a section
 heading and a stat figure apart by *step* rather than by sheer size. Retune one
 in isolation and the next one up starts competing with it — dropping the display
 alone once left `--text-title` a single pixel behind the h1 it sits under.
@@ -144,14 +146,16 @@ against cloudflare.com, whose h1 measures 72px at the same viewport.
 each set their own hero size inline, deliberately — see
 [patterns.md](patterns.md).
 
-- **Syne's width is its weight.** It has no width axis — heavier is wider,
-  and by 700–800 it is fully extended. 600 is set once on `.font-display` in
-  the base layer (never `font-normal` or a weight in markup); tighten by
-  lowering it, since `font-stretch` does nothing. Tracking on the ladder is
-  -0.03 to -0.04em because a wide face sets loose.
-- **Syne is for headings only.** Set in paragraphs it was tried and cut — its
-  regular weight reads rounded and odd at body size. Body is Instrument Sans,
-  whose job is to stay quiet beside it.
+- **Mattone ships one drawing, Bold**, declared across the whole weight range
+  so every heading weight renders it rather than a synthesised bold. It is
+  wide: long titles wrap sooner, so check the work index after any size
+  change. Tracking on the ladder is -0.03 to -0.04em because a wide face sets
+  loose. It has no → glyph; no heading sets an arrow as text.
+- **`--display-numeral`** is the display face's numeral height (Mattone
+  0.77em); the homepage hero's × and → icons are sized off it. Re-measure it
+  whenever the display face changes.
+- **The display face is for headings only.** Body is Geist, whose
+  job is to stay quiet beside it.
 - **Every uppercase label is mono.** The `uppercase` utility carries
   `--font-mono` with it (base layer, so `font-sans` on the element overrides),
   and any component stylesheet that sets `text-transform: uppercase` sets

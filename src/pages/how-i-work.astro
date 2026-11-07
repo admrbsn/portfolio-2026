@@ -49,7 +49,7 @@ const chapters: { href: string; label: string; brand?: Brand }[] = [
   title="How I work with AI · Adam Robertson"
   description="One redesign through an AI-first toolchain: Notion as the hub for MCP-connected agents, evidence-cited PRDs, briefs for Claude Code, Impeccable taste passes, Relume, Fern docs, Linear, and PostHog’s self-driving loop."
 >
-  <div class="page-rails">
+  <div class="page-rails signal-page">
     {/* Hero — text-first, on the about page's pattern and scale. No
         `data-blueprint`: its caption would collide with the nav's. */}
     <section class="relative flex min-h-[62svh] flex-col overflow-hidden px-shell pb-28 pt-36">
@@ -60,18 +60,18 @@ const chapters: { href: string; label: string; brand?: Brand }[] = [
         {/*
           Headline across the full width, one sentence per line from `md` up,
           then the lead under it on the right. Beside the lead (the /about
-          pattern) the h1 got ~60% of the row, and in Syne that broke it into
+          pattern) the h1 got ~60% of the row, and in the wide display face that broke it into
           three ragged lines that split the gradient phrase mid-sentence.
         */}
         <div class="grid gap-y-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,34rem)]">
           {/* No eyebrow: the page heroes match /about's — headline, then lead. */}
           <div class="lg:col-span-2">
             <h1
-              class="font-display text-[clamp(2.5rem,5.4vw,4.75rem)] leading-[1.05] tracking-[-0.02em] text-ink"
+              class="font-display text-[clamp(2rem,4.3vw,3.75rem)] leading-[1.2] tracking-[-0.02em] text-ink"
               data-anim="reveal-heading"
             >
-              Agents do the legwork.<br class="hidden md:block" />
-              {' '}I bring the <span class="phrase-gradient">judgment</span>.
+              Agents do the <span class="outage outage--a" data-text="legwork"><span class="outage__tear" data-text="legwork">legwork</span></span>.<br class="hidden md:block" />
+              {' '}I bring the <span class="phrase-gradient">judgment.</span>
             </h1>
           </div>
           {/*

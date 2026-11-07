@@ -1,0 +1,510 @@
+/*
+  The signal vocabulary — the site's "losing transmission" effects, shared by
+  every page that opts in. Imported from global.css after the components
+  layer. Two parts:
+
+  1. `.signal-page` on a page's `.page-rails`: its blueprint captions flicker
+     like weak indicator lamps, each on its own clock (keyed by caption).
+  2. `.outage` on a word: the full signal-loss glitch (brownout, chromatic
+     split, torn slices) — `data-text` must carry the word, and the word needs
+     an inner `<span class="outage__tear" data-text="…">`. `.outage--a` and
+     `.outage--b` are the two clocks; the homepage's `.debris` bars are its
+     own hand-placed layer around its headline.
+
+  The quieter heading glitch (`.signal`, `.signal-hover`) lives in global.css.
+  Everything here is off under reduced or failed motion.
+*/
+
+/*
+  Blueprint captions ("GREATEST HITS" and the rest) as weak indicator lamps:
+  sitting at their usual 0.2, then once a cycle a stepped dip and a brief
+  over-bright pop — a bulb on a failing supply. Homepage only (the
+  `.signal-page` wrapper), and each label on its own duration so no two
+  stutter together; negative delays put them mid-cycle on load, so the page
+  does not arrive and then start misbehaving.
+*/
+.signal-page [data-blueprint]::before {
+  animation: lamp 12.3s steps(1, end) infinite;
+}
+.signal-page [data-blueprint='The Hook']::before { animation-duration: 9.7s; animation-delay: -2s; }
+.signal-page [data-blueprint='Story Quest']::before { animation-duration: 12.3s; animation-delay: -7s; }
+.signal-page [data-blueprint='My toolbelt']::before { animation-duration: 10.9s; animation-delay: -4s; }
+.signal-page [data-blueprint='Greatest Hits']::before { animation-duration: 14.1s; animation-delay: -9s; }
+.signal-page [data-blueprint='About Me']::before { animation-duration: 11.7s; animation-delay: -1s; }
+.signal-page [data-blueprint='War Stories']::before { animation-duration: 16.3s; animation-delay: -12s; }
+.signal-page [data-blueprint='The Sketchbook']::before { animation-duration: 13.3s; animation-delay: -5s; }
+.signal-page [data-blueprint='The Workbench']::before { animation-duration: 15.7s; animation-delay: -3s; }
+.signal-page [data-blueprint='Point of view']::before { animation-duration: 10.3s; animation-delay: -6s; }
+.signal-page [data-blueprint='Operating principles']::before { animation-duration: 13.9s; animation-delay: -2s; }
+.signal-page [data-blueprint='Receipts']::before { animation-duration: 11.1s; animation-delay: -8s; }
+.signal-page [data-blueprint='How the work happens']::before { animation-duration: 15.1s; animation-delay: -4s; }
+.signal-page [data-blueprint='The long version']::before { animation-duration: 12.7s; animation-delay: -10s; }
+.signal-page [data-blueprint='The Point Guard']::before { animation-duration: 9.9s; animation-delay: -3s; }
+.signal-page [data-blueprint='The Paper Trail']::before { animation-duration: 14.7s; animation-delay: -7s; }
+.signal-page [data-blueprint='The Taste Layer']::before { animation-duration: 10.7s; animation-delay: -1s; }
+.signal-page [data-blueprint='The Skeleton']::before { animation-duration: 16.9s; animation-delay: -11s; }
+.signal-page [data-blueprint='The Reference']::before { animation-duration: 12.1s; animation-delay: -5s; }
+.signal-page [data-blueprint='The Queue']::before { animation-duration: 13.7s; animation-delay: -9s; }
+.signal-page [data-blueprint='The Feedback Loop']::before { animation-duration: 11.3s; animation-delay: -2s; }
+.signal-page [data-blueprint='The Team']::before { animation-duration: 15.9s; animation-delay: -6s; }
+.signal-page [data-blueprint='Still Open']::before { animation-duration: 10.1s; animation-delay: -4s; }
+@keyframes lamp {
+  0%, 88% { opacity: 0.2; }
+  88.4% { opacity: 0.06; }
+  88.9% { opacity: 0.2; }
+  89.3% { opacity: 0.04; }
+  90.1% { opacity: 0.45; }
+  90.5%, 100% { opacity: 0.2; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .signal-page [data-blueprint]::before {
+    animation: none;
+  }
+}
+html[data-motion='reduced'] .signal-page [data-blueprint]::before,
+html[data-motion='failed'] .signal-page [data-blueprint]::before {
+  animation: none;
+}
+
+/*
+  The hero's signal glitch on Technical / Roots — the analog-TV look: the
+  word steady almost all the time, then a short burst where it loses sync.
+  Three layers do it, matching the reference set (whole-word chromatic split,
+  torn bright slices, pixel debris):
+
+  - `.outage::before/::after` — whole copies of the word in the accent blue
+    and purple, *behind* it, thrown a few px apart. Mostly the full word
+    (that is the chromatic aberration), sometimes only a band of it.
+  - `.outage__tear::before/::after` — slices of the word in ink, *in front*,
+    thrown 6–18px sideways. One is solid, one is a 3px scanline raster (the
+    CRT pitch from BreakoutCTA), which is the textured band in the refs.
+  - `.debris` — short bars scattered round the words, two groups per word
+    strobing on alternate frames.
+
+  The keyframes were generated once from a seeded LCG (so the values are
+  arbitrary but fixed, like the Breakout rack) and are plain CSS from here
+  on: edit frames directly. Every frame inside a burst is ~25ms. Every
+  layer of a word shares its duration and delay, so all three land in the same
+  burst windows and are fully off between them. The two words run on clocks
+  that share no factor (7.3s / 11.9s), so they never fall into a loop.
+
+  `steps(1, end)` throughout: a lost signal cuts, it does not ease. The main
+  word dims its *colour*, not its opacity — every layer is its descendant,
+  and an opacity dip would take the glitch down with it.
+
+  SplitText puts its word wrapper inside `.outage__tear`; the reveal tween
+  only moves that wrapper, so it never touches these properties. The `/ ""`
+  on `content` gives each copy empty alt text, or a screen reader would read
+  the word five times. Reduced motion and failed motion remove it entirely —
+  a strobing headline is exactly what that setting exists to stop.
+*/
+.outage,
+.outage__tear {
+  position: relative;
+  display: inline-block;
+}
+.outage {
+  animation: var(--glitch-main) var(--glitch-dur) steps(1, end) var(--glitch-delay) infinite;
+}
+.outage--a {
+  --glitch-dur: 7.3s;
+  --glitch-delay: 2.4s;
+  --glitch-main: outage-a;
+}
+.outage--b {
+  --glitch-dur: 11.9s;
+  --glitch-delay: 3.7s;
+  --glitch-main: outage-b;
+}
+
+.outage::before,
+.outage::after,
+.outage__tear::before,
+.outage__tear::after {
+  content: attr(data-text);
+  content: attr(data-text) / '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  text-shadow: none;
+}
+
+/* Chromatic copies, behind the word. */
+.outage::before,
+.outage::after {
+  z-index: -1;
+  mix-blend-mode: screen;
+}
+.outage::before {
+  color: var(--color-accent);
+  -webkit-text-fill-color: var(--color-accent);
+}
+.outage::after {
+  color: var(--color-accent-warm);
+  -webkit-text-fill-color: var(--color-accent-warm);
+}
+.outage--a::before { animation: rgb-a1 var(--glitch-dur) steps(1, end) var(--glitch-delay) infinite; }
+.outage--a::after { animation: rgb-a2 var(--glitch-dur) steps(1, end) var(--glitch-delay) infinite; }
+.outage--b::before { animation: rgb-b1 var(--glitch-dur) steps(1, end) var(--glitch-delay) infinite; }
+.outage--b::after { animation: rgb-b2 var(--glitch-dur) steps(1, end) var(--glitch-delay) infinite; }
+
+/* Torn slices, in front. */
+.outage__tear::before {
+  color: var(--color-ink);
+  -webkit-text-fill-color: var(--color-ink);
+}
+.outage__tear::after {
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--color-ink) 0 2px,
+    transparent 2px 3px
+  );
+  background-clip: text;
+  -webkit-background-clip: text;
+}
+.outage--a .outage__tear::before { animation: tear-a1 var(--glitch-dur) steps(1, end) var(--glitch-delay) infinite; }
+.outage--a .outage__tear::after { animation: tear-a2 var(--glitch-dur) steps(1, end) var(--glitch-delay) infinite; }
+.outage--b .outage__tear::before { animation: tear-b1 var(--glitch-dur) steps(1, end) var(--glitch-delay) infinite; }
+.outage--b .outage__tear::after { animation: tear-b2 var(--glitch-dur) steps(1, end) var(--glitch-delay) infinite; }
+
+/*
+  Debris. Positioned in % of the headline box around the second line, which
+  is where both words sit from `md` up; below that the headline wraps
+  differently and the bars would land on the wrong words, so they are off.
+*/
+.debris-field {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: none;
+}
+@media (min-width: 48rem) {
+  .debris-field {
+    display: block;
+  }
+}
+.debris {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+}
+.debris > i {
+  position: absolute;
+  display: block;
+}
+.debris--a1 { animation: debris-a1 7.3s steps(1, end) 2.4s infinite; }
+.debris--a2 { animation: debris-a2 7.3s steps(1, end) 2.4s infinite; }
+.debris--b1 { animation: debris-b1 11.9s steps(1, end) 3.7s infinite; }
+.debris--b2 { animation: debris-b2 11.9s steps(1, end) 3.7s infinite; }
+
+@keyframes outage-a {
+  0%, 79.99% { color: var(--color-ink); transform: none; }
+  80% { color: var(--color-ink); transform: translateX(3px); }
+  80.35% { color: var(--color-ink); transform: translateX(-3px); }
+  80.7% { color: var(--color-ink); transform: translateX(0px); }
+  81.05% { color: var(--color-ink); transform: translateX(-3px); }
+  81.4% { color: var(--color-ink); transform: translateX(1px); }
+  81.75% { color: var(--color-ink); transform: translateX(2px); }
+  82.1%, 83.39% { color: var(--color-ink); transform: none; }
+  83.4% { color: color-mix(in oklab, var(--color-ink) 34%, transparent); transform: translateX(2px); }
+  83.75% { color: color-mix(in oklab, var(--color-ink) 82%, transparent); transform: translateX(-1px); }
+  84.1% { color: color-mix(in oklab, var(--color-ink) 62%, transparent); transform: translateX(3px); }
+  84.45% { color: var(--color-ink); transform: translateX(2px); }
+  84.8% { color: color-mix(in oklab, var(--color-ink) 62%, transparent); transform: translateX(0px); }
+  85.15% { color: var(--color-ink); transform: translateX(2px); }
+  85.5%, 100% { color: var(--color-ink); transform: none; }
+}
+
+@keyframes rgb-a1 {
+  0%, 79.99% { opacity: 0; transform: none; }
+  80% { opacity: 0; clip-path: inset(-10% -4%); transform: translate(-4px, -2px); }
+  80.35% { opacity: 1; clip-path: inset(26% -4% 62% -4%); transform: translate(-4px, 0px); }
+  80.7% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(-3px, 1px); }
+  81.05% { opacity: 1; clip-path: inset(74% -4% 11% -4%); transform: translate(-3px, 0px); }
+  81.4% { opacity: 1; clip-path: inset(7% -4% 74% -4%); transform: translate(-5px, 2px); }
+  81.75% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(-8px, 2px); }
+  82.1%, 83.39% { opacity: 0; transform: none; }
+  83.4% { opacity: 1; clip-path: inset(2% -4% 85% -4%); transform: translate(-7px, 0px); }
+  83.75% { opacity: 1; clip-path: inset(66% -4% 15% -4%); transform: translate(-3px, 1px); }
+  84.1% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(-4px, 2px); }
+  84.45% { opacity: 1; clip-path: inset(45% -4% 46% -4%); transform: translate(-8px, 0px); }
+  84.8% { opacity: 1; clip-path: inset(37% -4% 55% -4%); transform: translate(-8px, 0px); }
+  85.15% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(-6px, -1px); }
+  85.5%, 100% { opacity: 0; transform: none; }
+}
+
+@keyframes rgb-a2 {
+  0%, 79.99% { opacity: 0; transform: none; }
+  80% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(7px, -2px); }
+  80.35% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(5px, -1px); }
+  80.7% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(4px, -1px); }
+  81.05% { opacity: 1; clip-path: inset(7% -4% 82% -4%); transform: translate(3px, 0px); }
+  81.4% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(7px, -2px); }
+  81.75% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(3px, -2px); }
+  82.1%, 83.39% { opacity: 0; transform: none; }
+  83.4% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(8px, 1px); }
+  83.75% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(5px, -1px); }
+  84.1% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(3px, -1px); }
+  84.45% { opacity: 1; clip-path: inset(55% -4% 30% -4%); transform: translate(3px, 2px); }
+  84.8% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(6px, -1px); }
+  85.15% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(6px, -1px); }
+  85.5%, 100% { opacity: 0; transform: none; }
+}
+
+@keyframes tear-a1 {
+  0%, 79.99% { opacity: 0; transform: none; clip-path: inset(0 0 100% 0); }
+  80% { opacity: 1; clip-path: inset(40% -4% 50% -4%); transform: translateX(-16px); background-position: 0 0px; }
+  80.35% { opacity: 1; clip-path: inset(25% -4% 62% -4%); transform: translateX(-15px); background-position: 0 1px; }
+  80.7% { opacity: 0; clip-path: inset(13% -4% 66% -4%); transform: translateX(9px); background-position: 0 2px; }
+  81.05% { opacity: 1; clip-path: inset(67% -4% 18% -4%); transform: translateX(15px); background-position: 0 0px; }
+  81.4% { opacity: 1; clip-path: inset(39% -4% 47% -4%); transform: translateX(13px); background-position: 0 1px; }
+  81.75% { opacity: 1; clip-path: inset(23% -4% 60% -4%); transform: translateX(8px); background-position: 0 2px; }
+  82.1%, 83.39% { opacity: 0; transform: none; clip-path: inset(0 0 100% 0); }
+  83.4% { opacity: 1; clip-path: inset(56% -4% 23% -4%); transform: translateX(-17px); background-position: 0 0px; }
+  83.75% { opacity: 1; clip-path: inset(2% -4% 79% -4%); transform: translateX(8px); background-position: 0 1px; }
+  84.1% { opacity: 1; clip-path: inset(5% -4% 81% -4%); transform: translateX(8px); background-position: 0 2px; }
+  84.45% { opacity: 1; clip-path: inset(66% -4% 19% -4%); transform: translateX(-10px); background-position: 0 2px; }
+  84.8% { opacity: 0; clip-path: inset(26% -4% 61% -4%); transform: translateX(-17px); background-position: 0 2px; }
+  85.15% { opacity: 1; clip-path: inset(25% -4% 65% -4%); transform: translateX(-13px); background-position: 0 1px; }
+  85.5%, 100% { opacity: 0; transform: none; clip-path: inset(0 0 100% 0); }
+}
+
+@keyframes tear-a2 {
+  0%, 79.99% { opacity: 0; transform: none; clip-path: inset(0 0 100% 0); }
+  80% { opacity: 1; clip-path: inset(77% -4% 9% -4%); transform: translateX(-14px); background-position: 0 2px; }
+  80.35% { opacity: 1; clip-path: inset(42% -4% 36% -4%); transform: translateX(-9px); background-position: 0 2px; }
+  80.7% { opacity: 1; clip-path: inset(15% -4% 66% -4%); transform: translateX(16px); background-position: 0 0px; }
+  81.05% { opacity: 0; clip-path: inset(31% -4% 47% -4%); transform: translateX(11px); background-position: 0 1px; }
+  81.4% { opacity: 1; clip-path: inset(8% -4% 72% -4%); transform: translateX(-11px); background-position: 0 1px; }
+  81.75% { opacity: 1; clip-path: inset(53% -4% 35% -4%); transform: translateX(-17px); background-position: 0 2px; }
+  82.1%, 83.39% { opacity: 0; transform: none; clip-path: inset(0 0 100% 0); }
+  83.4% { opacity: 1; clip-path: inset(11% -4% 73% -4%); transform: translateX(15px); background-position: 0 2px; }
+  83.75% { opacity: 1; clip-path: inset(7% -4% 76% -4%); transform: translateX(-14px); background-position: 0 1px; }
+  84.1% { opacity: 1; clip-path: inset(21% -4% 58% -4%); transform: translateX(-18px); background-position: 0 0px; }
+  84.45% { opacity: 1; clip-path: inset(51% -4% 32% -4%); transform: translateX(-6px); background-position: 0 0px; }
+  84.8% { opacity: 1; clip-path: inset(53% -4% 35% -4%); transform: translateX(16px); background-position: 0 1px; }
+  85.15% { opacity: 1; clip-path: inset(19% -4% 60% -4%); transform: translateX(10px); background-position: 0 0px; }
+  85.5%, 100% { opacity: 0; transform: none; clip-path: inset(0 0 100% 0); }
+}
+
+@keyframes debris-a1 {
+  0%, 79.99% { opacity: 0; transform: none; }
+  80% { opacity: 1; transform: translateX(-1px); }
+  80.35% { opacity: 0; transform: translateX(-3px); }
+  80.7% { opacity: 1; transform: translateX(0px); }
+  81.05% { opacity: 0; transform: translateX(-5px); }
+  81.4% { opacity: 1; transform: translateX(2px); }
+  81.75% { opacity: 1; transform: translateX(-9px); }
+  82.1%, 83.39% { opacity: 0; transform: none; }
+  83.4% { opacity: 1; transform: translateX(-10px); }
+  83.75% { opacity: 1; transform: translateX(-3px); }
+  84.1% { opacity: 1; transform: translateX(-3px); }
+  84.45% { opacity: 0; transform: translateX(-10px); }
+  84.8% { opacity: 1; transform: translateX(5px); }
+  85.15% { opacity: 1; transform: translateX(9px); }
+  85.5%, 100% { opacity: 0; transform: none; }
+}
+
+@keyframes debris-a2 {
+  0%, 79.99% { opacity: 0; transform: none; }
+  80% { opacity: 0; transform: translateX(-9px); }
+  80.35% { opacity: 1; transform: translateX(5px); }
+  80.7% { opacity: 0; transform: translateX(-3px); }
+  81.05% { opacity: 1; transform: translateX(0px); }
+  81.4% { opacity: 0; transform: translateX(-5px); }
+  81.75% { opacity: 1; transform: translateX(4px); }
+  82.1%, 83.39% { opacity: 0; transform: none; }
+  83.4% { opacity: 1; transform: translateX(-3px); }
+  83.75% { opacity: 1; transform: translateX(-6px); }
+  84.1% { opacity: 0; transform: translateX(-8px); }
+  84.45% { opacity: 1; transform: translateX(1px); }
+  84.8% { opacity: 0; transform: translateX(-2px); }
+  85.15% { opacity: 1; transform: translateX(9px); }
+  85.5%, 100% { opacity: 0; transform: none; }
+}
+
+@keyframes outage-b {
+  0%, 37.39% { color: var(--color-ink); transform: none; }
+  37.4% { color: var(--color-ink); transform: translateX(0px); }
+  37.6% { color: var(--color-ink); transform: translateX(-3px); }
+  37.8% { color: var(--color-ink); transform: translateX(0px); }
+  38% { color: color-mix(in oklab, var(--color-ink) 34%, transparent); transform: translateX(1px); }
+  38.2% { color: color-mix(in oklab, var(--color-ink) 34%, transparent); transform: translateX(3px); }
+  38.4%, 88.39% { color: var(--color-ink); transform: none; }
+  88.4% { color: var(--color-ink); transform: translateX(-2px); }
+  88.6% { color: var(--color-ink); transform: translateX(-2px); }
+  88.8% { color: var(--color-ink); transform: translateX(-2px); }
+  89% { color: var(--color-ink); transform: translateX(1px); }
+  89.2% { color: color-mix(in oklab, var(--color-ink) 62%, transparent); transform: translateX(1px); }
+  89.4% { color: color-mix(in oklab, var(--color-ink) 62%, transparent); transform: translateX(0px); }
+  89.6%, 89.99% { color: var(--color-ink); transform: none; }
+  90% { color: color-mix(in oklab, var(--color-ink) 34%, transparent); transform: translateX(1px); }
+  90.2% { color: var(--color-ink); transform: translateX(-2px); }
+  90.4% { color: var(--color-ink); transform: translateX(-2px); }
+  90.6% { color: var(--color-ink); transform: translateX(3px); }
+  90.8%, 100% { color: var(--color-ink); transform: none; }
+}
+
+@keyframes rgb-b1 {
+  0%, 37.39% { opacity: 0; transform: none; }
+  37.4% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(-3px, -2px); }
+  37.6% { opacity: 1; clip-path: inset(41% -4% 38% -4%); transform: translate(-7px, 0px); }
+  37.8% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(-3px, -1px); }
+  38% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(-4px, 2px); }
+  38.2% { opacity: 0; clip-path: inset(-10% -4%); transform: translate(-7px, 0px); }
+  38.4%, 88.39% { opacity: 0; transform: none; }
+  88.4% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(-3px, 1px); }
+  88.6% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(-6px, 1px); }
+  88.8% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(-4px, -1px); }
+  89% { opacity: 0; clip-path: inset(-10% -4%); transform: translate(-6px, 0px); }
+  89.2% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(-6px, -1px); }
+  89.4% { opacity: 1; clip-path: inset(51% -4% 27% -4%); transform: translate(-6px, 0px); }
+  89.6%, 89.99% { opacity: 0; transform: none; }
+  90% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(-6px, -1px); }
+  90.2% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(-6px, 0px); }
+  90.4% { opacity: 1; clip-path: inset(35% -4% 58% -4%); transform: translate(-3px, -2px); }
+  90.6% { opacity: 1; clip-path: inset(53% -4% 32% -4%); transform: translate(-8px, 0px); }
+  90.8%, 100% { opacity: 0; transform: none; }
+}
+
+@keyframes rgb-b2 {
+  0%, 37.39% { opacity: 0; transform: none; }
+  37.4% { opacity: 1; clip-path: inset(43% -4% 36% -4%); transform: translate(3px, 0px); }
+  37.6% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(5px, 0px); }
+  37.8% { opacity: 0; clip-path: inset(-10% -4%); transform: translate(5px, 2px); }
+  38% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(6px, 2px); }
+  38.2% { opacity: 1; clip-path: inset(39% -4% 50% -4%); transform: translate(4px, -1px); }
+  38.4%, 88.39% { opacity: 0; transform: none; }
+  88.4% { opacity: 1; clip-path: inset(79% -4% 0% -4%); transform: translate(4px, 0px); }
+  88.6% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(6px, 1px); }
+  88.8% { opacity: 1; clip-path: inset(19% -4% 64% -4%); transform: translate(4px, 2px); }
+  89% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(5px, -2px); }
+  89.2% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(8px, 2px); }
+  89.4% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(7px, 0px); }
+  89.6%, 89.99% { opacity: 0; transform: none; }
+  90% { opacity: 1; clip-path: inset(39% -4% 42% -4%); transform: translate(5px, 0px); }
+  90.2% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(5px, -1px); }
+  90.4% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(8px, -2px); }
+  90.6% { opacity: 1; clip-path: inset(5% -4% 84% -4%); transform: translate(4px, -2px); }
+  90.8%, 100% { opacity: 0; transform: none; }
+}
+
+@keyframes tear-b1 {
+  0%, 37.39% { opacity: 0; transform: none; clip-path: inset(0 0 100% 0); }
+  37.4% { opacity: 1; clip-path: inset(67% -4% 17% -4%); transform: translateX(14px); background-position: 0 0px; }
+  37.6% { opacity: 1; clip-path: inset(50% -4% 29% -4%); transform: translateX(-10px); background-position: 0 1px; }
+  37.8% { opacity: 1; clip-path: inset(3% -4% 81% -4%); transform: translateX(7px); background-position: 0 1px; }
+  38% { opacity: 1; clip-path: inset(51% -4% 33% -4%); transform: translateX(7px); background-position: 0 1px; }
+  38.2% { opacity: 1; clip-path: inset(58% -4% 23% -4%); transform: translateX(-15px); background-position: 0 2px; }
+  38.4%, 88.39% { opacity: 0; transform: none; clip-path: inset(0 0 100% 0); }
+  88.4% { opacity: 1; clip-path: inset(79% -4% 1% -4%); transform: translateX(-18px); background-position: 0 0px; }
+  88.6% { opacity: 1; clip-path: inset(12% -4% 67% -4%); transform: translateX(7px); background-position: 0 0px; }
+  88.8% { opacity: 1; clip-path: inset(78% -4% 12% -4%); transform: translateX(13px); background-position: 0 1px; }
+  89% { opacity: 1; clip-path: inset(4% -4% 86% -4%); transform: translateX(8px); background-position: 0 1px; }
+  89.2% { opacity: 1; clip-path: inset(25% -4% 61% -4%); transform: translateX(-8px); background-position: 0 0px; }
+  89.4% { opacity: 1; clip-path: inset(36% -4% 45% -4%); transform: translateX(12px); background-position: 0 0px; }
+  89.6%, 89.99% { opacity: 0; transform: none; clip-path: inset(0 0 100% 0); }
+  90% { opacity: 1; clip-path: inset(73% -4% 18% -4%); transform: translateX(8px); background-position: 0 1px; }
+  90.2% { opacity: 1; clip-path: inset(9% -4% 82% -4%); transform: translateX(9px); background-position: 0 2px; }
+  90.4% { opacity: 1; clip-path: inset(41% -4% 45% -4%); transform: translateX(6px); background-position: 0 1px; }
+  90.6% { opacity: 1; clip-path: inset(25% -4% 61% -4%); transform: translateX(11px); background-position: 0 2px; }
+  90.8%, 100% { opacity: 0; transform: none; clip-path: inset(0 0 100% 0); }
+}
+
+@keyframes tear-b2 {
+  0%, 37.39% { opacity: 0; transform: none; clip-path: inset(0 0 100% 0); }
+  37.4% { opacity: 0; clip-path: inset(51% -4% 31% -4%); transform: translateX(-16px); background-position: 0 0px; }
+  37.6% { opacity: 1; clip-path: inset(33% -4% 52% -4%); transform: translateX(-13px); background-position: 0 1px; }
+  37.8% { opacity: 1; clip-path: inset(78% -4% 0% -4%); transform: translateX(-17px); background-position: 0 2px; }
+  38% { opacity: 1; clip-path: inset(38% -4% 52% -4%); transform: translateX(17px); background-position: 0 0px; }
+  38.2% { opacity: 1; clip-path: inset(59% -4% 23% -4%); transform: translateX(-15px); background-position: 0 0px; }
+  38.4%, 88.39% { opacity: 0; transform: none; clip-path: inset(0 0 100% 0); }
+  88.4% { opacity: 1; clip-path: inset(10% -4% 73% -4%); transform: translateX(17px); background-position: 0 0px; }
+  88.6% { opacity: 1; clip-path: inset(70% -4% 18% -4%); transform: translateX(8px); background-position: 0 0px; }
+  88.8% { opacity: 1; clip-path: inset(37% -4% 51% -4%); transform: translateX(-11px); background-position: 0 1px; }
+  89% { opacity: 0; clip-path: inset(28% -4% 55% -4%); transform: translateX(-13px); background-position: 0 1px; }
+  89.2% { opacity: 1; clip-path: inset(79% -4% 0% -4%); transform: translateX(16px); background-position: 0 1px; }
+  89.4% { opacity: 0; clip-path: inset(51% -4% 38% -4%); transform: translateX(-6px); background-position: 0 1px; }
+  89.6%, 89.99% { opacity: 0; transform: none; clip-path: inset(0 0 100% 0); }
+  90% { opacity: 1; clip-path: inset(77% -4% 14% -4%); transform: translateX(-10px); background-position: 0 2px; }
+  90.2% { opacity: 1; clip-path: inset(47% -4% 46% -4%); transform: translateX(7px); background-position: 0 1px; }
+  90.4% { opacity: 1; clip-path: inset(34% -4% 47% -4%); transform: translateX(-15px); background-position: 0 0px; }
+  90.6% { opacity: 1; clip-path: inset(42% -4% 49% -4%); transform: translateX(17px); background-position: 0 2px; }
+  90.8%, 100% { opacity: 0; transform: none; clip-path: inset(0 0 100% 0); }
+}
+
+@keyframes debris-b1 {
+  0%, 37.39% { opacity: 0; transform: none; }
+  37.4% { opacity: 1; transform: translateX(-5px); }
+  37.6% { opacity: 0; transform: translateX(6px); }
+  37.8% { opacity: 1; transform: translateX(1px); }
+  38% { opacity: 0; transform: translateX(-3px); }
+  38.2% { opacity: 1; transform: translateX(-2px); }
+  38.4%, 88.39% { opacity: 0; transform: none; }
+  88.4% { opacity: 1; transform: translateX(0px); }
+  88.6% { opacity: 1; transform: translateX(4px); }
+  88.8% { opacity: 1; transform: translateX(-9px); }
+  89% { opacity: 0; transform: translateX(-9px); }
+  89.2% { opacity: 1; transform: translateX(0px); }
+  89.4% { opacity: 0; transform: translateX(3px); }
+  89.6%, 89.99% { opacity: 0; transform: none; }
+  90% { opacity: 1; transform: translateX(-5px); }
+  90.2% { opacity: 0; transform: translateX(-10px); }
+  90.4% { opacity: 1; transform: translateX(-4px); }
+  90.6% { opacity: 1; transform: translateX(1px); }
+  90.8%, 100% { opacity: 0; transform: none; }
+}
+
+@keyframes debris-b2 {
+  0%, 37.39% { opacity: 0; transform: none; }
+  37.4% { opacity: 1; transform: translateX(6px); }
+  37.6% { opacity: 1; transform: translateX(8px); }
+  37.8% { opacity: 0; transform: translateX(8px); }
+  38% { opacity: 1; transform: translateX(-2px); }
+  38.2% { opacity: 0; transform: translateX(10px); }
+  38.4%, 88.39% { opacity: 0; transform: none; }
+  88.4% { opacity: 0; transform: translateX(-2px); }
+  88.6% { opacity: 1; transform: translateX(9px); }
+  88.8% { opacity: 0; transform: translateX(-9px); }
+  89% { opacity: 1; transform: translateX(-9px); }
+  89.2% { opacity: 0; transform: translateX(8px); }
+  89.4% { opacity: 1; transform: translateX(4px); }
+  89.6%, 89.99% { opacity: 0; transform: none; }
+  90% { opacity: 1; transform: translateX(8px); }
+  90.2% { opacity: 1; transform: translateX(5px); }
+  90.4% { opacity: 0; transform: translateX(-1px); }
+  90.6% { opacity: 1; transform: translateX(3px); }
+  90.8%, 100% { opacity: 0; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .outage {
+    animation: none;
+  }
+  .outage::before,
+  .outage::after,
+  .outage__tear::before,
+  .outage__tear::after,
+  .debris-field {
+    display: none;
+  }
+}
+html[data-motion='reduced'] .outage,
+html[data-motion='failed'] .outage {
+  animation: none;
+}
+html[data-motion='reduced'] .outage::before,
+html[data-motion='reduced'] .outage::after,
+html[data-motion='reduced'] .outage__tear::before,
+html[data-motion='reduced'] .outage__tear::after,
+html[data-motion='reduced'] .debris-field,
+html[data-motion='failed'] .outage::before,
+html[data-motion='failed'] .outage::after,
+html[data-motion='failed'] .outage__tear::before,
+html[data-motion='failed'] .outage__tear::after,
+html[data-motion='failed'] .debris-field {
+  display: none;
+}

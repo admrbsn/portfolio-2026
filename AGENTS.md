@@ -57,9 +57,9 @@ Read those before touching anything visual. The short version, for orientation:
 - Tailwind v4 is CSS-first. **There is no `tailwind.config.js`** — the `@theme`
   block in `src/styles/global.css` is the config, and every key in it becomes a
   utility.
-- **Four type families, one role each**: Syne for display (600 — its width
-  grows with weight, so lighter is tighter), Instrument Sans for UI and body,
-  JetBrains Mono for every small uppercase label, Instrument Serif italic for
+- **Four type families, one role each**: Mattone for display (one Bold
+  drawing, self-hosted from Collletttivo's release), Geist for UI and body,
+  Geist Mono for every small uppercase label and code, Instrument Serif italic for
   accents only. Plus **one accent palette** site-wide, **one radius** (`--radius-ui`, 3px). Every
   exception is listed in `tokens.md`; if it is not on that list, it is a mistake.
 - **The accent follows the hero wash.** `--color-accent` / `-warm` / `--color-status`
