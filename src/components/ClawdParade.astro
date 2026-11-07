@@ -43,6 +43,9 @@ const ITEMS: Record<string, string> = {
 
 const walkers = ['prd', 'bug', 'ticket', 'chart'];
 const CYCLE = 34; // seconds to cross the hero
+// Each walker's signal-loss clock. Unrelated durations, so the parade never
+// glitches in unison — the same rule as every other glitch on the site.
+const ZAPS = [6.7, 9.1, 7.9, 11.3];
 
 /*
   The review station — the headline's second half. Each Clawd hands its item
@@ -93,7 +96,7 @@ const STATION_PHASE = (ARRIVE * CYCLE) % SPACING;
           height="54"
           class="walker__sprite"
           shape-rendering="crispEdges"
-          style={`animation-delay: ${(-i * 0.13).toFixed(2)}s`}
+          style={`animation-delay: ${(-i * 0.13).toFixed(2)}s, ${(-i * 2.3).toFixed(1)}s; --zap: ${ZAPS[i]}s`}
         >
           <path
             class="walker__item"
@@ -215,9 +218,30 @@ const STATION_PHASE = (ARRIVE * CYCLE) % SPACING;
 
   /* The step: legs swap and the body bobs a pixel (3px at this scale), on
      one shared stepped clock. */
+  /*
+    Two animations on one element without fighting: the bob moves
+    `transform`, the zap moves the individual `translate` property and
+    `filter`. The zap is a ~200ms brownout at the end of its own cycle — a
+    sideways jitter, a blue/purple split (two hard drop-shadows in the accent
+    pair) and a dip — then nothing until the next one.
+  */
   .walker__sprite {
     display: block;
-    animation: bob 0.46s steps(1, end) infinite;
+    animation:
+      bob 0.46s steps(1, end) infinite,
+      zap var(--zap, 8s) steps(1, end) infinite;
+  }
+  @keyframes zap {
+    0%, 96.9% { translate: 0 0; filter: none; opacity: 1; }
+    97% {
+      translate: -3px 0;
+      filter: drop-shadow(-3px 0 var(--color-accent)) drop-shadow(3px 0 var(--color-accent-warm));
+      opacity: 0.85;
+    }
+    97.6% { translate: 4px -1px; filter: drop-shadow(3px 0 var(--color-accent)) drop-shadow(-4px 0 var(--color-accent-warm)); opacity: 0.4; }
+    98.2% { translate: -1px 0; filter: drop-shadow(-2px 0 var(--color-accent)); opacity: 1; }
+    98.8% { translate: 2px 0; filter: none; opacity: 0.6; }
+    99.4%, 100% { translate: 0 0; filter: none; opacity: 1; }
   }
   @keyframes bob {
     0%, 100% { transform: translateY(0); }

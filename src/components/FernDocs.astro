@@ -5,70 +5,268 @@ import ToolHeader from './ToolHeader.astro';
 import RichText from './RichText.astro';
 
 /*
-  Fern — dev and API docs. The mock is an API reference page of the kind Fern
-  generates from a spec: sidebar, endpoint, parameter table, and a request in
-  the SDK languages it generates. The endpoint is the illustrative upload API
-  the PRD mock cites (`POST /v1/uploads`), so the two sections point at the
-  same thing.
+  Fern — dev and API docs. The mock is a small API reference of the kind Fern
+  generates from a spec: five pages in the sidebar, each with its fields and a
+  request in the languages we actually use (TypeScript, React, Python). The
+  upload endpoint is the one the PRD mock cites (`POST /v1/uploads`).
 
   Claims, all from Fern's own pages: specs in (OpenAPI, AsyncAPI, gRPC,
   OpenRPC), SDKs out in nine languages, generated interactive docs, Ask Fern
   AI search, `/llms.txt` + `.md` versions of every page, and a hosted MCP
   server for AI clients.
 
-  The language tabs are CSS-only (radio inputs), so there is no script to tear
-  down and the default reads with JS off.
+  Interaction is CSS-only — radio inputs for the page and for the language,
+  each read by sibling selectors — so there is no script to tear down and the
+  first page reads with JS off. The language choice persists across pages.
+  Every page sits in the same grid cell (inactive ones `visibility: hidden`),
+  so the mock never changes height when the page changes.
+
+  Code conventions, deliberately consistent — this is the part an engineer
+  reads closely:
+  - The tables show wire names (snake_case). The TypeScript SDK takes
+    camelCase (`tributeId`), as Fern's TS generator emits; Python keeps
+    snake_case. Never mix the two inside one language.
+  - TypeScript: single quotes, trailing commas. Python: double quotes,
+    trailing commas, keyword arguments.
+  - React never holds a server key: every React sample gets its client from
+    `useTribute()`, defined on the Authentication page, which exchanges the
+    session for a short-lived scoped token. The TS samples are server-side.
+  - Every identifier a sample uses is either defined in it or established on
+    an earlier page (`client`, `useTribute`, `tributeId`).
 */
-const params: { name: string; type: string; req?: boolean; note: string }[] = [
-  { name: 'tribute_id', type: 'string', req: true, note: 'The tribute the video belongs to' },
-  { name: 'part', type: 'integer', req: true, note: 'Chunk index, from 1' },
-  { name: 'content_type', type: 'string', note: 'video/mp4 or video/webm' },
+
+type Field = { name: string; type?: string; req?: boolean; note: string };
+type Lang = 'ts' | 'react' | 'py';
+type Page = {
+  id: string;
+  nav: string;
+  verb?: 'GET' | 'POST';
+  path: string;
+  title: string;
+  body: string;
+  sections: { title: string; fields: Field[] }[];
+  code: Record<Lang, string>;
+};
+
+const pages: Page[] = [
+  {
+    id: 'overview',
+    nav: 'Overview',
+    path: 'Getting started',
+    title: 'Tribute API',
+    body: 'REST over HTTPS, JSON in and out. Every endpoint here, and every SDK, is generated from one OpenAPI spec.',
+    sections: [
+      {
+        title: 'Basics',
+        fields: [
+          { name: 'base_url', type: 'string', note: 'https://api.example.dev/v1' },
+          { name: 'version', type: 'date', note: 'Pinned per key, e.g. 2026-10-01' },
+          { name: 'format', type: 'json', note: 'UTF-8, snake_case keys, ISO 8601 times' },
+        ],
+      },
+    ],
+    code: {
+      ts: `import { TributeClient } from '@tribute/sdk';
+
+const client = new TributeClient({
+  token: process.env.TRIBUTE_TOKEN,
+});`,
+      react: `import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const queryClient = new QueryClient();
+
+export function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <Routes />
+    </QueryClientProvider>
+  );
+}`,
+      py: `import os
+
+from tribute import Tribute
+
+client = Tribute(token=os.environ["TRIBUTE_TOKEN"])`,
+    },
+  },
+  {
+    id: 'auth',
+    nav: 'Authentication',
+    path: 'Bearer tokens',
+    title: 'Authenticate requests',
+    body: 'Every request carries a bearer token. Server keys never reach a browser: the web app trades its session for a short-lived token scoped to one tribute.',
+    sections: [
+      {
+        title: 'Headers',
+        fields: [
+          { name: 'Authorization', type: 'string', req: true, note: 'Bearer <token>' },
+          { name: 'Tribute-Version', type: 'date', note: 'Overrides the version pinned to the key' },
+        ],
+      },
+    ],
+    code: {
+      ts: `// Server-side only. The key never ships to a browser.
+const client = new TributeClient({
+  token: process.env.TRIBUTE_TOKEN,
+  timeoutInSeconds: 30,
+});`,
+      react: `export function useTribute() {
+  const { data: token } = useSuspenseQuery({
+    queryKey: ['tribute-token'],
+    queryFn: fetchScopedToken,
+    staleTime: 5 * 60_000,
+  });
+
+  return useMemo(() => new TributeClient({ token }), [token]);
+}`,
+      py: `client = Tribute(
+    token=os.environ["TRIBUTE_TOKEN"],
+    timeout=30.0,
+)`,
+    },
+  },
+  {
+    id: 'tributes',
+    nav: 'Tributes',
+    verb: 'GET',
+    path: '/v1/tributes/{tribute_id}',
+    title: 'Retrieve a tribute',
+    body: 'Returns a tribute with its status and deadline, and optionally its contributors and uploads.',
+    sections: [
+      { title: 'Path', fields: [{ name: 'tribute_id', type: 'string', req: true, note: 'For example trb_8f2k' }] },
+      { title: 'Query', fields: [{ name: 'expand', type: 'string[]', note: 'contributors, uploads' }] },
+    ],
+    code: {
+      ts: `const tribute = await client.tributes.get('trb_8f2k', {
+  expand: ['contributors'],
+});`,
+      react: `const client = useTribute();
+
+const { data: tribute } = useQuery({
+  queryKey: ['tribute', tributeId],
+  queryFn: () => client.tributes.get(tributeId),
+});`,
+      py: `tribute = client.tributes.get(
+    "trb_8f2k",
+    expand=["contributors"],
+)`,
+    },
+  },
+  {
+    id: 'uploads',
+    nav: 'Uploads',
+    verb: 'POST',
+    path: '/v1/uploads',
+    title: 'Create an upload',
+    body: 'Starts a chunked upload for a contributor’s video. Large takes are split into parts and resumed if the connection drops.',
+    sections: [
+      {
+        title: 'Body',
+        fields: [
+          { name: 'tribute_id', type: 'string', req: true, note: 'The tribute the video belongs to' },
+          { name: 'part', type: 'integer', req: true, note: 'Chunk index, from 1' },
+          { name: 'content_type', type: 'string', note: 'video/mp4 or video/webm' },
+        ],
+      },
+    ],
+    code: {
+      ts: `const upload = await client.uploads.create({
+  tributeId: 'trb_8f2k',
+  part: 1,
+  contentType: 'video/mp4',
+});`,
+      react: `const client = useTribute();
+
+const { mutate: uploadPart } = useMutation({
+  mutationFn: (part: number) =>
+    client.uploads.create({ tributeId, part }),
+});`,
+      py: `upload = client.uploads.create(
+    tribute_id="trb_8f2k",
+    part=1,
+    content_type="video/mp4",
+)`,
+    },
+  },
+  {
+    id: 'webhooks',
+    nav: 'Webhooks',
+    verb: 'POST',
+    path: '/v1/webhooks',
+    title: 'Register a webhook',
+    body: 'Sends a signed POST to your endpoint when an event fires, retrying with backoff for 24 hours.',
+    sections: [
+      {
+        title: 'Body',
+        fields: [
+          { name: 'url', type: 'string', req: true, note: 'An HTTPS endpoint you control' },
+          { name: 'events', type: 'string[]', req: true, note: 'For example upload.completed' },
+        ],
+      },
+    ],
+    code: {
+      ts: `const webhook = await client.webhooks.create({
+  url: 'https://example.com/hooks/tribute',
+  events: ['upload.completed'],
+});`,
+      react: `const client = useTribute();
+
+const { mutate: register } = useMutation({
+  mutationFn: (url: string) =>
+    client.webhooks.create({ url, events: ['upload.completed'] }),
+});`,
+      py: `webhook = client.webhooks.create(
+    url="https://example.com/hooks/tribute",
+    events=["upload.completed"],
+)`,
+    },
+  },
 ];
 
-const langs = [
-  {
-    id: 'ts',
-    label: 'TypeScript',
-    code: [
-      ['k', 'await '],
-      ['', 'client.uploads.'],
-      ['f', 'create'],
-      ['', '({\n  tribute_id: '],
-      ['s', "'trb_8f2k'"],
-      ['', ',\n  part: '],
-      ['n', '1'],
-      ['', ',\n});'],
-    ],
-  },
-  {
-    id: 'py',
-    label: 'Python',
-    code: [
-      ['', 'client.uploads.'],
-      ['f', 'create'],
-      ['', '(\n    tribute_id='],
-      ['s', '"trb_8f2k"'],
-      ['', ',\n    part='],
-      ['n', '1'],
-      ['', ',\n)'],
-    ],
-  },
-  {
-    id: 'go',
-    label: 'Go',
-    code: [
-      ['', 'client.Uploads.'],
-      ['f', 'Create'],
-      ['', '(ctx, &api.UploadRequest{\n  TributeID: '],
-      ['s', '"trb_8f2k"'],
-      ['', ',\n  Part:      '],
-      ['n', '1'],
-      ['', ',\n})'],
-    ],
-  },
+const DEFAULT_PAGE = 'uploads';
+
+const langs: { id: Lang; label: string }[] = [
+  { id: 'ts', label: 'TypeScript' },
+  { id: 'react', label: 'React' },
+  { id: 'py', label: 'Python' },
 ];
 
-const nav = ['Overview', 'Authentication', 'Tributes', 'Uploads', 'Webhooks'];
+/*
+  A tiny highlighter — comments, strings, numbers, keywords, and the name in
+  front of a call. Enough for these samples, and no runtime cost: it runs at
+  build time and emits spans.
+*/
+type Seg = { t: string; c?: 'k' | 's' | 'n' | 'f' | 'c' };
+const KEYWORDS = {
+  ts: new Set(['import', 'from', 'export', 'function', 'return', 'const', 'let', 'await', 'async', 'new', 'number', 'string']),
+  py: new Set(['import', 'from', 'def', 'return', 'await', 'async', 'None', 'True', 'False']),
+};
+function highlight(code: string, lang: Lang): Seg[] {
+  const py = lang === 'py';
+  const kw = py ? KEYWORDS.py : KEYWORDS.ts;
+  const re = py
+    ? /(#[^\n]*)|("[^"\n]*")|(\b\d[\d_.]*\b)|([A-Za-z_]\w*)(?=\()|([A-Za-z_]\w*)/g
+    : /(\/\/[^\n]*)|('[^'\n]*'|"[^"\n]*")|(\b\d[\d_.]*\b)|([A-Za-z_]\w*)(?=\()|([A-Za-z_]\w*)/g;
+  const out: Seg[] = [];
+  let last = 0;
+  for (const m of code.matchAll(re)) {
+    if (m.index! > last) out.push({ t: code.slice(last, m.index) });
+    const [tok, comment, str, num, call, ident] = m;
+    if (comment) out.push({ t: tok, c: 'c' });
+    else if (str) out.push({ t: tok, c: 's' });
+    else if (num) out.push({ t: tok, c: 'n' });
+    else if (call) out.push({ t: tok, c: kw.has(tok) ? 'k' : 'f' });
+    else if (ident) out.push(kw.has(tok) ? { t: tok, c: 'k' } : { t: tok });
+    last = m.index! + tok.length;
+  }
+  if (last < code.length) out.push({ t: code.slice(last) });
+  return out;
+}
+
+const rendered = pages.map((p) => ({
+  ...p,
+  segs: Object.fromEntries(langs.map((l) => [l.id, highlight(p.code[l.id], l.id)])) as Record<Lang, Seg[]>,
+}));
 
 const gives = [
   { t: 'One spec, every surface', b: 'The reference, the SDKs and the changelog all regenerate from the spec, so the docs can’t fall behind the API.' },
@@ -76,6 +274,23 @@ const gives = [
   { t: 'An MCP server for the docs', b: 'Notion’s agent, Claude Code or Cursor can ask the docs directly — which is how the PRD knew the upload limit.' },
   { t: 'The dev wiki, too', b: 'Guides, runbooks and how-tos live beside the reference, versioned with the code they describe.' },
 ];
+
+/*
+  The :checked wiring, generated so it can never drift from the data. Scoped
+  under `.fern` and keyed by unique ids, so emitting it unscoped is safe.
+*/
+const css = [
+  ...pages.map(
+    (p) =>
+      `.fern #fern-p-${p.id}:checked ~ .fern-body .fern-page--${p.id}{visibility:visible}` +
+      `.fern #fern-p-${p.id}:checked ~ .fern-body .fern-nav__item--${p.id}{background:var(--color-surface);color:var(--color-ink)}`,
+  ),
+  ...langs.map(
+    (l) =>
+      `.fern #fern-l-${l.id}:checked ~ .fern-body .fern-code--${l.id}{display:block}` +
+      `.fern #fern-l-${l.id}:checked ~ .fern-body .fern-tab--${l.id}{color:var(--color-ink)}`,
+  ),
+].join('\n');
 ---
 
 <section
@@ -93,57 +308,79 @@ const gives = [
     </p>
   </ToolHeader>
 
-  {/* The reference page ------------------------------------------------ */}
+  {/* The reference ------------------------------------------------------ */}
   <div class="fern mt-16 overflow-hidden rounded-ui border border-line bg-surface-lift" aria-hidden="true" data-anim="reveal">
-    <div class="flex items-center justify-between border-b border-line px-5 py-2.5 font-mono text-[0.6875rem] text-ink-faint">
-      <span class="flex items-center gap-2"><BrandMark name="fern" class="h-3.5 w-3.5 text-ink-dim" /> docs / api-reference</span>
-      <span class="hidden sm:inline">Ask AI ⌘K</span>
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-[11rem_minmax(0,1fr)] lg:grid-cols-[11rem_minmax(0,1.2fr)_minmax(0,1fr)]">
-      <ul class="hidden border-r border-line py-4 text-[0.8125rem] md:block">
-        {
-          nav.map((n) => (
-            <li class:list={['px-5 py-1.5', n === 'Uploads' ? 'bg-surface text-ink' : 'text-ink-dim']}>{n}</li>
-          ))
-        }
-      </ul>
+    {pages.map((p) => <input type="radio" name="fern-page" id={`fern-p-${p.id}`} class="sr-only" tabindex="-1" checked={p.id === DEFAULT_PAGE} />)}
+    {langs.map((l, i) => <input type="radio" name="fern-lang" id={`fern-l-${l.id}`} class="sr-only" tabindex="-1" checked={i === 0} />)}
 
-      <div class="px-6 py-7">
-        <p class="flex items-center gap-3">
-          <span class="fern-verb">POST</span>
-          <span class="font-mono text-[0.875rem] text-ink">/v1/uploads</span>
-        </p>
-        <p class="mt-3 text-[1.25rem] font-medium text-ink">Create an upload</p>
-        <p class="mt-2 text-[0.875rem] leading-relaxed text-ink-dim">
-          Starts a chunked upload for a contributor’s video. Large takes are split into parts and
-          resumed if the connection drops.
-        </p>
-        <p class="mt-6 font-mono text-[0.625rem] uppercase tracking-[0.14em] text-ink-faint">Body</p>
-        <ul class="mt-2 border-t border-line">
+    <div class="fern-body">
+      <div class="flex items-center justify-between border-b border-line px-5 py-2.5 font-mono text-[0.6875rem] text-ink-faint">
+        <span class="flex items-center gap-2"><BrandMark name="fern" class="h-3.5 w-3.5 text-ink-dim" /> docs / api-reference</span>
+        <span class="hidden sm:inline">Ask AI ⌘K</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-[11rem_minmax(0,1fr)]">
+        {/* Sidebar: a row that scrolls on phones, a column from md. */}
+        <ul class="fern-nav flex overflow-x-auto border-b border-line py-2 text-[0.8125rem] md:block md:overflow-visible md:border-b-0 md:border-r md:py-4">
           {
-            params.map((p) => (
-              <li class="border-b border-line py-2.5">
-                <span class="font-mono text-[0.8125rem] text-ink">{p.name}</span>
-                <span class="ml-2 font-mono text-[0.6875rem] text-ink-faint">{p.type}</span>
-                {p.req && <span class="ml-2 font-mono text-[0.625rem] uppercase tracking-[0.14em] text-accent-warm">required</span>}
-                <span class="mt-0.5 block text-[0.8125rem] text-ink-dim">{p.note}</span>
+            pages.map((p) => (
+              <li class="shrink-0">
+                <label for={`fern-p-${p.id}`} class={`fern-nav__item fern-nav__item--${p.id}`}>
+                  {p.nav}
+                </label>
               </li>
             ))
           }
         </ul>
-      </div>
 
-      {/* The request, in the generated SDKs. CSS-only tabs. */}
-      <div class="fern-req border-t border-line bg-surface lg:border-l lg:border-t-0">
-        {langs.map((l, i) => <input type="radio" name="fern-lang" id={`fern-${l.id}`} class="sr-only" tabindex="-1" checked={i === 0} />)}
-        <div class="flex gap-4 border-b border-line px-5 py-2.5 font-mono text-[0.6875rem]">
-          {langs.map((l) => <label for={`fern-${l.id}`} class={`fern-tab fern-tab--${l.id}`}>{l.label}</label>)}
+        <div class="fern-pages">
+          {
+            rendered.map((p) => (
+              <div class={`fern-page fern-page--${p.id} grid grid-cols-1 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]`}>
+                <div class="px-6 py-7">
+                  <p class="flex items-center gap-3">
+                    {p.verb ? (
+                      <span class={`fern-verb fern-verb--${p.verb.toLowerCase()}`}>{p.verb}</span>
+                    ) : (
+                      <span class="fern-verb fern-verb--guide">Guide</span>
+                    )}
+                    <span class="truncate font-mono text-[0.875rem] text-ink">{p.path}</span>
+                  </p>
+                  <p class="mt-3 text-[1.25rem] font-medium text-ink">{p.title}</p>
+                  <p class="mt-2 text-[0.875rem] leading-relaxed text-ink-dim">{p.body}</p>
+                  {p.sections.map((sec) => (
+                    <>
+                      <p class="mt-6 font-mono text-[0.625rem] uppercase tracking-[0.14em] text-ink-faint">{sec.title}</p>
+                      <ul class="mt-2 border-t border-line">
+                        {sec.fields.map((f) => (
+                          <li class="border-b border-line py-2.5">
+                            <span class="font-mono text-[0.8125rem] text-ink">{f.name}</span>
+                            {f.type && <span class="ml-2 font-mono text-[0.6875rem] text-ink-faint">{f.type}</span>}
+                            {f.req && (
+                              <span class="ml-2 font-mono text-[0.625rem] uppercase tracking-[0.14em] text-accent-warm">required</span>
+                            )}
+                            <span class="mt-0.5 block text-[0.8125rem] text-ink-dim">{f.note}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                  ))}
+                </div>
+
+                <div class="border-t border-line bg-surface lg:border-l lg:border-t-0">
+                  <div class="flex gap-4 border-b border-line px-5 py-2.5 font-mono text-[0.6875rem]">
+                    {langs.map((l) => (
+                      <label for={`fern-l-${l.id}`} class={`fern-tab fern-tab--${l.id}`}>{l.label}</label>
+                    ))}
+                  </div>
+                  {langs.map((l) => (
+                    <pre class={`fern-code fern-code--${l.id} px-5 py-5 font-mono text-[0.75rem] leading-[1.8]`}><code>{p.segs[l.id].map((s) => (s.c ? <span class={`tk-${s.c}`}>{s.t}</span> : s.t))}</code></pre>
+                  ))}
+                </div>
+              </div>
+            ))
+          }
         </div>
-        {
-          langs.map((l) => (
-            <pre class={`fern-code fern-code--${l.id} px-5 py-5 font-mono text-[0.75rem] leading-[1.8]`}><code>{l.code.map(([c, t]) => (c ? <span class={`tk-${c}`}>{t}</span> : t))}</code></pre>
-          ))
-        }
       </div>
     </div>
   </div>
@@ -190,17 +427,56 @@ const gives = [
   </div>
 </section>
 
+<style is:inline set:html={css}></style>
+
 <style>
+  .fern-nav__item {
+    display: block;
+    padding: 0.375rem 1.25rem;
+    color: var(--color-ink-dim);
+    white-space: nowrap;
+    cursor: pointer;
+    transition:
+      color var(--dur-fast) ease,
+      background-color var(--dur-fast) ease;
+  }
+  .fern-nav__item:hover {
+    color: var(--color-ink);
+  }
+
+  /* Every page in one cell: the mock is as tall as its tallest page and never
+     jumps. Inactive pages are hidden with visibility, not display. */
+  .fern-pages {
+    display: grid;
+  }
+  .fern-page {
+    grid-area: 1 / 1;
+    visibility: hidden;
+  }
+
   .fern-verb {
+    flex-shrink: 0;
     padding: 0.1rem 0.45rem;
     border-radius: var(--radius-ui);
-    background: color-mix(in oklab, var(--color-accent) 16%, transparent);
-    color: var(--color-accent);
     font-family: var(--font-mono);
     font-size: 0.6875rem;
     font-weight: 600;
     letter-spacing: 0.06em;
   }
+  .fern-verb--post {
+    background: color-mix(in oklab, var(--color-accent) 16%, transparent);
+    color: var(--color-accent);
+  }
+  .fern-verb--get {
+    background: color-mix(in oklab, var(--color-accent-warm) 16%, transparent);
+    color: var(--color-accent-warm);
+  }
+  .fern-verb--guide {
+    border: 1px dashed var(--color-line);
+    color: var(--color-ink-dim);
+    text-transform: uppercase;
+  }
+
   .fern-tab {
     cursor: pointer;
     color: var(--color-ink-faint);
@@ -216,16 +492,7 @@ const gives = [
     overflow-x: auto;
     color: var(--color-ink-dim);
   }
-  #fern-ts:checked ~ div .fern-tab--ts,
-  #fern-py:checked ~ div .fern-tab--py,
-  #fern-go:checked ~ div .fern-tab--go {
-    color: var(--color-ink);
-  }
-  #fern-ts:checked ~ .fern-code--ts,
-  #fern-py:checked ~ .fern-code--py,
-  #fern-go:checked ~ .fern-code--go {
-    display: block;
-  }
+
   .tk-k {
     color: var(--color-accent-warm);
   }
@@ -237,5 +504,8 @@ const gives = [
   }
   .tk-n {
     color: var(--color-accent-warm);
+  }
+  .tk-c {
+    color: var(--color-ink-faint);
   }
 </style>

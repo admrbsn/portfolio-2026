@@ -45,6 +45,10 @@ const frames = ['Record — v14', 'Record — v15', 'Record — v15 (Copy)'];
         poke at. It used to be where the work lived. Now the work starts as a brief and is running
         code by the end of the day.
       </p>
+      <p class="mt-4 max-w-md text-ink-dim">
+        And when an exploration wins, a comment is enough. The Notion agent reads Figma over MCP,
+        picks up the mention, and logs the decision on the PRD, linked back to the frame.
+      </p>
     </div>
 
     {/* The file. Decorative: it is a picture of a habit, not content. */}
@@ -53,8 +57,8 @@ const frames = ['Record — v14', 'Record — v15', 'Record — v15 (Copy)'];
         <span>Tribute v3 — FINAL (2)</span>
         <span>100%</span>
       </div>
-      <div class="grid grid-cols-[minmax(0,9.5rem)_minmax(0,1fr)] sm:grid-cols-[minmax(0,13rem)_minmax(0,1fr)]">
-        <div class="border-r border-line py-3 text-[0.75rem]">
+      <div class="grid grid-cols-1 sm:grid-cols-[minmax(0,13rem)_minmax(0,1fr)]">
+        <div class="hidden border-r border-line py-3 text-[0.75rem] sm:block">
           <p class="px-4 pb-2 font-mono text-[0.625rem] uppercase tracking-[0.14em] text-ink-faint">Pages</p>
           <ul>
             {
@@ -78,13 +82,15 @@ const frames = ['Record — v14', 'Record — v15', 'Record — v15 (Copy)'];
           </ul>
         </div>
 
-        <div class="fig-canvas relative min-h-[19rem] overflow-hidden p-4 sm:p-5">
+        <div class="fig-canvas relative min-h-[19rem] overflow-hidden p-4 sm:min-h-[25rem] sm:p-5">
           <div class="flex gap-4">
             {
               frames.map((f, i) => (
                 <div class:list={['min-w-0 flex-1', i > 0 && 'hidden sm:block']}>
                   <p class="truncate pb-1.5 font-mono text-[0.625rem] text-ink-faint">{f}</p>
-                  <div class:list={['fig-frame rounded-ui border', i === 2 ? 'border-accent' : 'border-line']}>
+                  <div class:list={['fig-frame relative rounded-ui border', i === 2 ? 'border-accent' : 'border-line']}>
+                    {/* The comment pin, on the frame it's about. */}
+                    {i === 2 && <span class="fig-pin absolute -right-2.5 -top-2.5">AR</span>}
                     <div class="fig-bar h-2 w-1/2" />
                     <div class="fig-block mt-3 aspect-[4/5] w-full" />
                     <div class="fig-bar mt-3 h-1.5 w-3/4" />
@@ -95,9 +101,36 @@ const frames = ['Record — v14', 'Record — v15', 'Record — v15 (Copy)'];
               ))
             }
           </div>
-          <span class="fig-note absolute bottom-4 right-4 rotate-2 rounded-ui px-3 py-2 font-mono text-[0.6875rem] whitespace-nowrap text-surface sm:bottom-5 sm:right-5">
-            use this one??
-          </span>
+          {/*
+            A Figma comment thread: the question, the reply that mentions the
+            Notion agent, and the agent's answer. Illustrative — Figma comments
+            don't fire anything on their own; the agent reads the file over MCP
+            and acts on mentions of it. In flow below `sm` (the canvas is too
+            narrow to float a card over), pinned bottom-right above it.
+          */}
+          <div class="fig-thread mt-4 sm:absolute sm:bottom-5 sm:right-5 sm:mt-0 sm:w-[17.5rem]">
+            <div class="fig-msg">
+              <span class="fig-avatar">AR</span>
+              <div class="min-w-0">
+                <p class="fig-meta"><span class="text-ink">Adam Robertson</span><span>· 2m</span></p>
+                <p class="fig-text">use this one??</p>
+              </div>
+            </div>
+            <div class="fig-msg">
+              <span class="fig-avatar">AR</span>
+              <div class="min-w-0">
+                <p class="fig-meta"><span class="text-ink">Adam Robertson</span><span>· now</span></p>
+                <p class="fig-text"><span class="fig-mention">@Notion agent</span> log this as the winner on the PRD</p>
+              </div>
+            </div>
+            <div class="fig-msg fig-msg--agent">
+              <span class="fig-avatar fig-avatar--agent"><BrandMark name="notion" class="h-3 w-3" /></span>
+              <div class="min-w-0">
+                <p class="fig-meta"><span class="text-ink">Notion agent</span><span>· now</span><span class="agent-dot !h-[5px] !w-[5px]" /></p>
+                <p class="fig-text">Logged <span class="text-ink">Record — v15 (Copy)</span> as the decision on <span class="text-ink">Recording flow v2</span>, linked to this frame.</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -125,9 +158,81 @@ const frames = ['Record — v14', 'Record — v15', 'Record — v15 (Copy)'];
   .fig-btn {
     background: color-mix(in oklab, var(--color-ink) 18%, transparent);
   }
-  .fig-note {
+  /* Figma's comment pin: a teardrop with the commenter's initials. */
+  .fig-pin {
+    display: grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 9999px;
     background: var(--color-accent-warm);
-    box-shadow: 0 6px 20px rgb(0 0 0 / 0.35);
+    color: var(--color-surface);
+    font-family: var(--font-sans);
+    font-size: 0.5625rem;
+    font-weight: 600;
+    box-shadow: 0 0 0 2px var(--color-surface);
+  }
+  /* The teardrop's point: a square tucked under the bottom-left quarter. */
+  .fig-pin::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    z-index: -1;
+    width: 50%;
+    height: 50%;
+    background: var(--color-accent-warm);
+  }
+  .fig-pin {
+    isolation: isolate;
+  }
+  .fig-thread {
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-ui);
+    background: var(--color-surface-lift);
+    box-shadow: 0 12px 32px rgb(0 0 0 / 0.45);
+  }
+  .fig-msg {
+    display: flex;
+    gap: 0.6rem;
+    padding: 0.7rem 0.8rem;
+  }
+  .fig-msg + .fig-msg {
+    border-top: 1px solid var(--color-line);
+  }
+  .fig-avatar {
+    display: grid;
+    flex-shrink: 0;
+    place-items: center;
+    width: 1.375rem;
+    height: 1.375rem;
+    border-radius: 9999px;
+    background: var(--color-accent-warm);
+    color: var(--color-surface);
+    font-size: 0.5rem;
+    font-weight: 600;
+  }
+  .fig-avatar--agent {
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    color: var(--color-ink);
+  }
+  .fig-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    color: var(--color-ink-faint);
+    font-size: 0.6875rem;
+    line-height: 1.4;
+  }
+  .fig-text {
+    margin-top: 0.15rem;
+    color: var(--color-ink-dim);
+    font-size: 0.75rem;
+    line-height: 1.45;
+  }
+  .fig-mention {
+    color: var(--color-accent);
   }
 
   .fig-icon {

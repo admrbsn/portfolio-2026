@@ -31,6 +31,24 @@ import type { Brand } from '../data/brands';
   purpose — as how I'd run that redesign *today*: it shipped in 2024, before
   most of these tools existed.
 */
+// The close: the two case studies this page draws on, with their real outcomes.
+const receipts = [
+  {
+    href: '/work/recording-flow',
+    client: 'Tribute Recording Flow',
+    figure: '33% → 66.58%',
+    label: 'submission rate on the core flow',
+    title: 'Doubling submissions on a core flow',
+  },
+  {
+    href: '/work/tribute-v3',
+    client: 'Tribute V3',
+    figure: '3 months',
+    label: 'to rebuild a decade-old platform, team of four',
+    title: 'Re-architecting a decade-old platform',
+  },
+];
+
 const chapters: { href: string; label: string; brand?: Brand }[] = [
   { href: '#point-guard', label: 'The hub', brand: 'notion' },
   { href: '#prds', label: 'PRDs', brand: 'notion' },
@@ -54,6 +72,7 @@ const chapters: { href: string; label: string; brand?: Brand }[] = [
         `data-blueprint`: its caption would collide with the nav's. */}
     <section class="relative flex min-h-[62svh] flex-col overflow-hidden px-shell pb-28 pt-36">
       <NoiseGradient intensity="soft" />
+      <div class="hero-crt" aria-hidden="true"></div>
       {/* Agents, doing the legwork — along the rule under the hero. */}
       <ClawdParade />
       <div class="relative z-10 my-auto w-full">
@@ -123,32 +142,69 @@ const chapters: { href: string; label: string; brand?: Brand }[] = [
     <TeamSystem />
     <FigmaNow />
 
-    {/* Close — back to what it produced. */}
-    <section class="relative border-t border-line px-shell py-section">
+    {/*
+      Close — back to what it produced. The grid owns the section's top edge
+      (no top padding, no second top rule), so the dividers run up into the
+      section rule and cross it — those crossings are the RuleCross squares'
+      siblings, drawn by each cell. One ruled row, the page's own grammar:
+      the heading cell, then one cell per case study the page draws on, each
+      a link carrying its real outcome. Replaces a heading-left / lone-link-
+      right layout that left the middle of the band empty.
+    */}
+    <section class="relative border-t border-line px-shell pb-section" data-blueprint="The Receipts" data-dead="bottom">
       <RuleCross />
-      <div class="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
-        <div>
-          <h2 class="max-w-2xl font-display text-title text-ink" data-anim="reveal-heading">
-            See what it shipped
-          </h2>
-          <p class="mt-5 max-w-xl text-ink-dim" data-anim="reveal">
-            The recording flow went from 33% to 66.58% completion. The platform around it was rebuilt
-            in three months by a team of four.
-          </p>
+      <div class="relative -mx-shell-pad grid grid-cols-1 border-b border-line lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)_minmax(0,1fr)]">
+        <span class="bp-sq bp-sq--b bp-sq--l" aria-hidden="true"></span>
+        <span class="bp-sq bp-sq--b bp-sq--r" aria-hidden="true"></span>
+
+        <div class="flex flex-col gap-8 px-shell-pad pb-10 pt-16">
+          <h2 class="font-display text-title text-ink" data-anim="reveal-heading">See what it shipped</h2>
+          <a
+            href="/#work"
+            class="group inline-flex items-center gap-2 self-start text-micro uppercase tracking-[0.14em] text-ink-dim transition-colors hover:text-accent"
+          >
+            All work <ArrowUpRight />
+          </a>
         </div>
-        <a
-          href="/#work"
-          class="group inline-flex shrink-0 items-center gap-2 text-micro uppercase tracking-[0.14em] text-ink-dim transition-colors hover:text-accent"
-          data-anim="reveal"
-        >
-          Selected work <ArrowUpRight />
-        </a>
+
+        {
+          receipts.map((r) => (
+            <a
+              href={r.href}
+              class="receipt group relative flex flex-col border-t border-line px-shell-pad py-10 lg:border-l lg:border-t-0 lg:pt-16"
+            >
+              <span class="bp-sq bp-sq--t bp-sq--l lg:hidden" aria-hidden="true" />
+              <span class="bp-sq bp-sq--t bp-sq--r lg:hidden" aria-hidden="true" />
+              <span class="bp-sq bp-sq--b bp-sq--l hidden lg:block" aria-hidden="true" />
+              <span class="bp-sq bp-sq--t bp-sq--l hidden lg:block" aria-hidden="true" />
+              <span class="text-micro uppercase tracking-[0.14em] text-ink-faint">{r.client}</span>
+              <span class="receipt__fig mt-6 text-ink">{r.figure}</span>
+              <span class="mt-2 text-[0.9375rem] text-ink-dim">{r.label}</span>
+              <span class="mt-8 inline-flex items-center gap-2 text-[0.9375rem] font-medium text-ink transition-colors group-hover:text-accent">
+                {r.title} <ArrowUpRight />
+              </span>
+            </a>
+          ))
+        }
       </div>
     </section>
   </div>
 </BaseLayout>
 
 <style>
+  .receipt__fig {
+    font-size: clamp(1.75rem, 3vw, 2.75rem);
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+  .receipt {
+    transition: background-color var(--dur-fast) ease;
+  }
+  .receipt:hover {
+    background: color-mix(in oklab, var(--color-surface-lift) 60%, transparent);
+  }
   .chapters {
     scrollbar-width: none;
   }

@@ -48,6 +48,7 @@
 .signal-page [data-blueprint='The Feedback Loop']::before { animation-duration: 11.3s; animation-delay: -2s; }
 .signal-page [data-blueprint='The Team']::before { animation-duration: 15.9s; animation-delay: -6s; }
 .signal-page [data-blueprint='Still Open']::before { animation-duration: 10.1s; animation-delay: -4s; }
+.signal-page [data-blueprint='The Receipts']::before { animation-duration: 14.3s; animation-delay: -8s; }
 @keyframes lamp {
   0%, 88% { opacity: 0.2; }
   88.4% { opacity: 0.06; }
@@ -506,5 +507,108 @@ html[data-motion='failed'] .outage::after,
 html[data-motion='failed'] .outage__tear::before,
 html[data-motion='failed'] .outage__tear::after,
 html[data-motion='failed'] .debris-field {
+  display: none;
+}
+
+/*
+  The hero's CRT. The word outages are a TV losing signal; this
+  is the TV. Used by every page hero: drop `<div class="hero-crt"
+  aria-hidden="true">` in after the hero's wash. Values follow `.crt` in BreakoutCTA so the two read as the same
+  tube, top of the page and bottom.
+
+  - The raster is dark lines on a 3px pitch (2px moirés on fractional zoom,
+    4px reads as stripes). Dark lines only register over something lit, so
+    they show in the purple/blue wash and vanish on the black — which is the
+    brief. A much fainter *light* raster, offset 1px into the gaps, gives the
+    black some texture too, the same fix as RASTER in the CTA.
+  - The mask follows the wash: strongest top-right, gone by the bottom-left
+    corner where the headline and stats sit.
+  - Two roll bands on clocks that share no factor (10.3s / 15.7s), so they
+    drift in and out of phase rather than looping. Each band's translateY end
+    is 100 / its height: 22% -> 455%, 9% -> 1111%. Change one, change both.
+  - A faint stepped flicker on the whole layer (~0.9–1 opacity), the supply
+    ripple an old set has even when the picture is fine.
+
+  All transform/opacity on their own layers, so it composites and never
+  repaints. Reduced motion keeps the raster (composition) and drops the bands
+  and flicker (motion), same split as the CTA.
+*/
+.hero-crt {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background-image:
+    repeating-linear-gradient(to bottom, transparent 0 2px, rgb(0 0 0 / 0.22) 2px 3px),
+    repeating-linear-gradient(to bottom, transparent 0 1px, rgb(255 255 255 / 0.018) 1px 2px, transparent 2px 3px);
+  -webkit-mask-image: radial-gradient(130% 120% at 100% 0%, #000 30%, rgb(0 0 0 / 0.5) 62%, transparent 92%);
+  mask-image: radial-gradient(130% 120% at 100% 0%, #000 30%, rgb(0 0 0 / 0.5) 62%, transparent 92%);
+  animation: hero-crt-flicker 4.9s steps(1, end) infinite;
+}
+.hero-crt::before,
+.hero-crt::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  will-change: transform;
+}
+.hero-crt::after {
+  height: 22%;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgb(255 255 255 / 0.022) 45%,
+    rgb(255 255 255 / 0.032) 60%,
+    transparent 100%
+  );
+  animation: hero-crt-roll 10.3s linear infinite;
+}
+.hero-crt::before {
+  height: 9%;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgb(255 255 255 / 0.02) 55%,
+    transparent 100%
+  );
+  animation: hero-crt-roll-fast 15.7s linear infinite;
+  animation-delay: -6s;
+}
+@keyframes hero-crt-roll {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(455%); }
+}
+@keyframes hero-crt-roll-fast {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(1111%); }
+}
+@keyframes hero-crt-flicker {
+  0%, 100% { opacity: 1; }
+  23% { opacity: 0.92; }
+  23.6% { opacity: 1; }
+  61% { opacity: 0.88; }
+  61.4% { opacity: 0.97; }
+  61.8% { opacity: 1; }
+  84% { opacity: 0.94; }
+  84.5% { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-crt {
+    animation: none;
+  }
+  .hero-crt::before,
+  .hero-crt::after {
+    display: none;
+  }
+}
+html[data-motion='reduced'] .hero-crt,
+html[data-motion='failed'] .hero-crt {
+  animation: none;
+}
+html[data-motion='reduced'] .hero-crt::before,
+html[data-motion='reduced'] .hero-crt::after,
+html[data-motion='failed'] .hero-crt::before,
+html[data-motion='failed'] .hero-crt::after {
   display: none;
 }
