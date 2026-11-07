@@ -1,0 +1,95 @@
+---
+import RuleCross from './RuleCross.astro';
+import ArrowUpRight from './ArrowUpRight.astro';
+
+/*
+  The pointer to /how-i-work, used on the homepage (after Selected work) and
+  on /about (after "How I work"). The full story — Notion as the hub, the
+  workbench, Relume, Figma — is a process story with its own page; this is one
+  ruled band that links to it.
+
+  The whole band is the link: one target, one sentence of claim. The terminal
+  chip is a real Impeccable invocation (`/impeccable <command> <target>`) with a
+  blinking block cursor — a teaser for the window it opens, not decoration with
+  a made-up command in it.
+*/
+const claim = 'I prototype in code, with agents';
+---
+
+<section class="relative border-t border-line px-shell py-16 md:py-20" data-blueprint="The Workbench">
+  <RuleCross />
+  <a
+    href="/how-i-work"
+    class="group grid items-center gap-10 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-16"
+    data-cursor="grow"
+    data-cursor-label="How I work with AI"
+  >
+    <div data-anim="reveal">
+      <p class="text-micro uppercase tracking-[0.14em] text-ink-faint">How I work now</p>
+      <p
+        class="signal-hover mt-5 font-display text-stat text-ink transition-colors duration-500 group-hover:text-accent"
+        data-text={claim}
+      >
+        {claim}
+      </p>
+      <p class="mt-4 max-w-xl text-ink-dim">
+        Notion as the hub for every tool, briefs written for Claude Code, taste passes with
+        Impeccable, structure from Relume, and where Figma still fits.
+      </p>
+    </div>
+
+    <div class="flex flex-col items-start gap-5 lg:items-end" data-anim="reveal">
+      <div
+        class="cta-term rounded-ui border border-line bg-surface-lift px-4 py-3 font-mono text-[0.8125rem] text-ink-dim"
+        aria-hidden="true"
+      >
+        <span class="text-accent-warm">/impeccable</span>
+        <span class="text-accent">critique</span> the record step<span class="cta-caret"></span>
+      </div>
+      <span
+        class="inline-flex items-center gap-2 text-micro uppercase tracking-[0.14em] text-ink-dim transition-colors group-hover:text-accent"
+      >
+        How I work with AI <ArrowUpRight />
+      </span>
+    </div>
+  </a>
+</section>
+
+<style>
+  /* A block cursor, stepped like a real terminal's. Off under reduced motion —
+     it just sits there solid, which still reads as a prompt. */
+  .cta-caret {
+    display: inline-block;
+    width: 0.55em;
+    height: 1.1em;
+    margin-left: 0.2em;
+    vertical-align: -0.2em;
+    background: var(--color-ink-dim);
+    animation: cta-blink 1.1s steps(1, end) infinite;
+  }
+  @keyframes cta-blink {
+    0%,
+    55% {
+      opacity: 1;
+    }
+    56%,
+    100% {
+      opacity: 0;
+    }
+  }
+  .cta-term {
+    transition: border-color var(--dur-fast) ease;
+  }
+  .group:hover .cta-term {
+    border-color: color-mix(in oklab, var(--color-accent) 50%, var(--color-line));
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cta-caret {
+      animation: none;
+    }
+  }
+  :global(html[data-motion='reduced']) .cta-caret,
+  :global(html[data-motion='failed']) .cta-caret {
+    animation: none;
+  }
+</style>

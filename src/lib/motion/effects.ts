@@ -503,3 +503,113 @@ export function momentReveal(el: HTMLElement): Teardown {
     gsap.set([...rise, ...pop, ...rings], { clearProps: 'all' });
   };
 }
+
+/* -------------------------------------------------------------------------
+   Work-index hover preview. One frame for the whole list, following the
+   pointer, crossfading to whichever row is under it. Rows name their cover
+   with `data-preview-row`; images carry the matching `data-preview-img`.
+
+   Fine pointers only, and the frame is `hidden lg:block` in markup — on touch
+   there is no hover to follow, and on a narrow screen a floating image covers
+   the row it is meant to illustrate. The frame starts at opacity 0 in CSS
+   rather than via the pre-hide list: without this effect it should simply
+   never appear, which is the right failure.
+   ------------------------------------------------------------------------- */
+export function workPreview(root: HTMLElement): Teardown {
+  if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    return () => {};
+  }
+
+  const frame = root.querySelector<HTMLElement>('[data-preview]');
+  if (!frame) return () => {};
+
+  const imgs = new Map(
+    Array.from(frame.querySelectorAll<HTMLElement>('[data-preview-img]')).map((img) => [
+      img.dataset.previewImg!,
+      img,
+    ]),
+  );
+
+  // Centred on the pointer, nudged down-right so the cursor ring and its label
+  // sit on the frame's corner rather than over the middle of the image.
+  gsap.set(frame, { xPercent: -30, yPercent: -40, scale: 0.88, rotate: -2 });
+  const xTo = gsap.quickTo(frame, 'x', { duration: 0.55, ease: 'power3.out' });
+  const yTo = gsap.quickTo(frame, 'y', { duration: 0.55, ease: 'power3.out' });
+
+  let current: HTMLElement | null = null;
+  let shown = false;
+  // Last pointer position in viewport space. Scrolling moves the list under a
+  // still pointer without firing any pointer event, so the frame has to be
+  // re-resolved from here on scroll — otherwise it rides off with the row it
+  // was last shown on while a different row sits under the cursor.
+  let px = 0;
+  let py = 0;
+  let inside = false;
+
+  function place(snap = false) {
+    const r = root.getBoundingClientRect();
+    const x = px - r.left;
+    const y = py - r.top;
+    if (snap) gsap.set(frame, { x, y });
+    else {
+      xTo(x);
+      yTo(y);
+    }
+  }
+
+  function show(id: string | undefined) {
+    const img = id ? imgs.get(id) : undefined;
+    if (!img) return hide();
+    if (img !== current) {
+      if (current) gsap.to(current, { opacity: 0, duration: 0.3, overwrite: true });
+      gsap.to(img, { opacity: 1, duration: 0.3, overwrite: true });
+      current = img;
+    }
+    if (!shown) {
+      place(true);
+      gsap.to(frame, { opacity: 1, scale: 1, rotate: 0, duration: 0.5, ease: 'expo.out', overwrite: 'auto' });
+      shown = true;
+    }
+  }
+
+  function hide() {
+    if (!shown) return;
+    gsap.to(frame, { opacity: 0, scale: 0.88, rotate: -2, duration: 0.35, ease: 'power2.out', overwrite: 'auto' });
+    shown = false;
+  }
+
+  /** Whichever row is under the last pointer position, if any. */
+  function resolve() {
+    const hit = document.elementFromPoint(px, py);
+    const row = hit?.closest<HTMLElement>('ol > li > *');
+    if (!row || !root.contains(row)) return hide();
+    show(row.dataset.previewRow);
+    place();
+  }
+
+  const onMove = (e: PointerEvent) => {
+    px = e.clientX;
+    py = e.clientY;
+    inside = true;
+    resolve();
+  };
+  const onLeave = () => {
+    inside = false;
+    hide();
+  };
+  const onScroll = () => {
+    if (inside) resolve();
+  };
+
+  root.addEventListener('pointermove', onMove);
+  root.addEventListener('pointerleave', onLeave);
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  return () => {
+    root.removeEventListener('pointermove', onMove);
+    root.removeEventListener('pointerleave', onLeave);
+    window.removeEventListener('scroll', onScroll);
+    gsap.killTweensOf([frame, ...imgs.values()]);
+    gsap.set([frame, ...imgs.values()], { clearProps: 'all' });
+  };
+}

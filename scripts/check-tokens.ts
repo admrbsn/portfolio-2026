@@ -135,6 +135,9 @@ const OFF_BRAND = [
   'components/mdx/Device.astro',
   // The pixel-art coin sprite belongs to Breakout's palette, not the brand's.
   'components/Cursor.svelte',
+  // Clawd is Claude Code's mascot; a blue Clawd isn't Clawd. Its terracotta is
+  // a depiction of the character, like the Moment illustrations' palettes.
+  'components/ClawdParade.astro',
   'components/NoiseGradient.astro',
   'styles/global.css',
   'lib/color.ts',

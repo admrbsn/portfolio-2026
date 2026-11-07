@@ -64,7 +64,11 @@ carries a `mobile` flag and **Connect is hidden below `sm`** — the footer sets
 the same address at display size and ends every page. Two links plus the mark
 measure 262px; the wordmark's mobile size is a clamp that only gives way under
 ~390px, keeping the bar inside the rails down to 320px. **Anything added to the
-bar must be checked against that 310px budget.**
+bar must be checked against that 310px budget.** That budget is now spent:
+**AI** (`/how-i-work`) went in as a third link with the mobile gap tightened to
+1rem, which lands flush on the content edge down to 360px, and it hides below
+22.5rem (360px), where the wordmark and three links cannot fit at all. A fourth
+link means taking one out on phones.
 
 The nav deliberately has **no `mix-blend-mode`**. Difference blending kept a
 monochrome bar legible over any backdrop, but it inverts the green availability
@@ -75,7 +79,10 @@ replaces it.
 
 | Component | Used by | Notes |
 | --- | --- | --- |
-| `WorkTile.astro` | `/` | 16/9 cover, sans title, hover accent wash. Carries **no `transition:name`** — the case study has no counterpart, and an unpaired name animates the tile out on its own. |
+| `WorkRow.astro` | `/` | One row of the Selected Work index: number, title (`font-display`, `text-stat`), summary, and client / role / year on the right. **No cover in the layout** — covers appear only in the cursor-following frame driven by `data-anim="work-preview"` (fine pointers, `lg` up). Rows are rule-separated inside the shell column and never reach the rails, so they carry no squares. No `transition:name`. |
+| `NotionHub`, `NotionPrd`, `Workbench`, `ImpeccableDeep`, `RelumeGrid`, `FernDocs`, `LinearBoard`, `PostHogLoop`, `FigmaNow` | `/how-i-work` | "How I work with AI", in that order, with `TeamSystem` between `PostHogLoop` and `FigmaNow` — one redesign followed through the toolchain, framed as how it would be run *today* (it shipped in 2024, before most of these tools existed; keep that framing line in the hero). Every section opens with `ToolHeader` (mark, eyebrow, `.signal` h2 with `scroll-mt-32` for the chapter links, lead). Each has its own product mock built in markup; mocks are `aria-hidden`, and any with made-up figures says so on the page (only `NotionPrd` uses real numbers, from the recording-flow case study). `Workbench` is a code window driven by a vertical ARIA tablist; at `lg` the window is absolutely inset so the steps column sets the row height and the file scrolls (`data-lenis-prevent`). Inactive panels are `visibility: hidden` via `data-off`, never the `hidden` attribute (preflight makes that `display: none !important`). Every Impeccable command shown is one its README documents; every Relume and Notion claim is from their own pages — keep it that way. |
+| `WorkbenchCta.astro` | `/`, `/about` | One ruled link band to `/how-i-work`. |
+| `BrandMark.astro` | `/how-i-work` | Tool marks from `src/data/brands.ts` (Simple Icons, CC0, read at build time; Relume's hexagon from its own site), always `currentColor` — never brand colours. |
 | `Leadership.astro` | `/` | Three columns at `lg`. The books image is `hidden lg:block`: stacked, it read as a second full-width photo and pushed the CTA a screen down. |
 | `Experience.astro` | `/`, `/about` | Résumé accordion. |
 | `Dribbble.astro` | `/` | Grid over generated data — see the Dribbble section in `AGENTS.md`. |

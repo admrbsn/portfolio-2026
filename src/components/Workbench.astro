@@ -1,0 +1,474 @@
+---
+import RuleCross from './RuleCross.astro';
+import BrandMark from './BrandMark.astro';
+
+/*
+  The Workbench (/how-i-work): a code window driven by a vertical tablist —
+  four real artefacts of the workflow: an agent brief, a Claude Design prompt,
+  the PRODUCT.md that `/impeccable init` writes, and a terminal session of
+  Impeccable passes. Every Impeccable command here is one its README documents
+  (`/impeccable <command> <target>`, and the standalone `npx impeccable
+  detect`); don't invent flags or commands — anyone who uses the tool will
+  notice.
+
+  The code is tokenised by the tiny highlighter below rather than a library —
+  three formats, a handful of rules, and no runtime cost.
+*/
+
+type Seg = { t: string; c?: string };
+type Lang = 'md' | 'txt' | 'sh';
+
+function highlight(src: string, lang: Lang): Seg[][] {
+  return src.split('\n').map((line): Seg[] => {
+    if (lang === 'sh') {
+      if (line.startsWith('#')) return [{ t: line, c: 'tok-c' }];
+      const slash = line.match(/^(\/impeccable)( \S+)?(.*)$/);
+      if (slash)
+        return [
+          { t: slash[1], c: 'tok-k' },
+          { t: slash[2] ?? '', c: 'tok-f' },
+          { t: slash[3] },
+        ];
+      const npx = line.match(/^(\$ )(npx impeccable \S+)(.*)$/);
+      if (npx)
+        return [
+          { t: npx[1], c: 'tok-c' },
+          { t: npx[2], c: 'tok-k' },
+          { t: npx[3], c: 'tok-f' },
+        ];
+      return [{ t: line }];
+    }
+    if (line.startsWith('#')) return [{ t: line, c: 'tok-h' }];
+    const marker = line.match(/^(\s*(?:- |\d+\. ))(.*)$/);
+    const head: Seg[] = marker ? [{ t: marker[1], c: 'tok-k' }] : [];
+    const body = marker ? marker[2] : line;
+    // `code spans` in the accent; everything else plain.
+    const parts = body.split(/(`[^`]+`)/).filter(Boolean);
+    return [
+      ...head,
+      ...parts.map((p) => (p.startsWith('`') ? { t: p, c: 'tok-f' } : { t: p })),
+    ];
+  });
+}
+
+const steps: { id: string; title: string; body: string; file: string; lang: Lang; code: string }[] = [
+  {
+    id: 'brief',
+    title: 'Brief the agent like an engineer',
+    body: 'Context, a goal, the constraints and a definition of done. The same brief I used to write for a team, now written for Claude Code.',
+    file: 'brief.md',
+    lang: 'md',
+    code: `# Task: prototype the recording-flow redesign
+
+## Context
+Read PRODUCT.md and DESIGN.md before writing code.
+Contributors are on a phone, often recording for the
+first time, usually minutes before a deadline.
+
+## Goal
+One flow, mobile-first: record → review → submit.
+Completion is the metric. Every extra screen costs it.
+
+## Constraints
+- Use the tokens in \`src/styles/global.css\`.
+  No new colours, no new radii.
+- Ask for the camera in context, never on load.
+- Design every state: denied, recording, uploading,
+  failed upload, success.
+
+## Done when
+- It runs at 390px with no horizontal scroll
+- A keyboard and a screen reader can finish the flow
+- You've listed what you assumed and couldn't verify`,
+  },
+  {
+    id: 'draft',
+    title: 'Draft directions in Claude Design',
+    body: 'Two or three clickable directions in an afternoon, with real copy. The one that survives goes to Claude Code as a handoff, not a redline.',
+    file: 'prompt.txt',
+    lang: 'txt',
+    code: `Interactive prototype, phone frame: the contributor
+side of a group video gift for a teacher's retirement.
+
+Three clickable screens:
+1. Invite: who it's for, the deadline, one button
+2. Record: 60-second cap, retake, visible countdown
+3. Done: what happens next, and a link to share
+
+Use the attached screenshots as the visual baseline.
+Show two directions for screen 1 side by side, one
+quiet and one loud. Real copy, no lorem ipsum.
+
+When I pick one, package it as a handoff to Claude Code.`,
+  },
+  {
+    id: 'context',
+    title: 'Give it taste before it writes a line',
+    body: 'Impeccable reads the codebase, asks what it can’t infer, and writes PRODUCT.md. Every later pass is judged against it.',
+    file: 'PRODUCT.md',
+    lang: 'md',
+    code: `# Product
+
+## Who it's for
+Contributors invited to a group video gift, not the
+organiser. Most arrive from a text message, on a phone,
+with no account and no idea what Tribute is.
+
+## What it has to do
+Get a heartfelt 60-second video from someone in under
+three minutes, without losing them at the camera step.
+
+## Constraints
+- Mobile Safari is the primary browser
+- Contributors never create an account
+- Warm, never cute: some of these are memorials
+
+## Anti-goals
+- No onboarding carousel
+- No dark patterns on the upsell`,
+  },
+  {
+    id: 'passes',
+    title: 'Run taste passes, not review meetings',
+    body: 'Shape, critique, polish, harden — each a command against a narrow target. The same rules run in CI, so drift fails the build.',
+    file: 'session.sh',
+    lang: 'sh',
+    code: `# Plan the UX before any code exists
+/impeccable shape the contributor invite screen
+
+# A scored review, then act on it
+/impeccable critique the record step
+/impeccable quieter the invite hero
+
+# Final passes before it ships
+/impeccable polish the review screen
+/impeccable harden the upload states
+
+# Same rules in CI, no agent required
+$ npx impeccable detect --github src/`,
+  },
+];
+
+const panels = steps.map((s) => ({ ...s, lines: highlight(s.code, s.lang) }));
+---
+
+<section
+  class="relative border-t border-line px-shell py-section"
+  aria-labelledby="workbench"
+  data-blueprint="The Workbench"
+  data-dead="bottom"
+>
+  <RuleCross />
+
+  <p class="flex items-center gap-2.5 text-micro uppercase tracking-[0.14em] text-ink-faint">
+    <BrandMark name="clawd" class="h-3 w-4 text-ink-dim [shape-rendering:crispEdges]" />
+    Claude Code · Claude Design
+  </p>
+  <h2
+    id="workbench"
+    class="signal mt-6 max-w-3xl scroll-mt-32 font-display text-title text-ink"
+    data-anim="reveal-heading"
+    data-text="The prototype is the code now"
+    style="--signal-dur: 12.7s; --signal-delay: 6s"
+  >
+    The prototype is the code now
+  </h2>
+  <p class="mt-6 max-w-2xl text-ink-dim" data-anim="reveal">
+    The agents write the code; my job is the brief, the direction and the judgment. Four files
+    from the recording flow, as I’d run it today, start to finish.
+  </p>
+
+  {/*
+    The panel. Pulled out to the rails (`-mx-shell-pad`), so its top and bottom
+    rules run rail to rail and cross both — squares at all four. The vertical
+    divider between the window and the list meets both rules (squares at `lg`,
+    where the divider exists), and every rule between list items meets the
+    divider on the left and the rail on the right.
+  */}
+  <div
+    class="workbench relative -mx-shell-pad mt-16 grid grid-cols-1 border-y border-line lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)]"
+    data-workbench
+    data-anim="reveal"
+  >
+    <span class="bp-sq bp-sq--t bp-sq--l" aria-hidden="true"></span>
+    <span class="bp-sq bp-sq--t bp-sq--r" aria-hidden="true"></span>
+    <span class="bp-sq bp-sq--b bp-sq--l" aria-hidden="true"></span>
+    <span class="bp-sq bp-sq--b bp-sq--r" aria-hidden="true"></span>
+
+    {/* Code window */}
+    {/*
+      At `lg` the window is absolutely inset in its cell, so it contributes no
+      height: the row is exactly as tall as the steps column on the right, and
+      the file view scrolls when a file is longer than that. Below `lg` the
+      cells stack and the window takes its natural height.
+    */}
+    <div class="relative p-shell-pad py-10 md:py-14 lg:p-0">
+      <div class="wb-window flex flex-col overflow-hidden rounded-ui border border-line bg-surface-lift lg:absolute lg:inset-x-shell-pad lg:inset-y-10">
+        <div class="flex shrink-0 flex-wrap items-center gap-x-5 gap-y-1 border-b border-line px-5 py-3 font-mono text-[0.75rem]" aria-hidden="true">
+          {
+            panels.map((p, i) => (
+              <button
+                type="button"
+                tabindex="-1"
+                class="wb-file text-ink-faint transition-colors hover:text-ink-dim"
+                data-tab-target={p.id}
+                data-active={i === 0 ? '' : undefined}
+              >
+                {p.file}
+              </button>
+            ))
+          }
+        </div>
+
+        {/* All panels share one grid cell, so the window is always as tall as
+            the longest file and never jumps when the tab changes. Inactive
+            panels are `visibility: hidden` (via `data-off`), not the `hidden`
+            attribute: Tailwind's preflight makes `[hidden]` display:none
+            !important, which drops them out of the cell and the window
+            collapses to the active file. Visibility keeps the space and still
+            removes them from the accessibility tree. */}
+        {/* The scroller. `data-lenis-prevent`, or Lenis swallows the wheel and
+            scrolls the page instead of the file. */}
+        <div class="wb-scroll grid min-h-0 flex-1 overflow-y-auto overscroll-contain" data-lenis-prevent>
+          {
+            panels.map((p, i) => (
+              <div
+                class="wb-panel col-start-1 row-start-1 px-5 py-5"
+                role="tabpanel"
+                id={`wb-panel-${p.id}`}
+                aria-labelledby={`wb-tab-${p.id}`}
+                data-panel={p.id}
+                data-raw={p.code}
+                data-off={i !== 0 ? '' : undefined}
+              >
+                <pre class="font-mono text-[0.8125rem] leading-[1.75]"><code>{p.lines.map((line, n) => (
+                  <span class="wb-line"><span class="wb-ln" aria-hidden="true">{String(n + 1).padStart(2, '0')}</span><span class="wb-text">{line.length ? line.map((s) => s.c ? <span class={s.c}>{s.t}</span> : s.t) : ' '}</span></span>
+                ))}</code></pre>
+              </div>
+            ))
+          }
+        </div>
+
+        <div class="flex shrink-0 justify-end border-t border-line px-4 py-2">
+          <button
+            type="button"
+            class="wb-copy font-mono text-[0.6875rem] uppercase tracking-[0.14em] text-ink-faint transition-colors hover:text-ink"
+            data-copy-active
+          >
+            Copy
+          </button>
+        </div>
+      </div>
+    </div>
+
+    {/* Steps — the tablist */}
+    <div
+      class="relative border-t border-line lg:border-l lg:border-t-0"
+      role="tablist"
+      aria-orientation="vertical"
+      aria-label="How a prototype gets made"
+    >
+      <span class="bp-sq bp-sq--t bp-sq--l lg:hidden" aria-hidden="true"></span>
+      <span class="bp-sq bp-sq--t bp-sq--r lg:hidden" aria-hidden="true"></span>
+      <span class="bp-sq bp-sq--t bp-sq--l hidden lg:block" aria-hidden="true"></span>
+      <span class="bp-sq bp-sq--b bp-sq--l hidden lg:block" aria-hidden="true"></span>
+      {
+        panels.map((p, i) => (
+          <button
+            type="button"
+            role="tab"
+            id={`wb-tab-${p.id}`}
+            aria-controls={`wb-panel-${p.id}`}
+            aria-selected={i === 0 ? 'true' : 'false'}
+            tabindex={i === 0 ? 0 : -1}
+            class:list={['wb-step relative block w-full px-shell-pad py-7 text-left', i > 0 && 'border-t border-line']}
+            data-tab-target={p.id}
+          >
+            {i > 0 && (
+              <>
+                <span class="bp-sq bp-sq--t bp-sq--l" aria-hidden="true" />
+                <span class="bp-sq bp-sq--t bp-sq--r" aria-hidden="true" />
+              </>
+            )}
+            <span class="wb-step__num block font-mono text-micro tracking-[0.14em] text-ink-faint">
+              {String(i + 1).padStart(2, '0')}
+            </span>
+            <span class="mt-2 block text-[1.0625rem] font-medium text-ink">{p.title}</span>
+            <span class="mt-2 block text-[0.9375rem] leading-relaxed text-ink-dim">{p.body}</span>
+          </button>
+        ))
+      }
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Syntax colours — the accent pair and the ink ramp, nothing else. */
+  .tok-h {
+    color: var(--color-accent-warm);
+    font-weight: 600;
+  }
+  .tok-k {
+    color: var(--color-accent-warm);
+  }
+  .tok-f {
+    color: var(--color-accent);
+  }
+  .tok-c {
+    color: var(--color-ink-faint);
+  }
+
+  pre {
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .wb-line {
+    display: grid;
+    grid-template-columns: 2.25rem minmax(0, 1fr);
+  }
+  .wb-ln {
+    color: var(--color-ink-faint);
+    opacity: 0.6;
+    user-select: none;
+  }
+  .wb-text {
+    color: var(--color-ink-dim);
+  }
+
+  /* A thin scrollbar in the line colour — the window is the site's, not the OS's. */
+  .wb-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-line) transparent;
+  }
+
+  .wb-panel[data-off] {
+    visibility: hidden;
+  }
+
+  .wb-file[data-active] {
+    color: var(--color-ink);
+  }
+
+  /* The active step: a lifted fill and an accent bar on the divider side,
+     the reference's treatment in the site's own accent. */
+  .wb-step {
+    transition: background-color var(--dur-fast) ease;
+  }
+  .wb-step::before {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    left: 0;
+    width: 3px;
+    background: var(--color-accent);
+    transform: scaleY(0);
+    transform-origin: top;
+    transition: transform var(--dur-base) var(--ease-out-expo);
+  }
+  .wb-step[aria-selected='true'] {
+    background: var(--color-surface-lift);
+  }
+  .wb-step[aria-selected='true']::before {
+    transform: scaleY(1);
+  }
+  .wb-step[aria-selected='true'] .wb-step__num {
+    color: var(--color-accent);
+  }
+  .wb-step:hover:not([aria-selected='true']) {
+    background: color-mix(in oklab, var(--color-surface-lift) 50%, transparent);
+  }
+  .wb-step:focus-visible {
+    outline: 1px solid var(--color-accent);
+    outline-offset: -1px;
+  }
+
+
+  @media (prefers-reduced-motion: reduce) {
+    .wb-step::before {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  /*
+    Tablist behaviour: click either a step or a file tab; arrow keys move
+    between steps (roving tabindex, per the ARIA tabs pattern, vertical so
+    Up/Down). Copy puts the active file's raw text on the clipboard.
+    Same teardown contract as the motion registry.
+  */
+  function initWorkbench(root: HTMLElement) {
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+    const files = [...root.querySelectorAll<HTMLButtonElement>('.wb-file')];
+    const panels = [...root.querySelectorAll<HTMLElement>('[data-panel]')];
+    const copy = root.querySelector<HTMLButtonElement>('[data-copy-active]');
+    let copyTimer = 0;
+
+    function select(id: string, focus = false) {
+      tabs.forEach((t) => {
+        const on = t.dataset.tabTarget === id;
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+        t.tabIndex = on ? 0 : -1;
+        if (on && focus) t.focus();
+      });
+      files.forEach((f) => f.toggleAttribute('data-active', f.dataset.tabTarget === id));
+      panels.forEach((p) => p.toggleAttribute('data-off', p.dataset.panel !== id));
+      // A new file opens at its first line, not wherever the last one was left.
+      root.querySelector<HTMLElement>('.wb-scroll')?.scrollTo({ top: 0 });
+    }
+
+    const onClick = (e: Event) => {
+      const target = (e.target as HTMLElement).closest<HTMLElement>('[data-tab-target]');
+      if (target?.dataset.tabTarget) select(target.dataset.tabTarget);
+    };
+
+    const onKey = (e: KeyboardEvent) => {
+      const i = tabs.indexOf(document.activeElement as HTMLButtonElement);
+      if (i < 0) return;
+      let next = -1;
+      if (e.key === 'ArrowDown' || e.key === 'ArrowRight') next = (i + 1) % tabs.length;
+      else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') next = (i - 1 + tabs.length) % tabs.length;
+      else if (e.key === 'Home') next = 0;
+      else if (e.key === 'End') next = tabs.length - 1;
+      if (next < 0) return;
+      e.preventDefault();
+      select(tabs[next].dataset.tabTarget!, true);
+    };
+
+    const onCopy = async () => {
+      const active = panels.find((p) => !p.hasAttribute('data-off'));
+      if (!active?.dataset.raw || !copy) return;
+      try {
+        await navigator.clipboard.writeText(active.dataset.raw);
+        copy.textContent = 'Copied';
+      } catch {
+        copy.textContent = 'Copy failed';
+      }
+      window.clearTimeout(copyTimer);
+      copyTimer = window.setTimeout(() => (copy.textContent = 'Copy'), 1600);
+    };
+
+    root.addEventListener('click', onClick);
+    root.addEventListener('keydown', onKey);
+    copy?.addEventListener('click', onCopy);
+
+    return () => {
+      root.removeEventListener('click', onClick);
+      root.removeEventListener('keydown', onKey);
+      copy?.removeEventListener('click', onCopy);
+      window.clearTimeout(copyTimer);
+    };
+  }
+
+  let teardowns: (() => void)[] = [];
+
+  document.addEventListener('astro:page-load', () => {
+    teardowns = [...document.querySelectorAll<HTMLElement>('[data-workbench]')].map(initWorkbench);
+  });
+
+  document.addEventListener('astro:before-swap', () => {
+    teardowns.forEach((fn) => fn());
+    teardowns = [];
+  });
+</script>

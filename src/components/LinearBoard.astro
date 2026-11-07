@@ -1,0 +1,186 @@
+---
+import RuleCross from './RuleCross.astro';
+import BrandMark from './BrandMark.astro';
+import ToolHeader from './ToolHeader.astro';
+
+/*
+  Linear — where commitments become work. The board continues the story the
+  PRD started: the issues the agent proposed (and I approved — writes need a
+  yes), one of them delegated to a coding agent with its PR in review.
+
+  Claims kept to what Linear documents: a hosted MCP server agents read and
+  write issues through, issues delegable to agents, and the Linear Agent
+  pulling outside context in over MCP (changelog, April 2026). The coding
+  agent is deliberately unnamed — "Coding agent" — rather than implying a
+  specific vendor integration.
+*/
+type Issue = { id: string; t: string; tag?: string; agent?: boolean; pr?: boolean; src?: boolean };
+
+const cols: { name: string; dot: string; issues: Issue[] }[] = [
+  {
+    name: 'Backlog',
+    dot: 'dashed',
+    issues: [
+      { id: 'REC-146', t: 'Photo upload as a secondary path', tag: 'Design', src: true },
+      { id: 'REC-147', t: 'Notes field for the person recording', tag: 'Design' },
+    ],
+  },
+  {
+    name: 'In progress',
+    dot: 'half',
+    issues: [
+      { id: 'REC-141', t: 'Ask for the camera in context, not on load', tag: 'Frontend', src: true },
+      { id: 'REC-143', t: 'Resumable chunked uploads', tag: 'Backend', agent: true },
+    ],
+  },
+  {
+    name: 'In review',
+    dot: 'ring',
+    issues: [{ id: 'REC-142', t: 'Show processing progress instead of a spinner', tag: 'Frontend', agent: true, pr: true, src: true }],
+  },
+  {
+    name: 'Done',
+    dot: 'full',
+    issues: [{ id: 'REC-140', t: 'Recording flow v2 — PRD', tag: 'Product' }],
+  },
+];
+
+const notes = [
+  { t: 'Filed from the PRD', b: 'The agent proposes issues from what the PRD commits to, each linked back to the line that justifies it. Nothing is created until I say yes.' },
+  { t: 'Delegated, not dumped', b: 'Well-scoped issues go to a coding agent. It opens the PR; a human reviews and merges. The issue keeps the whole trail.' },
+  { t: 'Context in, over MCP', b: 'Linear’s own agent pulls context from other tools over MCP, so an issue can start from meeting notes or a replay rather than a blank form.' },
+];
+---
+
+<section
+  class="relative border-t border-line px-shell py-section"
+  aria-labelledby="linear"
+  data-blueprint="The Queue"
+  data-dead="bottom"
+>
+  <RuleCross />
+  <ToolHeader id="linear" brand="linear" eyebrow="Linear · Planning" title="From commitment to pull request" dur="13.3s" delay="9s">
+    <p>
+      The PRD says what we’re committing to; Linear is where that turns into work someone owns.
+      More and more of that someone is an agent, which changes what a good issue looks like:
+      scoped tightly enough to hand off, with the evidence attached.
+    </p>
+  </ToolHeader>
+
+  {/* The board ---------------------------------------------------------- */}
+  <div class="lin mt-16 overflow-hidden rounded-ui border border-line bg-surface-lift" aria-hidden="true" data-anim="reveal">
+    <div class="flex items-center justify-between border-b border-line px-5 py-2.5 font-mono text-[0.6875rem] text-ink-faint">
+      <span class="flex items-center gap-2"><BrandMark name="linear" class="h-3.5 w-3.5 text-ink-dim" /> Recording · Cycle 24</span>
+      <span>6 issues</span>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+      {
+        cols.map((c, i) => (
+          <div
+            class:list={[
+              'p-4',
+              i === 1 && 'border-t border-line sm:border-l sm:border-t-0',
+              i === 2 && 'border-t border-line lg:border-l lg:border-t-0',
+              i === 3 && 'border-t border-line sm:border-l lg:border-t-0',
+            ]}
+          >
+            <p class="flex items-center gap-2 px-1 pb-3 text-[0.8125rem] text-ink-dim">
+              <span class={`lin-dot lin-dot--${c.dot}`} />
+              {c.name}
+              <span class="text-ink-faint">{c.issues.length}</span>
+            </p>
+            <ul class="space-y-2">
+              {c.issues.map((is) => (
+                <li class="lin-card rounded-ui border border-line bg-surface p-3">
+                  <p class="font-mono text-[0.625rem] text-ink-faint">{is.id}</p>
+                  <p class="mt-1 text-[0.8125rem] leading-snug text-ink">{is.t}</p>
+                  <div class="mt-3 flex flex-wrap items-center gap-1.5">
+                    {is.tag && <span class="lin-chip">{is.tag}</span>}
+                    {is.src && (
+                      <span class="lin-chip">
+                        <BrandMark name="notion" class="h-2.5 w-2.5" /> PRD
+                      </span>
+                    )}
+                    {is.agent && (
+                      <span class="lin-chip lin-chip--agent">
+                        <span class="agent-dot !h-[5px] !w-[5px]" /> Coding agent
+                      </span>
+                    )}
+                    {is.pr && <span class="lin-chip lin-chip--pr">PR · needs review</span>}
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+    </div>
+  </div>
+
+  {/* Notes -------------------------------------------------------------- */}
+  <div class="relative -mx-shell-pad mt-16 grid grid-cols-1 border-y border-line lg:grid-cols-3" data-anim="reveal-batch">
+    <span class="bp-sq bp-sq--t bp-sq--l" aria-hidden="true"></span>
+    <span class="bp-sq bp-sq--t bp-sq--r" aria-hidden="true"></span>
+    <span class="bp-sq bp-sq--b bp-sq--l" aria-hidden="true"></span>
+    <span class="bp-sq bp-sq--b bp-sq--r" aria-hidden="true"></span>
+    {
+      notes.map((n, i) => (
+        <div class:list={['relative px-shell-pad py-8', i > 0 && 'border-t border-line lg:border-l lg:border-t-0']}>
+          {i > 0 && (
+            <>
+              <span class="bp-sq bp-sq--t bp-sq--l lg:hidden" aria-hidden="true" />
+              <span class="bp-sq bp-sq--t bp-sq--r lg:hidden" aria-hidden="true" />
+              <span class="bp-sq bp-sq--t bp-sq--l hidden lg:block" aria-hidden="true" />
+              <span class="bp-sq bp-sq--b bp-sq--l hidden lg:block" aria-hidden="true" />
+            </>
+          )}
+          <p class="text-[1.0625rem] font-medium text-ink">{n.t}</p>
+          <p class="mt-2 text-[0.9375rem] leading-relaxed text-ink-dim">{n.b}</p>
+        </div>
+      ))
+    }
+  </div>
+</section>
+
+<style>
+  .lin-dot {
+    width: 0.625rem;
+    height: 0.625rem;
+    border-radius: 9999px;
+    border: 1.5px solid var(--color-ink-faint);
+  }
+  .lin-dot--dashed {
+    border-style: dashed;
+  }
+  .lin-dot--half {
+    border-color: var(--color-accent-warm);
+    background: linear-gradient(90deg, var(--color-accent-warm) 50%, transparent 50%);
+  }
+  .lin-dot--ring {
+    border-color: var(--color-accent);
+    box-shadow: inset 0 0 0 1.5px var(--color-surface-lift), inset 0 0 0 4px var(--color-accent);
+  }
+  .lin-dot--full {
+    border-color: var(--color-ink-dim);
+    background: var(--color-ink-dim);
+  }
+  .lin-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.05rem 0.4rem;
+    border: 1px dashed var(--color-line);
+    border-radius: var(--radius-ui);
+    color: var(--color-ink-faint);
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+  }
+  .lin-chip--agent {
+    border-color: color-mix(in oklab, var(--color-accent) 50%, var(--color-line));
+    color: var(--color-accent);
+  }
+  .lin-chip--pr {
+    border-color: color-mix(in oklab, var(--color-accent-warm) 50%, var(--color-line));
+    color: var(--color-accent-warm);
+  }
+</style>

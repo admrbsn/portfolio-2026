@@ -14,8 +14,8 @@ const work = defineCollection({
       summary: z.string(),
       /*
         Optional so a placeholder entry can sit on the work index before there
-        is anything to show. `<WorkTile>` falls back to a ruled panel; nothing
-        else reads it, so no other guard is needed.
+        is anything to show. The homepage index only uses it for the hover
+        preview and skips entries without one.
       */
       cover: image().optional(),
       coverAlt: z.string().optional(),

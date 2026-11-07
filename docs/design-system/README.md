@@ -30,7 +30,7 @@ Four rules fall out of that, and most review comments trace back to one of them:
    rails, grid corners, both ends of every divider. Half-marked grids are what
    make the system read as arbitrary. See
    [patterns](patterns.md#intersection-squares).
-3. **Two type families, and one radius.** Deviations are listed explicitly in
+3. **Four type families with one role each, and one radius.** Deviations are listed explicitly in
    [tokens](tokens.md#type) and [tokens](tokens.md#radius) — if it is not on
    those lists, it is a mistake.
 4. **Every effect returns a teardown.** See [motion](motion.md#the-contract).

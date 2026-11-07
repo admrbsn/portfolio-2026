@@ -1,0 +1,128 @@
+---
+import RuleCross from './RuleCross.astro';
+import ToolHeader from './ToolHeader.astro';
+
+/*
+  The team note (/how-i-work). Everything above reads as one person's setup;
+  this is where it becomes leadership. Two rules for it:
+
+  - Every figure is real, from the Tribute V3 case study and /about's
+    "In practice" (three months, a team of four, one-week sprints, onboarding
+    ~25% → 54%). Keep them in step with those sources.
+  - No product mock. Every other section is header → mock → ruled cells, and
+    by this point the page needs its rhythm broken: real numbers, then the
+    four things that make the system a team's rather than mine.
+*/
+const figures = [
+  { v: '3 months', l: 'to rebuild a decade-old platform' },
+  { v: 'Team of 4', l: 'from skeptical to one-week sprints' },
+  // No "~" in the figure: Syne draws the tilde as a small raised dot, so it
+  // read as "·25%". The "about" lives in the label instead.
+  { v: '25% → 54%', l: 'onboarding conversion, from about 25%, after the rebuild' },
+];
+
+const artifacts = [
+  {
+    k: 'PRD template',
+    t: 'One spine for every PRD',
+    b: 'The agent drafts against the same template for everyone, so review is about the argument, not the format.',
+  },
+  {
+    k: 'PRODUCT.md · DESIGN.md',
+    t: 'The standard lives in the repo',
+    b: 'Not in my head. Every agent and every designer works against the same two files, and changing the standard is a pull request.',
+  },
+  {
+    k: 'impeccable detect',
+    t: 'The check holds the line',
+    b: 'It runs on every pull request, including the reviews I’m not in. Taste that only exists in one reviewer doesn’t scale.',
+  },
+  {
+    k: 'Writes need a yes',
+    t: 'One trust model',
+    b: 'Agents read freely; anything that changes another tool waits for a person. The same rule for the whole team, not a setting each of us remembers.',
+  },
+];
+---
+
+<section
+  class="relative border-t border-line px-shell py-section"
+  aria-labelledby="team"
+  data-blueprint="The Team"
+  data-dead="bottom"
+>
+  <RuleCross />
+  <ToolHeader id="team" eyebrow="The team" title="A team’s system, not my setup" dur="17.3s" delay="6s">
+    <p>
+      None of this is a personal productivity stack. It’s how we rebuilt
+      <a href="/work/tribute-v3" class="text-ink underline decoration-line underline-offset-4 transition-colors hover:text-accent hover:decoration-accent">Tribute’s platform</a>:
+      functioning code as the deliverable instead of Figma files, one-week sprints across product,
+      design and engineering, and a team that started skeptical and stopped being.
+    </p>
+  </ToolHeader>
+
+  <dl class="mt-14 grid gap-10 sm:grid-cols-3" data-anim="reveal-batch">
+    {
+      figures.map((f) => (
+        <div>
+          <dt class="sr-only">{f.l}</dt>
+          <dd class="font-display text-stat text-ink">{f.v}</dd>
+          <dd class="mt-2 max-w-[16rem] text-[0.9375rem] text-ink-dim">{f.l}</dd>
+        </div>
+      ))
+    }
+  </dl>
+
+  <div class="relative -mx-shell-pad mt-16 grid grid-cols-1 border-y border-line md:grid-cols-2 lg:grid-cols-4" data-anim="reveal-batch">
+    <span class="bp-sq bp-sq--t bp-sq--l" aria-hidden="true"></span>
+    <span class="bp-sq bp-sq--t bp-sq--r" aria-hidden="true"></span>
+    <span class="bp-sq bp-sq--b bp-sq--l" aria-hidden="true"></span>
+    <span class="bp-sq bp-sq--b bp-sq--r" aria-hidden="true"></span>
+    {
+      artifacts.map((a, i) => (
+        <div
+          class:list={[
+            'relative px-shell-pad py-8',
+            i > 0 && 'border-t border-line',
+            i === 1 && 'md:border-l md:border-t-0',
+            i === 2 && 'lg:border-l lg:border-t-0',
+            i === 3 && 'md:border-l lg:border-t-0',
+          ]}
+        >
+          {i > 0 && (
+            <>
+              <span class="bp-sq bp-sq--t bp-sq--l md:hidden" aria-hidden="true" />
+              <span class="bp-sq bp-sq--t bp-sq--r md:hidden" aria-hidden="true" />
+            </>
+          )}
+          {i === 1 && <span class="bp-sq bp-sq--t bp-sq--l hidden md:block" aria-hidden="true" />}
+          {i === 2 && <span class="bp-sq bp-sq--t bp-sq--l hidden md:block" aria-hidden="true" />}
+          {i === 3 && (
+            <>
+              <span class="bp-sq bp-sq--t bp-sq--l hidden md:block lg:hidden" aria-hidden="true" />
+              <span class="bp-sq bp-sq--t bp-sq--r hidden md:block lg:hidden" aria-hidden="true" />
+              <span class="bp-sq bp-sq--t bp-sq--l hidden lg:block" aria-hidden="true" />
+              <span class="bp-sq bp-sq--b bp-sq--l hidden md:block" aria-hidden="true" />
+            </>
+          )}
+          {(i === 1 || i === 2) && <span class="bp-sq bp-sq--b bp-sq--l hidden lg:block" aria-hidden="true" />}
+          <span class="team-art">{a.k}</span>
+          <p class="mt-5 text-[1.0625rem] font-medium text-ink">{a.t}</p>
+          <p class="mt-2 text-[0.9375rem] leading-relaxed text-ink-dim">{a.b}</p>
+        </div>
+      ))
+    }
+  </div>
+</section>
+
+<style>
+  .team-art {
+    display: inline-block;
+    padding: 0.15rem 0.55rem;
+    border: 1px dashed var(--color-line);
+    border-radius: var(--radius-ui);
+    color: var(--color-ink-dim);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+  }
+</style>

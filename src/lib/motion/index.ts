@@ -13,6 +13,7 @@ import {
   storyLine,
   jiggle,
   momentReveal,
+  workPreview,
   type Teardown,
 } from './effects';
 
@@ -32,6 +33,7 @@ const registry: Record<string, (el: HTMLElement) => Teardown> = {
   'story-line': storyLine,
   jiggle,
   'moment-reveal': momentReveal,
+  'work-preview': workPreview,
 };
 
 let teardowns: Teardown[] = [];

@@ -1,0 +1,119 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import ArrowUpRight from './ArrowUpRight.astro';
+
+interface Props {
+  entry: CollectionEntry<'work'>;
+  /** 1-based position in the list, rendered as the row's index. */
+  index: number;
+  /** The last row also closes the list with a bottom rule, so it marks that crossing too. */
+  last?: boolean;
+}
+
+const { entry, index, last = false } = Astro.props;
+const { title, client, summary, year, role, comingSoon } = entry.data;
+
+const Tag = comingSoon ? 'div' : 'a';
+const num = String(index).padStart(2, '0');
+---
+
+{/*
+  One row of the Selected Work index. Text only — the cover appears as a
+  cursor-following preview on fine pointers (`work-preview` in effects.ts),
+  never in the layout. The list reads as an index of claims, not a gallery.
+
+  The title leads, not the client: four of the six clients are some flavour of
+  "Tribute", so a client-first list reads as one word repeated. The client sits
+  in the meta column with the role and year.
+
+  `data-preview-row` is the index into the preview frame's images; a row with
+  no cover (the coming-soon entry) carries none, and the frame hides over it.
+
+  The list is pulled out to the page rails (`-mx-shell-pad` on the <ol>), so
+  every row rule runs rail to rail and crosses both — each crossing gets its
+  square. The index sits *on* the left rail, centred on the line and in the
+  row; its surface fill punches the dashed rail the way the squares do. The
+  row's left padding clears half the circle plus the usual shell pad, so the
+  copy keeps the same distance from the circle's edge that it would from a rail.
+*/}
+<li class:list={['work-row group/row relative border-t border-line', last && 'border-b']}>
+  <span class="bp-sq bp-sq--t bp-sq--l" aria-hidden="true"></span>
+  <span class="bp-sq bp-sq--t bp-sq--r" aria-hidden="true"></span>
+  {
+    last && (
+      <>
+        <span class="bp-sq bp-sq--b bp-sq--l" aria-hidden="true" />
+        <span class="bp-sq bp-sq--b bp-sq--r" aria-hidden="true" />
+      </>
+    )
+  }
+
+  <span
+    class:list={[
+      'work-idx absolute left-0 top-1/2 z-10 grid -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full border border-line bg-surface text-micro tabular-nums text-ink-faint transition-colors duration-500',
+      !comingSoon && 'group-hover/row:border-accent group-hover/row:text-accent',
+    ]}
+    aria-hidden="true"
+  >
+    {num}
+  </span>
+
+  <Tag
+    href={comingSoon ? undefined : `/work/${entry.id}`}
+    class:list={[
+      'work-row__link group grid grid-cols-1 gap-y-3 py-8 pr-shell-pad md:grid-cols-[1fr_minmax(11rem,15rem)] md:gap-x-6 md:py-10',
+      comingSoon && 'opacity-60',
+    ]}
+    data-preview-row={entry.data.cover && !comingSoon ? entry.id : undefined}
+  >
+    {/* Mobile eyebrow: the client, since the meta column is gone. */}
+    <p class="text-micro uppercase tracking-[0.14em] text-ink-faint md:hidden">
+      {client}
+    </p>
+
+    <div class="min-w-0">
+      <h3
+        class:list={[
+          'font-display text-stat text-ink transition-[color,translate] duration-500 ease-[var(--ease-out-expo)]',
+          !comingSoon && 'signal-hover group-hover:translate-x-2 group-hover:text-accent group-focus-visible:text-accent',
+        ]}
+        data-text={comingSoon ? undefined : title}
+      >
+        {title}
+        {
+          !comingSoon && (
+            <ArrowUpRight class="ml-1 inline-block !h-[0.55em] !w-[0.55em] -translate-x-1 align-[0.35em] opacity-0 transition duration-500 group-hover:translate-x-0 group-hover:opacity-100" />
+          )
+        }
+      </h3>
+      <p class="mt-3 max-w-2xl text-body leading-relaxed text-ink-dim">{summary}</p>
+    </div>
+
+    <dl class="text-micro uppercase leading-relaxed tracking-[0.14em] text-ink-faint md:pt-[0.6em] md:text-right">
+      <dt class="sr-only">Client</dt>
+      <dd class="text-ink-dim max-md:hidden">{client}</dd>
+      <dt class="sr-only">Role</dt>
+      <dd class="max-md:inline">{role[0]}</dd>
+      <dt class="sr-only">Year</dt>
+      <dd class="max-md:inline max-md:before:content-['_·_']">{comingSoon ? 'Coming soon' : year}</dd>
+    </dl>
+  </Tag>
+</li>
+
+<style>
+  /*
+    The index circle. A circle is a shape, not a corner — `rounded-full` here sits
+    on tokens.md's circles-and-pills list rather than being a second radius. 36px: big enough to hold two tabular digits at micro size with air
+    around them, small enough that half of it (18px) still fits inside the
+    narrowest gutter (1.5rem) without reaching the viewport edge.
+  */
+  .work-idx {
+    --idx: 2.25rem;
+    width: var(--idx);
+    height: var(--idx);
+  }
+
+  .work-row__link {
+    padding-left: calc(2.25rem / 2 + max(var(--spacing-shell-pad), 1.25rem));
+  }
+</style>

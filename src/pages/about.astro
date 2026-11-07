@@ -8,6 +8,7 @@ import MomentPetersons from '../components/MomentPetersons.astro';
 import ArrowUpRight from '../components/ArrowUpRight.astro';
 import overlook from '../assets/about/overlook.webp';
 import RuleCross from '../components/RuleCross.astro';
+import WorkbenchCta from '../components/WorkbenchCta.astro';
 
 
 /*
@@ -69,24 +70,28 @@ const principles = [
 const process = [
   {
     phase: 'Research',
+    icon: 'M10.5 17a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13zM15.2 15.2 20 20',
     title: 'Establishing why',
     body: 'The Research Phase is where we identify the purpose for all the decisions we will eventually make. At this point, I determine goals and outcomes and challenge assumptions, using user research, mental models, and storyboards to help define how users think. The primary goal is to first figure out what users want and why they want it — this forms the basis for all our future design decisions.',
     tools: 'PlaybookUX, Userbrain, Dovetail, Maze',
   },
   {
     phase: 'Ideate',
+    icon: 'M4 12h5M9 12l7-6M9 12l7 6M9 12h11M16 6h4M16 18h4',
     title: 'Explore and expand options',
     body: 'In Ideation, we brainstorm and collaborate to explore possibilities through various exercises. Ideation may need to be streamlined to meet the needs of a startup project, but it is critical for more complex, larger initiatives. Design sprints, either with fellow designers or stakeholders, are central to this stage. We use techniques such as How Might We, Crazy 8s, and Spicy Debates to generate multiple possible solutions. These exercises take up significant time, but they give us numerous ways to innovate and force us to rethink how we traditionally design.',
     tools: 'Mural, Miro',
   },
   {
     phase: 'Make',
+    icon: 'M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3zM12 12l8-4.5M12 12v9M12 12 4 7.5',
     title: 'Realizing our vision',
     body: 'In the Make Stage, we transform our ideas into tangible products — my favourite part of the design process. Based on our findings from the Research Phase, we begin forming hypotheses and developing our products. Whether we are working in Figma or rapidly prototyping using modern tools, this is where the product takes shape and comes alive. As a designer, I can express my creativity at this stage while also making meaningful contributions to the end product.',
     tools: 'Figma, Bolt, v0',
   },
   {
     phase: 'Check',
+    icon: 'M20 12a8 8 0 1 1-2.34-5.66M20 4v4h-4M8.5 12.5l2.5 2.5 5-5',
     title: 'Ongoing improvement',
     body: "The Check Phase is the core of my design process — it's where we validate our assumptions and continuously refine the work through user testing and data analysis. This continues long after the design is complete. Occasionally we discover that our data-backed assumptions were wrong, or that users reacted badly to some part of the product. That is exactly why the Check Phase matters: it hands us real-world opportunities for growth. Whether we are taking a 25% conversion rate to 50% or fine-tuning flows on user feedback, this is where we measure whether the design actually served anyone.",
     tools: 'PostHog, GA4',
@@ -148,7 +153,7 @@ const inPractice = [
     <div class="relative z-10 my-auto w-full">
       <div class="grid gap-x-16 gap-y-10 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] lg:items-end">
         <h1
-          class="font-display text-[clamp(2.5rem,5.4vw,4.75rem)] font-normal leading-[1.05] tracking-[-0.02em] text-balance text-ink"
+          class="font-display text-[clamp(2.5rem,5.4vw,4.75rem)] leading-[1.05] tracking-[-0.02em] text-balance text-ink"
           data-anim="reveal-heading"
         >
           {/* `.phrase-gradient`, not `.accent-gradient`. The latter clips a
@@ -157,7 +162,7 @@ const inPractice = [
               read as a rainbow. This one is painted as a single ramp along the
               phrase in reading order — see `paintPhrase` in effects.ts.
               Deliberately no full stop. */}
-          I make <span class="phrase-gradient">the room better</span>
+          I make the room <span class="phrase-gradient">better</span>
         </h1>
 
         <p
@@ -190,7 +195,7 @@ const inPractice = [
           banner, and at title scale it overpowered the prose it introduces. */}
       <h2
         id="pov"
-        class="font-display text-[clamp(1.75rem,3vw,2.75rem)] font-normal leading-[1.05] text-ink lg:sticky lg:top-32 lg:self-start"
+        class="font-display text-[clamp(1.75rem,3vw,2.75rem)] leading-[1.05] text-ink lg:sticky lg:top-[var(--sticky-top)] lg:transition-[top] lg:duration-500 lg:ease-[var(--ease-out-expo)] lg:self-start"
         data-anim="reveal-heading"
       >
         Point of view
@@ -241,7 +246,7 @@ const inPractice = [
     data-dead="bottom"
   >
     <RuleCross />
-    <h2 id="principles" class="font-display text-title font-normal text-ink" data-anim="reveal-heading">
+    <h2 id="principles" class="font-display text-title text-ink" data-anim="reveal-heading">
       How I lead
     </h2>
 
@@ -313,7 +318,7 @@ const inPractice = [
     data-dead="bottom"
   >
     <RuleCross />
-    <h2 id="in-practice" class="font-display text-title font-normal text-ink" data-anim="reveal-heading">
+    <h2 id="in-practice" class="font-display text-title text-ink" data-anim="reveal-heading">
       In practice
     </h2>
 
@@ -384,7 +389,7 @@ const inPractice = [
     data-blueprint="How the work happens"
   >
     <RuleCross />
-    <h2 id="process" class="font-display text-title font-normal text-ink" data-anim="reveal-heading">
+    <h2 id="process" class="font-display text-title text-ink" data-anim="reveal-heading">
       How I work
     </h2>
     <div class="mt-6 max-w-2xl space-y-5 text-ink-dim" data-anim="reveal">
@@ -404,29 +409,97 @@ const inPractice = [
       </p>
     </div>
 
-    {/* Two columns, not four. The phase descriptions carry their full original
-        length now, and four of those in a row reads as four narrow gutters of
-        text rather than four steps. */}
-    <ol class="mt-16 grid gap-5 md:grid-cols-2" data-anim="reveal-batch">
+    {/*
+      The phases as a pipeline first, the way cloudflare.com draws a request
+      path (dashed stations joined by short connectors, one caption under the
+      chain) — and with a return line, because the copy above describes a loop,
+      not a waterfall. Replaces a row of 01–04 gradient numerals that were the
+      loudest thing in the section and said nothing the order didn't.
+    */}
+    <div class="process-pipe mt-16" aria-hidden="true" data-anim="reveal">
+      <div class="process-pipe__row">
+        {
+          process.map((step, i) => (
+            <>
+              {i > 0 && <span class="process-pipe__link" />}
+              <span class="process-pipe__stop">
+                <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d={step.icon} />
+                </svg>
+                {step.phase}
+              </span>
+            </>
+          ))
+        }
+      </div>
+      <span class="process-pipe__loop" />
+      <p class="mt-9 text-center text-[0.8125rem] text-ink-faint">
+        One loop: fast on a small team, deeper where the stakes are higher.
+      </p>
+    </div>
+
+    {/*
+      One ruled grid, not four bordered cards — the cells share their rules,
+      the block pulls out to the rails, and every crossing is squared: the four
+      frame corners, and at `md` the row rule's three crossings (both rails and
+      the divider) plus the divider's two ends. Below `md` it is one column, and
+      each internal rule crosses both rails instead.
+
+      Inside a cell, hierarchy comes from weight rather than colour or scale:
+      the phase as a medium sans title, its subtitle dimmed beneath it (the
+      "Free / for hobby projects" stack), the body, then tools as dashed chips
+      rather than an uppercase comma list.
+    */}
+    <ol class="relative -mx-shell-pad mt-16 grid grid-cols-1 border-y border-line md:grid-cols-2" data-anim="reveal-batch">
       {
         process.map((step, i) => (
-          <li class="flex flex-col rounded-2xl border border-line bg-surface-lift/40 p-10 lg:p-12">
-            <p class="font-display text-stat leading-none text-ink">
-              <span class="accent-gradient">{String(i + 1).padStart(2, '0')}</span>
-            </p>
-            <h3 class="mt-5 text-micro uppercase tracking-[0.14em] text-ink-faint">{step.phase}</h3>
-            <p class="mt-2 text-[clamp(1.125rem,1.5vw,1.375rem)] font-medium leading-snug text-ink">
-              {step.title}
-            </p>
-            <p class="mt-4 text-ink-dim">{step.body}</p>
-            <p class="mt-auto pt-6 text-micro uppercase tracking-[0.14em] text-ink-faint">
-              {step.tools}
-            </p>
+          <li
+            class:list={[
+              'relative flex flex-col px-shell-pad py-10 lg:py-12',
+              i > 0 && 'border-t border-line',
+              i === 1 && 'md:border-l md:border-t-0',
+              i === 3 && 'md:border-l',
+            ]}
+          >
+            {i > 0 && (
+              <>
+                <span class="bp-sq bp-sq--t bp-sq--l md:hidden" aria-hidden="true" />
+                <span class="bp-sq bp-sq--t bp-sq--r md:hidden" aria-hidden="true" />
+              </>
+            )}
+            {i === 1 && <span class="bp-sq bp-sq--t bp-sq--l hidden md:block" aria-hidden="true" />}
+            {i === 2 && <span class="bp-sq bp-sq--t bp-sq--l hidden md:block" aria-hidden="true" />}
+            {i === 3 && (
+              <>
+                <span class="bp-sq bp-sq--t bp-sq--l hidden md:block" aria-hidden="true" />
+                <span class="bp-sq bp-sq--t bp-sq--r hidden md:block" aria-hidden="true" />
+                <span class="bp-sq bp-sq--b bp-sq--l hidden md:block" aria-hidden="true" />
+              </>
+            )}
+
+            <svg viewBox="0 0 24 24" class="h-6 w-6 text-ink-dim" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d={step.icon} />
+            </svg>
+            <h3 class="mt-6 text-[1.125rem] font-medium leading-snug text-ink">{step.phase}</h3>
+            <p class="text-[1.125rem] leading-snug text-ink-faint">{step.title}</p>
+            <p class="mt-4 max-w-xl text-ink-dim">{step.body}</p>
+            <ul class="mt-auto flex flex-wrap gap-2 pt-8" aria-label={`${step.phase} tools`}>
+              {step.tools.split(', ').map((tool) => (
+                <li class="process-chip">{tool}</li>
+              ))}
+            </ul>
           </li>
         ))
       }
+      <span class="bp-sq bp-sq--t bp-sq--l" aria-hidden="true"></span>
+      <span class="bp-sq bp-sq--t bp-sq--r" aria-hidden="true"></span>
+      <span class="bp-sq bp-sq--b bp-sq--l" aria-hidden="true"></span>
+      <span class="bp-sq bp-sq--b bp-sq--r" aria-hidden="true"></span>
     </ol>
   </section>
+
+  {/* The toolchain under the process — its own page, /how-i-work. */}
+  <WorkbenchCta />
 
   {/* Experience --------------------------------------------------------- */}
   <section
@@ -436,7 +509,7 @@ const inPractice = [
   >
     <RuleCross />
     <div class="flex items-end justify-between gap-6">
-      <h2 id="experience" class="font-display text-title font-normal text-ink" data-anim="reveal-heading">
+      <h2 id="experience" class="font-display text-title text-ink" data-anim="reveal-heading">
         Experience
       </h2>
       <a
@@ -494,6 +567,82 @@ const inPractice = [
 </BaseLayout>
 
 <style>
+  /* Process pipeline — dashed stations, solid connectors, a dashed return. */
+  .process-pipe {
+    position: relative;
+    max-width: 46rem;
+    margin-inline: auto;
+  }
+  .process-pipe__row {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  .process-pipe__stop {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1rem;
+    border: 1px dashed var(--color-line);
+    border-radius: var(--radius-ui);
+    background: var(--color-surface);
+    color: var(--color-ink);
+    font-size: 0.875rem;
+  }
+  .process-pipe__stop svg {
+    color: var(--color-ink-dim);
+  }
+  .process-pipe__link {
+    flex: 1 1 auto;
+    min-width: 0.75rem;
+    height: 1px;
+    background: var(--color-line);
+  }
+  /* The return: from under Check back to under Research — a bracket drawn in
+     the same dash as the stations, with an arrowhead pointing back up. */
+  .process-pipe__loop {
+    position: absolute;
+    left: 3.25rem;
+    right: 3.25rem;
+    top: calc(100% - 3.5rem);
+    height: 1.5rem;
+    border: 1px dashed var(--color-line);
+    border-top: 0;
+    border-radius: 0 0 var(--radius-ui) var(--radius-ui);
+  }
+  .process-pipe__loop::before {
+    content: '';
+    position: absolute;
+    left: -4px;
+    top: -1px;
+    border: 4px solid transparent;
+    border-bottom: 6px solid var(--color-ink-faint);
+    transform: translateY(-100%);
+  }
+  @media (max-width: 47.9375rem) {
+    .process-pipe__row {
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+    .process-pipe__link,
+    .process-pipe__loop {
+      display: none;
+    }
+  }
+
+  .process-chip {
+    padding: 0.25rem 0.625rem;
+    border: 1px dashed var(--color-line);
+    border-radius: var(--radius-ui);
+    color: var(--color-ink-dim);
+    font-size: 0.8125rem;
+    line-height: 1.4;
+  }
+
   /*
     Ruled principles grid.
 

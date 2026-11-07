@@ -12,6 +12,13 @@ import { email, socials } from '../data/contact';
 const links = [
   { href: '/#work', label: 'Work' },
   { href: '/about', label: 'About' },
+  // "AI", not "How I work with AI": the page's own h1 says the rest, and two
+  // letters are what fit beside the wordmark. Measured: with the mobile gap at
+  // 1rem it lands inside the content edge down to 360px; at 320px the wordmark
+  // and three links cannot fit at all, so below 360px it hides (`narrow`) —
+  // the same trade Connect makes below `sm`. The homepage and /about both
+  // carry a link band to the page, so nothing becomes unreachable.
+  { href: '/how-i-work', label: 'AI', narrow: true },
 ];
 
 const path = Astro.url.pathname;
@@ -46,10 +53,10 @@ const availableForWork = true;
 
   {/* Centre nav */}
   <nav aria-label="Primary" class="justify-self-end sm:justify-self-center">
-    <ul class="flex items-center gap-6 sm:gap-7">
+    <ul class="flex items-center gap-4 sm:gap-7">
       {
         links.map((link) => (
-          <li>
+          <li class:list={[link.narrow && 'max-[22.5rem]:hidden']}>
             <a
               href={link.href}
               aria-current={path.startsWith(link.href) ? 'page' : undefined}
@@ -326,53 +333,44 @@ const availableForWork = true;
 
 <script>
   /*
-   * The Connect disclosure. The nav is `transition:persist`, and Astro runs a
-   * bundled module script once per document, so this binds exactly once and
-   * survives every client-side navigation along with the markup it drives.
+   * The Connect disclosure. Astro runs a bundled module script once per
+   * document, so this binds exactly once — and therefore **never holds an
+   * element reference**. The `[data-nav]` node on the page after a client-side
+   * swap is not reliably the one that existed when this ran (see nav.ts), and
+   * handlers bound to captured nodes went dead after the first navigation:
+   * Connect stopped opening. Everything is delegated from `document` and looks
+   * the live elements up per event.
    */
-  const root = document.querySelector<HTMLElement>('[data-connect]');
-  const toggle = root?.querySelector<HTMLButtonElement>('[data-connect-toggle]');
-  const nav = document.querySelector<HTMLElement>('[data-nav]');
+  const parts = () => {
+    const root = document.querySelector<HTMLElement>('[data-connect]');
+    const toggle = root?.querySelector<HTMLButtonElement>('[data-connect-toggle]') ?? null;
+    return { root, toggle };
+  };
+  const setOpen = (open: boolean) => {
+    const { root, toggle } = parts();
+    if (!root || !toggle) return;
+    root.toggleAttribute('data-open', open);
+    toggle.setAttribute('aria-expanded', String(open));
+  };
+  const isOpen = () => !!parts().root?.hasAttribute('data-open');
 
-  if (root && toggle) {
-    const setOpen = (open: boolean) => {
-      root.toggleAttribute('data-open', open);
-      toggle.setAttribute('aria-expanded', String(open));
-    };
-    const isOpen = () => root.hasAttribute('data-open');
+  let reset: ReturnType<typeof setTimeout> | undefined;
 
-    toggle.addEventListener('click', () => setOpen(!isOpen()));
+  document.addEventListener('click', async (e) => {
+    const { root } = parts();
+    if (!root) return;
+    const target = e.target as Element;
 
-    // Outside click and Escape both close it; Escape hands focus back to the
-    // toggle so a keyboard user is not left focused on a hidden panel.
-    document.addEventListener('click', (e) => {
-      if (isOpen() && !root.contains(e.target as Node)) setOpen(false);
-    });
-    document.addEventListener('keydown', (e) => {
-      if (e.key !== 'Escape' || !isOpen()) return;
-      setOpen(false);
-      toggle.focus();
-    });
-    // Tabbing out past the last profile closes it too.
-    root.addEventListener('focusout', (e) => {
-      if (!root.contains(e.relatedTarget as Node | null)) setOpen(false);
-    });
-
-    // The bar retracts on scroll down; an open panel would ride up with it
-    // and come back open later, which reads as stale.
-    if (nav) {
-      new MutationObserver(() => {
-        if (nav.dataset.navState === 'hidden') setOpen(false);
-      }).observe(nav, { attributes: true, attributeFilter: ['data-nav-state'] });
+    if (target.closest('[data-connect-toggle]')) {
+      setOpen(!isOpen());
+      return;
     }
-    document.addEventListener('astro:before-swap', () => setOpen(false));
 
     // Copy, with its own label — the footer's handler keys off `[data-copy]`
     // and writes its feedback into the footer, so this stays separate.
-    const copy = root.querySelector<HTMLButtonElement>('[data-connect-copy]');
-    const label = root.querySelector<HTMLElement>('[data-connect-copy-label]');
-    let reset: ReturnType<typeof setTimeout> | undefined;
-    copy?.addEventListener('click', async () => {
+    const copy = target.closest<HTMLButtonElement>('[data-connect-copy]');
+    if (copy) {
+      const label = root.querySelector<HTMLElement>('[data-connect-copy-label]');
       let ok = true;
       try {
         await navigator.clipboard.writeText(copy.dataset.connectCopy!);
@@ -383,6 +381,42 @@ const availableForWork = true;
       clearTimeout(reset);
       label.textContent = ok ? 'Copied!' : 'Press ⌘C to copy';
       reset = setTimeout(() => (label.textContent = copy.dataset.connectCopy!), 2000);
+      return;
+    }
+
+    // Outside click closes it.
+    if (isOpen() && !root.contains(target)) setOpen(false);
+  });
+
+  // Escape closes it and hands focus back to the toggle, so a keyboard user is
+  // not left focused on a hidden panel.
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape' || !isOpen()) return;
+    setOpen(false);
+    parts().toggle?.focus();
+  });
+
+  // Tabbing out past the last profile closes it too.
+  document.addEventListener('focusout', (e) => {
+    const { root } = parts();
+    if (!root || !isOpen() || !root.contains(e.target as Node)) return;
+    if (!root.contains(e.relatedTarget as Node | null)) setOpen(false);
+  });
+
+  // The bar retracts on scroll down; an open panel would ride up with it and
+  // come back open later, which reads as stale. Observed per page, on the live
+  // bar, since the node can change across a swap.
+  let navObserver: MutationObserver | null = null;
+  const watchNav = () => {
+    navObserver?.disconnect();
+    const nav = document.querySelector<HTMLElement>('[data-nav]');
+    if (!nav) return;
+    navObserver = new MutationObserver(() => {
+      if (nav.dataset.navState === 'hidden') setOpen(false);
     });
-  }
+    navObserver.observe(nav, { attributes: true, attributeFilter: ['data-nav-state'] });
+  };
+  watchNav();
+  document.addEventListener('astro:page-load', watchNav);
+  document.addEventListener('astro:before-swap', () => setOpen(false));
 </script>

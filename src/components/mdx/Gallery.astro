@@ -52,7 +52,7 @@ const items = await Promise.all(
       class={inline ? 'my-12' : 'mx-auto max-w-6xl px-gutter py-section'}
       aria-label={heading ?? 'Process images'}
     >
-      {heading && <h2 class="font-display text-title font-normal text-ink">{heading}</h2>}
+      {heading && <h2 class="font-display text-title text-ink">{heading}</h2>}
 
       <ul
         class:list={[
@@ -353,6 +353,7 @@ const items = await Promise.all(
     font-size: var(--text-micro);
     letter-spacing: 0.14em;
     text-transform: uppercase;
+    font-family: var(--font-mono);
     cursor: pointer;
   }
 
@@ -404,6 +405,7 @@ const items = await Promise.all(
     font-size: var(--text-micro);
     letter-spacing: 0.14em;
     text-transform: uppercase;
+    font-family: var(--font-mono);
     color: var(--color-ink-faint);
   }
 

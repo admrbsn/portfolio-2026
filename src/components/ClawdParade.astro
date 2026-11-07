@@ -1,0 +1,273 @@
+---
+/*
+  The /how-i-work hero's joke, played straight: "Agents do the legwork", so
+  agents, literally, doing legwork. Four Clawds (Claude Code's mascot) march
+  along the hero's bottom edge, each carrying a piece of the work the page is
+  about — a PRD, a bug, a ticket, a chart — and loop off one side and back in
+  from the other.
+
+  Campy on purpose, so committed rather than faint: full size (3px per pixel),
+  full colour. The terracotta is Clawd's own and the one place it appears; a
+  blue Clawd isn't Clawd. That makes this file an off-brand island like the
+  Breakout CTA, allow-listed in `scripts/check-tokens.ts` for that reason.
+
+  Pixel rules, same as the Breakout sprites:
+  - One 16×18 grid per walker (item rows −6…1 above the head, Clawd 0…12),
+    `crispEdges`, scaled by whole pixels only.
+  - Walking is two leg frames swapped with `steps(1)` and a one-pixel bob on
+    the same clock. Anything eased reads as gliding, not walking.
+
+  Travel uses `cqw` (the parade is an inline-size container), so the march is
+  a transform across the hero's width rather than an animated `left` —
+  compositor-only. Delays are negative and a quarter-cycle apart, so the four
+  arrive already spaced out instead of entering in a clump.
+
+  Reduced / failed motion: no march, no legs — the four stand still, spaced
+  along the line, which still reads as the joke.
+*/
+const BODY = 'M2 2H14V6H16V8H14V10H2V8H0V6H2Z M4 4H5V6H4Z M11 4H12V6H11Z';
+// Legs: frame A has the outer pair down, frame B the inner pair.
+const LEGS_A = 'M3 10H4V12H3Z M5 10H6V11H5Z M10 10H11V11H10Z M12 10H13V12H12Z';
+const LEGS_B = 'M3 10H4V11H3Z M5 10H6V12H5Z M10 10H11V12H10Z M12 10H13V11H12Z';
+
+const ITEMS: Record<string, string> = {
+  // A PRD: a page with a folded corner and two lines.
+  prd: 'M5 -5H10V-4H11V2H5Z M6 -3H10V-2H6Z M6 -1H10V0H6Z',
+  // A bug, being carried off.
+  bug: 'M7 -4H9V-3H7Z M6 -3H10V2H6Z M5 -2H6V-1H5Z M10 -2H11V-1H10Z M5 0H6V1H5Z M10 0H11V1H10Z M6 -5H7V-4H6Z M9 -5H10V-4H9Z',
+  // A ticket, notched at both sides.
+  ticket: 'M5 -3H11V2H5Z M5 -1H6V0H5Z M10 -1H11V0H10Z M7 -1H9V0H7Z',
+  // A chart going the right way.
+  chart: 'M5 0H6V2H5Z M7 -2H8V2H7Z M9 -4H10V2H9Z',
+};
+
+const walkers = ['prd', 'bug', 'ticket', 'chart'];
+const CYCLE = 34; // seconds to cross the hero
+
+/*
+  The review station — the headline's second half. Each Clawd hands its item
+  over as it passes and walks on empty-handed; the station flips from NEEDS OK
+  to ✓ OK for a beat. Callback to the fan-out's "Needs OK" further down.
+
+  The station is a *waypoint* in the march, not a point the walker happens to
+  cross: the keyframes go START → station at ARRIVE → END. So the hand-off is
+  always the same fraction of the cycle, whatever the width — which is what
+  lets the station sit wherever the layout wants it. At `lg` that is flush
+  with the lead paragraph's left edge (`--station-x` in the CSS: the lead is
+  the grid's fixed 34rem right column, so its edge is 100cqw − shell-pad −
+  34rem in the parade's coordinates); below `lg` the lead is full width and
+  the station falls back to 62cqw. The walk is a little quicker after the
+  hand-off — unburdened — because the second leg is longer for the same time.
+*/
+const START = -12; // cqw — far enough left that a 48px walker starts out of frame on desktop
+const END = 104; // cqw
+const ARRIVE = 0.64; // fraction of the cycle at the hand-off — also the literal in `march` and `carry`
+const SPACING = CYCLE / walkers.length; // seconds between walkers
+// Walker i runs i·SPACING ahead, so arrivals land every SPACING seconds at
+// phase (ARRIVE·CYCLE) mod SPACING. The station's own clock is SPACING long
+// and starts its flip on that phase.
+const STATION_PHASE = (ARRIVE * CYCLE) % SPACING;
+---
+
+<div
+  class="parade"
+  aria-hidden="true"
+  style={`--cycle: ${CYCLE}s; --start: ${START}cqw; --end: ${END}cqw`}
+>
+  <span
+    class="station"
+    style={`--spacing: ${SPACING}s; animation-delay: ${STATION_PHASE.toFixed(2)}s`}
+  >
+    <span class="station__wait">Needs OK</span>
+    <span class="station__ok">✓ OK</span>
+  </span>
+  {
+    walkers.map((item, i) => (
+      <span
+        class="walker"
+        style={`animation-delay: ${(-i * CYCLE) / walkers.length}s; --rest: ${18 + i * 20}%`}
+      >
+        <svg
+          viewBox="0 -6 16 18"
+          width="48"
+          height="54"
+          class="walker__sprite"
+          shape-rendering="crispEdges"
+          style={`animation-delay: ${(-i * 0.13).toFixed(2)}s`}
+        >
+          <path
+            class="walker__item"
+            d={ITEMS[item]}
+            fill-rule="evenodd"
+            style={`animation-delay: ${(-i * CYCLE) / walkers.length}s`}
+          />
+          <path class="walker__body" d={BODY} fill-rule="evenodd" />
+          <path class="walker__legs walker__legs--a" d={LEGS_A} />
+          <path class="walker__legs walker__legs--b" d={LEGS_B} />
+        </svg>
+      </span>
+    ))
+  }
+</div>
+
+<style>
+  /* Between the rails: the Clawds walk out of the frame, not off the screen. */
+  .parade {
+    --station-x: 62cqw;
+    position: absolute;
+    left: var(--spacing-gutter);
+    right: var(--spacing-gutter);
+    bottom: 0;
+    z-index: 2;
+    height: 54px;
+    pointer-events: none;
+    container-type: inline-size;
+    overflow: hidden;
+  }
+
+  .walker {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    animation: march var(--cycle) linear infinite;
+    will-change: transform;
+  }
+  /* Three stops: in, the station at 64% (= ARRIVE), out. The walker's left
+     edge lands half a station in, so it is standing over the box at the
+     hand-off rather than at its doorstep. */
+  @keyframes march {
+    0% {
+      transform: translateX(var(--start));
+    }
+    64% {
+      transform: translateX(calc(var(--station-x) + 0.75rem));
+    }
+    100% {
+      transform: translateX(var(--end));
+    }
+  }
+
+  /* The hand-off: the item is carried up to the station and gone after it.
+     Same duration and delay as the walker's march, so `--arrive` lines up. */
+  .walker__item {
+    animation: carry var(--cycle) steps(1, end) infinite;
+  }
+  /* 64% = ARRIVE. Keyframe offsets can't take a custom property, so the
+     frontmatter constant, this, and the `march` waypoint are three copies of
+     one number — change them together. */
+  @keyframes carry {
+    0%, 63.99% { opacity: 1; }
+    64%, 100% { opacity: 0; }
+  }
+
+  /* The station: dashed, on the line, behind the walkers, its left edge at
+     `--station-x`. */
+  .station {
+    position: absolute;
+    left: var(--station-x);
+    bottom: 0;
+    z-index: 0;
+    display: grid;
+    padding: 0.3rem 0.55rem;
+    border: 1px dashed color-mix(in oklab, var(--color-accent-warm) 55%, var(--color-line));
+    border-bottom: 0;
+    border-radius: var(--radius-ui) var(--radius-ui) 0 0;
+    background: var(--color-surface);
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  /* Flush with the lead paragraph's left edge, where the lead sits in the
+     fixed 34rem right column. */
+  @media (min-width: 64rem) {
+    .parade {
+      --station-x: calc(100cqw - var(--spacing-shell-pad) - 34rem);
+    }
+  }
+  .station > span {
+    grid-area: 1 / 1;
+    text-align: center;
+  }
+  .station__wait {
+    color: var(--color-accent-warm);
+    animation: station-wait var(--spacing) steps(1, end) infinite;
+    animation-delay: inherit;
+  }
+  .station__ok {
+    color: var(--color-accent);
+    opacity: 0;
+    animation: station-ok var(--spacing) steps(1, end) infinite;
+    animation-delay: inherit;
+  }
+  @keyframes station-wait {
+    0%, 14% { opacity: 0; }
+    14.01%, 100% { opacity: 1; }
+  }
+  @keyframes station-ok {
+    0%, 14% { opacity: 1; }
+    14.01%, 100% { opacity: 0; }
+  }
+  .walker {
+    z-index: 1;
+  }
+
+  /* The step: legs swap and the body bobs a pixel (3px at this scale), on
+     one shared stepped clock. */
+  .walker__sprite {
+    display: block;
+    animation: bob 0.46s steps(1, end) infinite;
+  }
+  @keyframes bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+  }
+  .walker__legs--a { animation: leg-a 0.46s steps(1, end) infinite; }
+  .walker__legs--b { animation: leg-b 0.46s steps(1, end) infinite; }
+  @keyframes leg-a {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+  @keyframes leg-b {
+    0%, 100% { opacity: 0; }
+    50% { opacity: 1; }
+  }
+
+  /* Clawd's own terracotta — the documented exception (see header). */
+  .walker__body,
+  .walker__legs {
+    fill: #d97757;
+  }
+  .walker__item {
+    fill: var(--color-ink);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .walker {
+      animation: none;
+      left: var(--rest);
+    }
+    .walker__sprite,
+    .walker__legs--a,
+    .walker__legs--b {
+      animation: none;
+    }
+    .walker__legs--b {
+      opacity: 0;
+    }
+  }
+  :global(html[data-motion='reduced']) .walker,
+  :global(html[data-motion='failed']) .walker {
+    animation: none;
+    left: var(--rest);
+  }
+  :global(html[data-motion='reduced']) .walker *,
+  :global(html[data-motion='failed']) .walker * {
+    animation: none;
+  }
+  :global(html[data-motion='reduced']) .walker__legs--b,
+  :global(html[data-motion='failed']) .walker__legs--b {
+    opacity: 0;
+  }
+</style>

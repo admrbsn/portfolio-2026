@@ -1,0 +1,168 @@
+---
+import RuleCross from './RuleCross.astro';
+import ToolHeader from './ToolHeader.astro';
+
+/*
+  Impeccable, in depth. The grid is its actual command set, grouped the way
+  its README groups them, with descriptions kept close to the README's own one
+  line each. Invocation is `/impeccable <command> <target>`; `pin` makes a
+  standalone shortcut. The CI strip uses only documented behaviour: `npx
+  impeccable detect` with `--github` annotations, deterministic rules (no count on the
+  page — it changes between versions), exit code 2 on findings. Nothing here may be invented — it is the section most
+  likely to be read by someone who uses the tool.
+*/
+const groups: { name: string; note: string; cmds: [string, string][] }[] = [
+  {
+    name: 'Plan',
+    note: 'Before code exists',
+    cmds: [
+      ['init', 'Writes PRODUCT.md from the codebase'],
+      ['document', 'Writes DESIGN.md'],
+      ['shape', 'Plans the UX before code'],
+      ['extract', 'Pulls repeats into the system'],
+    ],
+  },
+  {
+    name: 'Steer',
+    note: 'Push it a direction',
+    cmds: [
+      ['bolder', 'Amplifies a safe design'],
+      ['quieter', 'Tones down a loud one'],
+      ['distill', 'Removes what isn’t needed'],
+      ['typeset', 'Fonts, hierarchy, sizing'],
+      ['layout', 'Spacing and rhythm'],
+      ['colorize', 'Colour for a grey interface'],
+      ['animate', 'Transitions and feedback'],
+      ['delight', 'Adds personality'],
+      ['overdrive', 'Shaders, springs, scroll effects'],
+    ],
+  },
+  {
+    name: 'Review & finish',
+    note: 'Before it ships',
+    cmds: [
+      ['critique', 'A scored UX review'],
+      ['audit', 'A technical quality report'],
+      ['polish', 'The final pass'],
+      ['harden', 'Errors, i18n, overflow, edge cases'],
+      ['clarify', 'Rewrites unclear copy'],
+      ['adapt', 'Screen sizes and devices'],
+      ['optimize', 'Loading and rendering'],
+      ['onboard', 'First-run and empty states'],
+    ],
+  },
+  {
+    name: 'Iterate live',
+    note: 'In the browser',
+    cmds: [
+      ['live', 'Pick an element, cycle variants'],
+      ['generate', 'Variants of a named element'],
+    ],
+  },
+];
+---
+
+<section
+  class="relative border-t border-line px-shell py-section"
+  aria-labelledby="impeccable"
+  data-blueprint="The Taste Layer"
+>
+  <RuleCross />
+  <ToolHeader id="impeccable" eyebrow="Impeccable" title="Taste, as a command" dur="11.9s" delay="7s">
+    <p>
+      Agents write competent, forgettable UI by default. Impeccable is a design skill for coding
+      agents, built on Anthropic’s frontend-design skill, that gives them a vocabulary for taste:
+      commands I aim at a narrow target, judged against the PRODUCT.md and DESIGN.md it writes for
+      the project.
+    </p>
+    <p>
+      A narrow target beats a whole page. <span class="font-mono text-[0.875rem] text-ink">/impeccable critique the
+      pricing cards</span> gets a better answer than “make the site nicer” ever will.
+    </p>
+  </ToolHeader>
+
+  <div class="relative -mx-shell-pad mt-16 grid grid-cols-1 border-y border-line sm:grid-cols-2 lg:grid-cols-4" data-anim="reveal-batch">
+    <span class="bp-sq bp-sq--t bp-sq--l" aria-hidden="true"></span>
+    <span class="bp-sq bp-sq--t bp-sq--r" aria-hidden="true"></span>
+    <span class="bp-sq bp-sq--b bp-sq--l" aria-hidden="true"></span>
+    <span class="bp-sq bp-sq--b bp-sq--r" aria-hidden="true"></span>
+    {
+      groups.map((g, i) => (
+        <div
+          class:list={[
+            'relative px-shell-pad py-8',
+            i > 0 && 'border-t border-line',
+            i === 1 && 'sm:border-l sm:border-t-0',
+            i === 2 && 'lg:border-l lg:border-t-0',
+            i === 3 && 'sm:border-l lg:border-t-0',
+          ]}
+        >
+          {/* Crossings: below sm each internal rule meets both rails; at sm
+              (2×2) the row rule crosses the rails and the divider; at lg (1×4)
+              the three dividers each meet both frame rules. */}
+          {i > 0 && (
+            <>
+              <span class="bp-sq bp-sq--t bp-sq--l sm:hidden" aria-hidden="true" />
+              <span class="bp-sq bp-sq--t bp-sq--r sm:hidden" aria-hidden="true" />
+            </>
+          )}
+          {i === 1 && <span class="bp-sq bp-sq--t bp-sq--l hidden sm:block" aria-hidden="true" />}
+          {i === 2 && <span class="bp-sq bp-sq--t bp-sq--l hidden sm:block" aria-hidden="true" />}
+          {i === 3 && (
+            <>
+              <span class="bp-sq bp-sq--t bp-sq--l hidden sm:block lg:hidden" aria-hidden="true" />
+              <span class="bp-sq bp-sq--t bp-sq--r hidden sm:block lg:hidden" aria-hidden="true" />
+              <span class="bp-sq bp-sq--t bp-sq--l hidden lg:block" aria-hidden="true" />
+              <span class="bp-sq bp-sq--b bp-sq--l hidden sm:block" aria-hidden="true" />
+            </>
+          )}
+          {i === 1 && <span class="bp-sq bp-sq--b bp-sq--l hidden lg:block" aria-hidden="true" />}
+          {i === 2 && <span class="bp-sq bp-sq--b bp-sq--l hidden lg:block" aria-hidden="true" />}
+
+          <p class="text-[1.0625rem] font-medium text-ink">{g.name}</p>
+          <p class="text-[0.9375rem] text-ink-faint">{g.note}</p>
+          <ul class="mt-6 space-y-3">
+            {g.cmds.map(([c, d]) => (
+              <li class="grid grid-cols-[6.25rem_minmax(0,1fr)] items-baseline gap-3">
+                <span class="imp-cmd">{c}</span>
+                <span class="text-[0.8125rem] leading-snug text-ink-dim">{d}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))
+    }
+  </div>
+
+  {/* The gate ------------------------------------------------------------ */}
+  <div class="mt-16 grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-center" data-anim="reveal">
+    <div class="rounded-ui border border-line bg-surface-lift px-5 py-4 font-mono text-[0.8125rem] leading-[1.9] text-ink-dim" aria-hidden="true">
+      <p><span class="text-ink-faint"># the one I use most, as its own shortcut</span></p>
+      <p><span class="text-accent-warm">/impeccable</span> <span class="text-accent">pin</span> audit</p>
+      <p><span class="text-accent-warm">/audit</span></p>
+      <p class="mt-3"><span class="text-ink-faint"># the same rules, no agent, on every PR</span></p>
+      <p><span class="text-ink-faint">$</span> <span class="text-accent-warm">npx impeccable detect</span> <span class="text-accent">--github</span> src/</p>
+      <p><span class="text-ink-faint">exit 2 · findings — the check fails</span></p>
+    </div>
+    <div>
+      <p class="text-[1.0625rem] font-medium text-ink">Drift fails the build</p>
+      <p class="mt-2 max-w-lg text-ink-dim">
+        The detector runs a set of deterministic rules without an agent in the loop, and annotates
+        the pull request on GitHub. Taste stops being a review comment someone has to remember to
+        leave, and becomes a check that has to pass.
+      </p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .imp-cmd {
+    justify-self: start;
+    padding: 0.1rem 0.5rem;
+    border: 1px dashed var(--color-line);
+    border-radius: var(--radius-ui);
+    color: var(--color-ink);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+  }
+</style>

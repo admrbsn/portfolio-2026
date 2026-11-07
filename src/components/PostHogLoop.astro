@@ -1,0 +1,366 @@
+---
+import RuleCross from './RuleCross.astro';
+import BrandMark from './BrandMark.astro';
+import ToolHeader from './ToolHeader.astro';
+
+/*
+  PostHog — the product watching itself. Three layers:
+
+  1. The self-driving loop, drawn as a pipeline (cloudflare.com's request-path
+     device). Stages and terms are PostHog's own: Replay Vision runs AI over
+     session replays (flags bugs, scores frustration, summarises); signals
+     collect in the Inbox, are grouped into reports and researched by
+     background agents, and can become pull requests (open beta). Engineers
+     still merge; the caption says so, because "self-driving" over-reads
+     otherwise. No pricing on the page: it is the vendor's to change, and on a
+     portfolio it reads as an ad.
+  2. Three cells: a replay finding (UX bugs), an error linked to its replay
+     (dev bugs — Error Tracking links every issue to the session), and the
+     experiment + flag pair (experiments are built on flags; flags do gradual
+     rollouts, kill switches and holdouts).
+  3. Every figure in the three mocks is made up for the illustration, and a
+     caption above the grid says so (above, not below: the band under the
+     grid is hatched dead space, and type does not sit on the hatch). Only the PRD section uses real numbers.
+*/
+const loop = ['Replay Vision', 'Inbox', 'Background agent', 'Pull request', 'You merge'];
+const marks = [
+  { at: 18, kind: 'rage', label: 'Rage click' },
+  { at: 47, kind: 'dead', label: 'Dead click' },
+  { at: 71, kind: 'err', label: 'Exception' },
+];
+const steps = [5, 25, 50, 100];
+---
+
+<section
+  class="relative border-t border-line px-shell py-section"
+  aria-labelledby="posthog"
+  data-blueprint="The Feedback Loop"
+  data-dead="bottom"
+>
+  <RuleCross />
+  <ToolHeader id="posthog" brand="posthog" eyebrow="PostHog · Self-driving" title="The product files its own bug reports" dur="14.9s" delay="4s">
+    <p>
+      PostHog is where the work gets judged after it ships. Replays, errors, funnels and
+      experiments in one place, and now an AI layer that watches the replays for me, files what it
+      finds, and can open the pull request that fixes it.
+    </p>
+    <p>
+      Self-driving means autonomy from my instructions, not from engineers. Every fix still goes
+      through review, and every release still goes out behind a flag.
+    </p>
+  </ToolHeader>
+
+  {/* The loop ----------------------------------------------------------- */}
+  <div class="ph-loop mt-16" aria-hidden="true" data-anim="reveal">
+    <div class="ph-loop__row">
+      {
+        loop.map((stage, i) => (
+          <>
+            {i > 0 && (
+              <span class="ph-loop__link">
+                <span class="ph-loop__packet" style={`animation-delay: ${((i - 1) * 0.8).toFixed(1)}s`} />
+              </span>
+            )}
+            <span class:list={['ph-loop__stop', i === loop.length - 1 && 'ph-loop__stop--human']}>
+              {i === 0 && <BrandMark name="posthog" class="h-3.5 w-3.5 text-ink-dim" />}
+              {stage === 'Background agent' && <span class="agent-dot" />}
+              {stage}
+            </span>
+          </>
+        ))
+      }
+    </div>
+    <p class="mt-5 text-center text-[0.8125rem] text-ink-faint">
+      Open beta · the agent proposes the fix · a person still merges
+    </p>
+    <p class="mt-1 text-center text-[0.75rem] text-ink-faint">The mocks below are illustrative; their numbers are not real data.</p>
+  </div>
+
+  {/* Three instruments --------------------------------------------------- */}
+  <div class="relative -mx-shell-pad mt-16 grid grid-cols-1 border-y border-line lg:grid-cols-3 lg:grid-rows-[auto_auto]" data-anim="reveal-batch">
+    <span class="bp-sq bp-sq--t bp-sq--l" aria-hidden="true"></span>
+    <span class="bp-sq bp-sq--t bp-sq--r" aria-hidden="true"></span>
+    <span class="bp-sq bp-sq--b bp-sq--l" aria-hidden="true"></span>
+    <span class="bp-sq bp-sq--b bp-sq--r" aria-hidden="true"></span>
+
+    {/* 1 · UX bugs */}
+    <div class="relative flex flex-col px-shell-pad py-8 lg:row-span-2 lg:grid lg:grid-rows-subgrid lg:gap-0">
+      <div class="ph-card" aria-hidden="true">
+        <div class="flex items-center justify-between font-mono text-[0.625rem] text-ink-faint">
+          <span>Replay · contributor, iOS</span>
+          <span class="ph-score">Frustration 8.4</span>
+        </div>
+        <div class="ph-track mt-4">
+          {marks.map((m) => <span class={`ph-mark ph-mark--${m.kind}`} style={`left: ${m.at}%`} title={m.label} />)}
+          <span class="ph-head" style="left: 47%" />
+        </div>
+        <div class="mt-2 flex justify-between font-mono text-[0.5625rem] text-ink-faint">
+          <span>0:00</span><span>1:18</span>
+        </div>
+        <p class="mt-4 text-[0.8125rem] leading-relaxed text-ink-dim">
+          Tapped Record four times while the button was disabled during camera setup, then left.
+        </p>
+      </div>
+      <div class="mt-8">
+      <p class="text-[1.0625rem] font-medium text-ink">UX bugs, found in the replays</p>
+      <p class="mt-2 text-[0.9375rem] leading-relaxed text-ink-dim">
+        Replay Vision watches sessions so I don’t have to: it flags the rage clicks and dead ends,
+        scores how frustrated someone was, and writes up what happened.
+      </p>
+      </div>
+    </div>
+
+    {/* 2 · Dev bugs */}
+    <div class="relative flex flex-col border-t border-line px-shell-pad py-8 lg:row-span-2 lg:grid lg:grid-rows-subgrid lg:gap-0 lg:border-l lg:border-t-0">
+      <span class="bp-sq bp-sq--t bp-sq--l lg:hidden" aria-hidden="true"></span>
+      <span class="bp-sq bp-sq--t bp-sq--r lg:hidden" aria-hidden="true"></span>
+      <span class="bp-sq bp-sq--t bp-sq--l hidden lg:block" aria-hidden="true"></span>
+      <span class="bp-sq bp-sq--b bp-sq--l hidden lg:block" aria-hidden="true"></span>
+      <div class="ph-card font-mono text-[0.6875rem]" aria-hidden="true">
+        <p class="text-accent-warm">TypeError</p>
+        <p class="mt-1 text-ink">Cannot read properties of null (reading ‘getTracks’)</p>
+        <p class="mt-3 text-ink-faint">recorder/stream.ts:88 · 212 users · 3 releases</p>
+        <div class="mt-4 flex flex-wrap gap-1.5">
+          <span class="ph-chip">▶ Linked replay</span>
+          <span class="ph-chip">Inbox report</span>
+          <span class="ph-chip ph-chip--pr">Fix PR opened</span>
+        </div>
+      </div>
+      <div class="mt-8">
+      <p class="text-[1.0625rem] font-medium text-ink">Dev bugs, with the session attached</p>
+      <p class="mt-2 text-[0.9375rem] leading-relaxed text-ink-dim">
+        Every error comes with the replay it happened in, so nobody has to reproduce it from a
+        stack trace. The Inbox groups the signal, and an agent researches it into a fix.
+      </p>
+      </div>
+    </div>
+
+    {/* 3 · Experiments + flags */}
+    <div class="relative flex flex-col border-t border-line px-shell-pad py-8 lg:row-span-2 lg:grid lg:grid-rows-subgrid lg:gap-0 lg:border-l lg:border-t-0">
+      <span class="bp-sq bp-sq--t bp-sq--l lg:hidden" aria-hidden="true"></span>
+      <span class="bp-sq bp-sq--t bp-sq--r lg:hidden" aria-hidden="true"></span>
+      <span class="bp-sq bp-sq--t bp-sq--l hidden lg:block" aria-hidden="true"></span>
+      <span class="bp-sq bp-sq--b bp-sq--l hidden lg:block" aria-hidden="true"></span>
+      <div class="ph-card" aria-hidden="true">
+        <p class="font-mono text-[0.625rem] text-ink-faint">Experiment · progress vs spinner</p>
+        <div class="mt-4 space-y-2.5 font-mono text-[0.6875rem]">
+          <div>
+            <div class="flex justify-between text-ink-dim"><span>Control</span><span>42.0%</span></div>
+            <div class="ph-bar mt-1"><span style="width: 42%" /></div>
+          </div>
+          <div>
+            <div class="flex justify-between text-ink"><span>Progress bar</span><span>51.6%</span></div>
+            <div class="ph-bar ph-bar--win mt-1"><span style="width: 51.6%" /></div>
+          </div>
+        </div>
+        <p class="mt-5 font-mono text-[0.625rem] text-ink-faint">Flag · recording-flow-v2</p>
+        <div class="ph-roll mt-2">
+          {steps.map((s, i) => <span class:list={['ph-roll__step', i <= 2 && 'is-on']}>{s}%</span>)}
+        </div>
+        <p class="mt-3 flex items-center justify-between font-mono text-[0.625rem] text-ink-faint">
+          <span>Holdout 10%</span>
+          <span class="flex items-center gap-1.5">Kill switch <span class="ph-switch" /></span>
+        </p>
+      </div>
+      <div class="mt-8">
+      <p class="text-[1.0625rem] font-medium text-ink">Ship behind a flag, prove it with a test</p>
+      <p class="mt-2 text-[0.9375rem] leading-relaxed text-ink-dim">
+        Experiments run on the same flags as releases: a staged rollout, a holdout to measure
+        against, and a kill switch if the numbers turn. Nothing goes to everyone on a hunch.
+      </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* The loop — dashed stations, solid connectors. Each link carries a packet,
+     staggered by 0.8s down the chain, so the eye reads one signal moving from
+     replay to merge rather than four things happening at once. */
+  .ph-loop__row {
+    display: flex;
+    align-items: center;
+    max-width: 64rem;
+    margin-inline: auto;
+  }
+  .ph-loop__stop {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 0.9rem;
+    border: 1px dashed var(--color-line);
+    border-radius: var(--radius-ui);
+    background: var(--color-surface);
+    color: var(--color-ink);
+    font-size: 0.8125rem;
+    white-space: nowrap;
+  }
+  .ph-loop__stop--human {
+    border-style: solid;
+    border-color: var(--color-accent);
+  }
+  .ph-loop__link {
+    position: relative;
+    flex: 1 1 auto;
+    min-width: 1rem;
+    height: 1px;
+    background: var(--color-line);
+  }
+  .ph-loop__packet {
+    position: absolute;
+    top: -2px;
+    left: 0;
+    width: 5px;
+    height: 5px;
+    background: var(--color-accent);
+    animation: ph-packet 3.2s var(--ease-in-out-quart) infinite;
+  }
+  @keyframes ph-packet {
+    0% { left: 0; opacity: 0; }
+    15% { opacity: 1; }
+    85% { opacity: 1; }
+    100% { left: calc(100% - 5px); opacity: 0; }
+  }
+  @media (max-width: 63.9375rem) {
+    .ph-loop__row {
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    .ph-loop__link {
+      display: none;
+    }
+  }
+
+  /* At lg the three cells share a subgrid row, so every card stretches to the
+     tallest one and the titles beneath all start on one line. */
+  .ph-card {
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-ui);
+    background: var(--color-surface-lift);
+  }
+  .ph-score {
+    padding: 0.05rem 0.4rem;
+    border: 1px dashed var(--color-line);
+    border-radius: var(--radius-ui);
+  }
+  .ph-score {
+    color: var(--color-accent-warm);
+    border-color: color-mix(in oklab, var(--color-accent-warm) 45%, var(--color-line));
+  }
+
+  /* Replay scrubber */
+  .ph-track {
+    position: relative;
+    height: 4px;
+    border-radius: var(--radius-ui);
+    background: var(--color-line);
+  }
+  .ph-track::before {
+    content: '';
+    position: absolute;
+    inset: 0 53% 0 0;
+    border-radius: inherit;
+    background: color-mix(in oklab, var(--color-ink) 35%, transparent);
+  }
+  .ph-mark {
+    position: absolute;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    border-radius: 9999px;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 0 2px var(--color-surface-lift);
+  }
+  .ph-mark--rage { background: var(--color-accent-warm); }
+  .ph-mark--dead { background: var(--color-ink-dim); }
+  .ph-mark--err { background: var(--color-accent); }
+  .ph-head {
+    position: absolute;
+    top: -5px;
+    width: 1px;
+    height: 14px;
+    background: var(--color-ink);
+  }
+
+  .ph-chip {
+    padding: 0.1rem 0.45rem;
+    border: 1px dashed var(--color-line);
+    border-radius: var(--radius-ui);
+    color: var(--color-ink-dim);
+    font-size: 0.625rem;
+  }
+  .ph-chip--pr {
+    border-color: color-mix(in oklab, var(--color-accent) 50%, var(--color-line));
+    color: var(--color-accent);
+  }
+
+  /* Experiment bars */
+  .ph-bar {
+    height: 6px;
+    border-radius: var(--radius-ui);
+    background: var(--color-line);
+    overflow: hidden;
+  }
+  .ph-bar > span {
+    display: block;
+    height: 100%;
+    background: var(--color-ink-faint);
+  }
+  .ph-bar--win > span {
+    background: linear-gradient(90deg, var(--color-accent), var(--color-accent-warm));
+  }
+
+  /* Rollout — stepped, like the flag's own stages. */
+  .ph-roll {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 3px;
+  }
+  .ph-roll__step {
+    padding: 0.3rem 0;
+    border: 1px dashed var(--color-line);
+    border-radius: var(--radius-ui);
+    color: var(--color-ink-faint);
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    text-align: center;
+  }
+  .ph-roll__step.is-on {
+    border-style: solid;
+    border-color: color-mix(in oklab, var(--color-accent) 55%, var(--color-line));
+    background: color-mix(in oklab, var(--color-accent) 12%, transparent);
+    color: var(--color-ink);
+  }
+  .ph-switch {
+    position: relative;
+    width: 1.5rem;
+    height: 0.8rem;
+    border: 1px solid var(--color-line);
+    border-radius: 9999px;
+  }
+  .ph-switch::after {
+    content: '';
+    position: absolute;
+    top: 1px;
+    left: 1px;
+    width: calc(0.8rem - 4px);
+    height: calc(0.8rem - 4px);
+    border-radius: 9999px;
+    background: var(--color-ink-faint);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ph-loop__packet {
+      animation: none;
+      left: calc(50% - 2.5px);
+    }
+  }
+  :global(html[data-motion='reduced']) .ph-loop__packet,
+  :global(html[data-motion='failed']) .ph-loop__packet {
+    animation: none;
+    left: calc(50% - 2.5px);
+  }
+</style>

@@ -1,0 +1,178 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import NoiseGradient from '../components/NoiseGradient.astro';
+import RuleCross from '../components/RuleCross.astro';
+import ArrowUpRight from '../components/ArrowUpRight.astro';
+import NotionHub from '../components/NotionHub.astro';
+import Workbench from '../components/Workbench.astro';
+import RelumeGrid from '../components/RelumeGrid.astro';
+import FigmaNow from '../components/FigmaNow.astro';
+import NotionPrd from '../components/NotionPrd.astro';
+import ImpeccableDeep from '../components/ImpeccableDeep.astro';
+import FernDocs from '../components/FernDocs.astro';
+import LinearBoard from '../components/LinearBoard.astro';
+import PostHogLoop from '../components/PostHogLoop.astro';
+import TeamSystem from '../components/TeamSystem.astro';
+import ClawdParade from '../components/ClawdParade.astro';
+import BrandMark from '../components/BrandMark.astro';
+import type { Brand } from '../data/brands';
+
+/*
+  How I work with AI. Its own page because it grew past a section — it is a
+  process story, where the homepage is outcomes and /about is how I lead. Both
+  link here through `WorkbenchCta`, and the nav carries it as "AI".
+
+  Order is the argument, and it follows one piece of work (the recording-flow
+  redesign) through the whole chain: where it is coordinated (the Notion hub),
+  how it is specified (PRDs), how it is made (the workbench, Impeccable),
+  where its structure and contracts come from (Relume, Fern), how it is
+  planned (Linear), how it is judged once live (PostHog), how it scales past
+  me (the team), and what Figma is for now. It is framed — in the hero, on
+  purpose — as how I'd run that redesign *today*: it shipped in 2024, before
+  most of these tools existed.
+*/
+const chapters: { href: string; label: string; brand?: Brand }[] = [
+  { href: '#point-guard', label: 'The hub', brand: 'notion' },
+  { href: '#prds', label: 'PRDs', brand: 'notion' },
+  { href: '#workbench', label: 'Workbench' },
+  { href: '#impeccable', label: 'Impeccable' },
+  { href: '#relume', label: 'Relume', brand: 'relume' },
+  { href: '#fern', label: 'Fern', brand: 'fern' },
+  { href: '#linear', label: 'Linear', brand: 'linear' },
+  { href: '#posthog', label: 'PostHog', brand: 'posthog' },
+  { href: '#team', label: 'The team' },
+  { href: '#figma-now', label: 'Figma', brand: 'figma' },
+];
+---
+
+<BaseLayout
+  title="How I work with AI · Adam Robertson"
+  description="One redesign through an AI-first toolchain: Notion as the hub for MCP-connected agents, evidence-cited PRDs, briefs for Claude Code, Impeccable taste passes, Relume, Fern docs, Linear, and PostHog’s self-driving loop."
+>
+  <div class="page-rails">
+    {/* Hero — text-first, on the about page's pattern and scale. No
+        `data-blueprint`: its caption would collide with the nav's. */}
+    <section class="relative flex min-h-[62svh] flex-col overflow-hidden px-shell pb-28 pt-36">
+      <NoiseGradient intensity="soft" />
+      {/* Agents, doing the legwork — along the rule under the hero. */}
+      <ClawdParade />
+      <div class="relative z-10 my-auto w-full">
+        {/*
+          Headline across the full width, one sentence per line from `md` up,
+          then the lead under it on the right. Beside the lead (the /about
+          pattern) the h1 got ~60% of the row, and in Syne that broke it into
+          three ragged lines that split the gradient phrase mid-sentence.
+        */}
+        <div class="grid gap-y-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,34rem)]">
+          {/* No eyebrow: the page heroes match /about's — headline, then lead. */}
+          <div class="lg:col-span-2">
+            <h1
+              class="font-display text-[clamp(2.5rem,5.4vw,4.75rem)] leading-[1.05] tracking-[-0.02em] text-ink"
+              data-anim="reveal-heading"
+            >
+              Agents do the legwork.<br class="hidden md:block" />
+              {' '}I bring the <span class="phrase-gradient">judgment</span>.
+            </h1>
+          </div>
+          {/*
+            One paragraph, and it carries the framing on purpose: the thread
+            through the page is the recording-flow redesign, which shipped in
+            2024 — before most of these tools existed — so it is presented as
+            how I'd run it *today*. Keep that clause if this is ever rewritten.
+          */}
+          <p
+            class="max-w-xl text-[clamp(1.0625rem,1.35vw,1.3rem)] leading-[1.55] text-ink-lead lg:col-start-2"
+            data-anim="reveal"
+          >
+            I brief agents the way I used to brief engineers, and put working prototypes in front of
+            people in days, not sprints. This page follows one real redesign, the
+            <a href="/work/recording-flow" class="text-ink underline decoration-line underline-offset-4 transition-colors hover:text-accent hover:decoration-accent">recording flow</a>
+            (33% → 66.58%), run the way I’d run it today.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    {/* Chapters — one ruled row of links, the way a long docs page opens.
+        It scrolls sideways on a phone rather than wrapping into a block. */}
+    <nav aria-label="On this page" class="relative border-t border-line">
+      <RuleCross />
+      <ul class="chapters flex gap-2 overflow-x-auto px-shell py-5" data-lenis-prevent>
+        {
+          chapters.map((c, i) => (
+            <li class="shrink-0">
+              <a href={c.href} class="chapter">
+                <span class="font-mono text-[0.625rem] text-ink-faint">{String(i + 1).padStart(2, '0')}</span>
+                {c.brand && <BrandMark name={c.brand} class="h-3.5 w-3.5" />}
+                {c.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <NotionHub />
+    <NotionPrd />
+    <Workbench />
+    <ImpeccableDeep />
+    <RelumeGrid />
+    <FernDocs />
+    <LinearBoard />
+    <PostHogLoop />
+    <TeamSystem />
+    <FigmaNow />
+
+    {/* Close — back to what it produced. */}
+    <section class="relative border-t border-line px-shell py-section">
+      <RuleCross />
+      <div class="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
+        <div>
+          <h2 class="max-w-2xl font-display text-title text-ink" data-anim="reveal-heading">
+            See what it shipped
+          </h2>
+          <p class="mt-5 max-w-xl text-ink-dim" data-anim="reveal">
+            The recording flow went from 33% to 66.58% completion. The platform around it was rebuilt
+            in three months by a team of four.
+          </p>
+        </div>
+        <a
+          href="/#work"
+          class="group inline-flex shrink-0 items-center gap-2 text-micro uppercase tracking-[0.14em] text-ink-dim transition-colors hover:text-accent"
+          data-anim="reveal"
+        >
+          Selected work <ArrowUpRight />
+        </a>
+      </div>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .chapters {
+    scrollbar-width: none;
+  }
+  .chapters::-webkit-scrollbar {
+    display: none;
+  }
+  .chapter {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 0.8rem;
+    border: 1px dashed var(--color-line);
+    border-radius: var(--radius-ui);
+    color: var(--color-ink-dim);
+    font-size: 0.8125rem;
+    white-space: nowrap;
+    transition:
+      color var(--dur-fast) ease,
+      border-color var(--dur-fast) ease;
+  }
+  .chapter:hover,
+  .chapter:focus-visible {
+    border-style: solid;
+    border-color: color-mix(in oklab, var(--color-accent) 55%, var(--color-line));
+    color: var(--color-ink);
+  }
+</style>

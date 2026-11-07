@@ -1,0 +1,148 @@
+---
+import RuleCross from './RuleCross.astro';
+import BrandMark from './BrandMark.astro';
+
+/*
+  "Figma, now": the file everyone recognises — pages named "final FINAL", a
+  layers panel of `Frame 1428` — built in markup, not a screenshot, so it takes
+  the site's tokens. Decorative: a picture of a habit, not content.
+*/
+/* The Figma file, as everyone's looked. */
+const pages = ['Cover', 'Explorations', 'v3 — final', 'v3 — final FINAL', 'Archive (do not use)'];
+const layers: { name: string; depth: number; kind: 'frame' | 'group' | 'rect' | 'text' }[] = [
+  { name: 'Record — v15 (Copy)', depth: 0, kind: 'frame' },
+  { name: 'Frame 1428', depth: 1, kind: 'frame' },
+  { name: 'Group 88', depth: 2, kind: 'group' },
+  { name: 'Rectangle 12 copy', depth: 3, kind: 'rect' },
+  { name: 'Rectangle 12 copy 2', depth: 3, kind: 'rect' },
+  { name: 'Button / Primary / Final', depth: 2, kind: 'group' },
+  { name: 'Record your message', depth: 3, kind: 'text' },
+  { name: 'Frame 1429', depth: 1, kind: 'frame' },
+];
+const frames = ['Record — v14', 'Record — v15', 'Record — v15 (Copy)'];
+---
+
+<section
+  class="relative border-t border-line px-shell py-section"
+  aria-labelledby="figma-now"
+  data-blueprint="Still Open"
+>
+  <RuleCross />
+  <div class="grid grid-cols-1 items-center gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.55fr)] lg:gap-16">
+    <div data-anim="reveal">
+      <BrandMark name="figma" class="h-10 w-10 text-ink-dim" label />
+      <p class="mt-8 text-micro uppercase tracking-[0.14em] text-ink-faint">The sketchbook</p>
+      <h2
+        id="figma-now"
+        class="signal mt-6 scroll-mt-32 font-display text-title text-ink"
+        data-text="Figma, now"
+        style="--signal-dur: 14.3s; --signal-delay: 4s"
+      >
+        Figma, now
+      </h2>
+      <p class="mt-5 max-w-md text-ink-dim">
+        Still open, mostly as a sketchbook: a moodboard, a layout to argue with, a component to
+        poke at. It used to be where the work lived. Now the work starts as a brief and is running
+        code by the end of the day.
+      </p>
+    </div>
+
+    {/* The file. Decorative: it is a picture of a habit, not content. */}
+    <div class="fig overflow-hidden rounded-ui border border-line bg-surface-lift" aria-hidden="true" data-anim="reveal">
+      <div class="flex items-center justify-between border-b border-line px-4 py-2.5 font-mono text-[0.6875rem] text-ink-faint">
+        <span>Tribute v3 — FINAL (2)</span>
+        <span>100%</span>
+      </div>
+      <div class="grid grid-cols-[minmax(0,9.5rem)_minmax(0,1fr)] sm:grid-cols-[minmax(0,13rem)_minmax(0,1fr)]">
+        <div class="border-r border-line py-3 text-[0.75rem]">
+          <p class="px-4 pb-2 font-mono text-[0.625rem] uppercase tracking-[0.14em] text-ink-faint">Pages</p>
+          <ul>
+            {
+              pages.map((p) => (
+                <li class:list={['truncate px-4 py-1', p === 'v3 — final FINAL' ? 'bg-surface text-ink' : 'text-ink-dim']}>
+                  {p}
+                </li>
+              ))
+            }
+          </ul>
+          <p class="mt-3 border-t border-line px-4 pb-2 pt-3 font-mono text-[0.625rem] uppercase tracking-[0.14em] text-ink-faint">Layers</p>
+          <ul>
+            {
+              layers.map((l) => (
+                <li class="flex items-center gap-2 truncate py-1 pr-3 text-ink-dim" style={`padding-left: ${1 + l.depth * 0.75}rem`}>
+                  <span class:list={['fig-icon shrink-0', `fig-icon--${l.kind}`]} />
+                  <span class="truncate">{l.name}</span>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+
+        <div class="fig-canvas relative min-h-[19rem] overflow-hidden p-4 sm:p-5">
+          <div class="flex gap-4">
+            {
+              frames.map((f, i) => (
+                <div class:list={['min-w-0 flex-1', i > 0 && 'hidden sm:block']}>
+                  <p class="truncate pb-1.5 font-mono text-[0.625rem] text-ink-faint">{f}</p>
+                  <div class:list={['fig-frame rounded-ui border', i === 2 ? 'border-accent' : 'border-line']}>
+                    <div class="fig-bar h-2 w-1/2" />
+                    <div class="fig-block mt-3 aspect-[4/5] w-full" />
+                    <div class="fig-bar mt-3 h-1.5 w-3/4" />
+                    <div class="fig-bar mt-1.5 h-1.5 w-2/3" />
+                    <div class="fig-btn mt-4 h-5 w-full rounded-ui" />
+                  </div>
+                </div>
+              ))
+            }
+          </div>
+          <span class="fig-note absolute bottom-4 right-4 rotate-2 rounded-ui px-3 py-2 font-mono text-[0.6875rem] whitespace-nowrap text-surface sm:bottom-5 sm:right-5">
+            use this one??
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* The Figma file */
+  .fig-canvas {
+    background-color: var(--color-surface);
+    background-image: radial-gradient(var(--color-line) 1px, transparent 1px);
+    background-size: 14px 14px;
+  }
+  .fig-frame {
+    padding: 0.75rem;
+    background: var(--color-surface-lift);
+  }
+  .fig-block {
+    background-color: var(--hatch-fill);
+    background-image: var(--hatch);
+  }
+  .fig-bar {
+    background: var(--color-line);
+  }
+  .fig-btn {
+    background: color-mix(in oklab, var(--color-ink) 18%, transparent);
+  }
+  .fig-note {
+    background: var(--color-accent-warm);
+    box-shadow: 0 6px 20px rgb(0 0 0 / 0.35);
+  }
+
+  .fig-icon {
+    width: 0.625rem;
+    height: 0.625rem;
+    border: 1px solid var(--color-ink-faint);
+  }
+  .fig-icon--frame {
+    border-style: dashed;
+  }
+  .fig-icon--group {
+    border-style: dotted;
+  }
+  .fig-icon--text {
+    border: 0;
+    border-bottom: 1px solid var(--color-ink-faint);
+  }
+</style>

@@ -1,0 +1,309 @@
+---
+import RuleCross from './RuleCross.astro';
+import BrandMark from './BrandMark.astro';
+import type { Brand } from '../data/brands';
+
+/*
+  "Notion is the point guard" (/how-i-work). Notion here is not the notes app:
+  it is where a Custom Agent sits with MCP connections to every other tool, and
+  where the PRDs, design docs and wiki it writes live beside the work.
+
+  What is claimed is what Notion documents: Custom Agents take MCP
+  connections, either pre-configured apps or any tool with a hosted MCP
+  server; each connection is per agent; and write tools (create, update,
+  delete, send, post) ask for confirmation by default — which is why the
+  Linear and Slack steps in the trace below wait. Every spoke is a tool that
+  publishes an MCP server: Slack's official server has been GA since February
+  2026, and a Fern docs site serves one that answers from the docs and API
+  reference.
+
+  The diagram is positioned in a fixed-aspect box so one SVG of spokes can sit
+  under absolutely-positioned nodes without the lines distorting: the box and
+  the viewBox share a 16:9 ratio, so `preserveAspectRatio="none"` stretches
+  nothing. Below `md` there is no room for a hub-and-spoke, so it becomes the
+  hub over a two-column grid of the same nodes, and the spokes are dropped.
+*/
+
+type Node = { key: string; brand?: Brand; name: string; role: string; x: number; y: number };
+
+// Positions in viewBox units (160 × 90). The hub is at (80, 45).
+const nodes: Node[] = [
+  { key: 'figma', brand: 'figma', name: 'Figma', role: 'Explorations & files', x: 24, y: 17 },
+  { key: 'relume', brand: 'relume', name: 'Relume', role: 'Sitemaps & system', x: 80, y: 9 },
+  { key: 'github', brand: 'github', name: 'GitHub', role: 'Code & issues', x: 136, y: 17 },
+  { key: 'fern', brand: 'fern', name: 'Fern', role: 'API docs & dev wiki', x: 19, y: 45 },
+  { key: 'slack', brand: 'slack', name: 'Slack', role: 'Team comms', x: 141, y: 45 },
+  { key: 'posthog', brand: 'posthog', name: 'PostHog', role: 'Data & analytics', x: 24, y: 73 },
+  { key: 'docs', name: 'Docs & wiki', role: 'PRDs, design docs', x: 80, y: 81 },
+  { key: 'linear', brand: 'linear', name: 'Linear', role: 'Issues & projects', x: 136, y: 73 },
+];
+
+const HUB = { x: 80, y: 45 };
+
+const trace: { brand?: Brand; tool: string; action: string; wait?: boolean; local?: boolean }[] = [
+  { brand: 'posthog', tool: 'PostHog', action: 'Query the record → submit funnel, last 30 days' },
+  { brand: 'figma', tool: 'Figma', action: 'Read the current recording-flow explorations' },
+  { brand: 'relume', tool: 'Relume', action: 'Find where the flow sits in the sitemap' },
+  { brand: 'github', tool: 'GitHub', action: 'Search open issues labelled recording' },
+  { brand: 'fern', tool: 'Fern', action: 'Check the upload API’s limits in the reference' },
+  { tool: 'Notion', action: 'Draft the PRD from the team template, numbers cited', local: true },
+  { brand: 'linear', tool: 'Linear', action: 'Create issues for what we commit to', wait: true },
+  { brand: 'slack', tool: 'Slack', action: 'Post the draft to #recording-flow for review', wait: true },
+];
+---
+
+<section
+  class="relative border-t border-line px-shell py-section"
+  aria-labelledby="point-guard"
+  data-blueprint="The Point Guard"
+  data-dead="bottom"
+>
+  <RuleCross />
+
+  {/* Copy, then the diagram full width beneath it. Side by side, the diagram
+      got half the row — 472px at 1024 — and eight stations spilled past its
+      edges and into each other. */}
+  <div>
+    <div class="max-w-2xl" data-anim="reveal">
+      <p class="text-micro uppercase tracking-[0.14em] text-ink-faint">The hub</p>
+      <h2
+        id="point-guard"
+        class="signal mt-6 scroll-mt-32 font-display text-title text-ink"
+        data-text="Notion is the point guard"
+        style="--signal-dur: 13.9s; --signal-delay: 5s"
+      >
+        Notion is the point guard
+      </h2>
+      <div class="mt-6 max-w-xl space-y-5 text-ink-dim">
+        <p>
+          I don’t use Notion for notes. I use it as the place every other tool reports to. An agent
+          there is connected over MCP to Figma, PostHog, Relume, GitHub, Linear, Fern and Slack,
+          and the PRDs, design docs and wiki it writes live right next to the work they describe.
+        </p>
+        <p>
+          I ask in plain language. It fans out, pulls what it needs from each tool, and comes back
+          with a draft I can edit, not a pile of tabs I have to stitch together.
+        </p>
+      </div>
+    </div>
+
+    {/* The diagram ---------------------------------------------------- */}
+    <div class="hub relative mx-auto mt-16 max-w-5xl" aria-hidden="true" data-anim="reveal">
+      {/* The stations are positioned inside an inner box inset by about half a
+          station's width, so a node centred on the box's edge still sits
+          inside the stage. The spokes share that box, so they still meet the
+          node centres. */}
+      <div class="hub__stage relative hidden aspect-[16/9] md:block">
+        <div class="absolute inset-y-6 inset-x-20">
+        <svg class="absolute inset-0 h-full w-full" viewBox="0 0 160 90" preserveAspectRatio="none">
+          {
+            nodes.map((n, i) => (
+              <>
+                <line class="hub__spoke" x1={HUB.x} y1={HUB.y} x2={n.x} y2={n.y} />
+                <line
+                  class="hub__flow"
+                  x1={HUB.x}
+                  y1={HUB.y}
+                  x2={n.x}
+                  y2={n.y}
+                  style={`animation-delay: ${(-i * 0.37).toFixed(2)}s`}
+                />
+              </>
+            ))
+          }
+        </svg>
+
+        <div class="hub__core absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+          <BrandMark name="notion" class="h-9 w-9 text-ink" />
+        </div>
+
+        {
+          nodes.map((n) => (
+            <div
+              class="hub__node absolute -translate-x-1/2 -translate-y-1/2"
+              style={`left: ${(n.x / 160) * 100}%; top: ${(n.y / 90) * 100}%`}
+            >
+              {n.brand ? (
+                <BrandMark name={n.brand} class="h-4 w-4 text-ink-dim" />
+              ) : (
+                <span class="hub__doc" />
+              )}
+              <span class="block">
+                <span class="block text-[0.8125rem] leading-tight text-ink">{n.name}</span>
+                <span class="block font-mono text-[0.625rem] leading-tight text-ink-faint">{n.role}</span>
+              </span>
+            </div>
+          ))
+        }
+      </div>
+      </div>
+
+      {/* Below md: the hub, then the same nodes as a grid. */}
+      <div class="md:hidden">
+        <div class="hub__core hub__core--flat mx-auto">
+          <BrandMark name="notion" class="h-8 w-8 text-ink" />
+        </div>
+        <div class="mt-6 grid grid-cols-2 gap-3">
+          {
+            nodes.map((n) => (
+              <div class="hub__node hub__node--flat">
+                {n.brand ? <BrandMark name={n.brand} class="h-4 w-4 text-ink-dim" /> : <span class="hub__doc" />}
+                <span class="block">
+                  <span class="block text-[0.8125rem] leading-tight text-ink">{n.name}</span>
+                  <span class="block font-mono text-[0.625rem] leading-tight text-ink-faint">{n.role}</span>
+                </span>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {/* The ask, and the fan-out ------------------------------------------ */}
+  <div class="relative -mx-shell-pad mt-12 grid grid-cols-1 border-y border-line md:mt-4 lg:grid-cols-2" data-anim="reveal">
+    <span class="bp-sq bp-sq--t bp-sq--l" aria-hidden="true"></span>
+    <span class="bp-sq bp-sq--t bp-sq--r" aria-hidden="true"></span>
+    <span class="bp-sq bp-sq--b bp-sq--l" aria-hidden="true"></span>
+    <span class="bp-sq bp-sq--b bp-sq--r" aria-hidden="true"></span>
+
+    <div class="relative px-shell-pad py-10">
+      <p class="font-mono text-micro uppercase tracking-[0.14em] text-ink-faint">The ask</p>
+      <div class="mt-5 rounded-ui border border-line bg-surface-lift p-5">
+        <div class="flex items-center gap-2 font-mono text-[0.6875rem] text-ink-faint">
+          <BrandMark name="notion" class="h-3.5 w-3.5 text-ink-dim" /> Product agent
+          <span class="agent-dot ml-1" />
+        </div>
+        <p class="mt-4 text-[0.9375rem] leading-relaxed text-ink">
+          Draft a PRD for the recording-flow redesign. Pull the last 30 days of the record → submit
+          funnel from PostHog, link the current explorations in Figma, check where the flow sits in
+          the Relume sitemap, check the upload API’s limits in our Fern docs, and list the open
+          GitHub issues labelled
+          <code class="font-mono text-[0.8125rem] text-accent">recording</code>. Use our PRD
+          template and cite every number. Then propose Linear issues for anything we commit to,
+          and share the draft in
+          <code class="font-mono text-[0.8125rem] text-accent">#recording-flow</code>.
+        </p>
+      </div>
+    </div>
+
+    <div class="relative border-t border-line px-shell-pad py-10 lg:border-l lg:border-t-0">
+      <span class="bp-sq bp-sq--t bp-sq--l lg:hidden" aria-hidden="true"></span>
+      <span class="bp-sq bp-sq--t bp-sq--r lg:hidden" aria-hidden="true"></span>
+      <span class="bp-sq bp-sq--t bp-sq--l hidden lg:block" aria-hidden="true"></span>
+      <span class="bp-sq bp-sq--b bp-sq--l hidden lg:block" aria-hidden="true"></span>
+
+      <p class="font-mono text-micro uppercase tracking-[0.14em] text-ink-faint">The fan-out</p>
+      <ol class="mt-5 space-y-3">
+        {
+          trace.map((t) => (
+            <li class="flex items-start gap-3">
+              {t.brand ? (
+                <BrandMark name={t.brand} class="mt-0.5 h-4 w-4 text-ink-dim" />
+              ) : (
+                <BrandMark name="notion" class="mt-0.5 h-4 w-4 text-ink-dim" />
+              )}
+              <span class="min-w-0 flex-1 text-[0.9375rem] leading-snug">
+                <span class="text-ink">{t.tool}</span>
+                <span class="text-ink-dim"> · {t.action}</span>
+              </span>
+              <span
+                class:list={[
+                  'mt-0.5 shrink-0 font-mono text-[0.625rem] uppercase tracking-[0.14em]',
+                  t.wait ? 'text-accent-warm' : t.local ? 'text-accent' : 'text-ink-faint',
+                ]}
+              >
+                {t.wait ? 'Needs OK' : t.local ? 'In Notion' : 'Read'}
+              </span>
+            </li>
+          ))
+        }
+      </ol>
+      <p class="mt-6 max-w-md text-[0.8125rem] leading-relaxed text-ink-faint">
+        Reads run on their own. Anything that writes to another tool waits for a yes, which is
+        Notion’s default for MCP actions, and the right one.
+      </p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hub__spoke {
+    stroke: var(--color-line);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+  /*
+    The fan-out: a short dash of accent running from the hub to each tool,
+    on a staggered offset so the six never fire as one. `pathLength` would be
+    cleaner but `non-scaling-stroke` dashes are measured in screen pixels, so
+    the dash and gap are pixel values and the offset runs a full period.
+  */
+  .hub__flow {
+    stroke: var(--color-accent);
+    stroke-width: 1.5;
+    vector-effect: non-scaling-stroke;
+    stroke-dasharray: 10 400;
+    stroke-dashoffset: 410;
+    opacity: 0.85;
+    animation: hub-flow 2.6s linear infinite;
+  }
+  @keyframes hub-flow {
+    from {
+      stroke-dashoffset: 410;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  .hub__core {
+    display: grid;
+    place-items: center;
+    width: 5rem;
+    height: 5rem;
+    border: 1px solid var(--color-accent);
+    border-radius: var(--radius-ui);
+    background: var(--color-surface-lift);
+    box-shadow: 0 0 0 6px var(--color-surface), 0 0 40px color-mix(in oklab, var(--color-accent) 22%, transparent);
+  }
+  .hub__core--flat {
+    width: 4rem;
+    height: 4rem;
+  }
+
+  .hub__node {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-ui);
+    background: var(--color-surface-lift);
+    white-space: nowrap;
+  }
+  .hub__node--flat {
+    white-space: normal;
+  }
+  /* Notion's own pages — a stack of two sheets rather than a borrowed mark. */
+  .hub__doc {
+    position: relative;
+    width: 0.75rem;
+    height: 0.9375rem;
+    border: 1px solid var(--color-ink-dim);
+    box-shadow: 2px -2px 0 -1px var(--color-surface-lift), 2px -2px 0 0 var(--color-ink-faint);
+    flex-shrink: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hub__flow {
+      animation: none;
+      opacity: 0;
+    }
+  }
+  :global(html[data-motion='reduced']) .hub__flow,
+  :global(html[data-motion='failed']) .hub__flow {
+    animation: none;
+    opacity: 0;
+  }
+</style>

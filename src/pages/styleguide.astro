@@ -69,7 +69,7 @@ const CHIPS = [
   <main id="main" class="px-shell pb-section pt-40">
     <header class="max-w-3xl">
       <p class="text-micro uppercase tracking-[0.14em] text-ink-faint">Internal reference</p>
-      <h1 class="mt-6 font-display text-title font-normal text-ink">Style guide</h1>
+      <h1 class="mt-6 font-display text-title text-ink">Style guide</h1>
       <p class="mt-6 text-lead text-ink-lead">
         Read from <code>global.css</code> at build time. If a value here looks wrong, the token is
         wrong — this page has no opinions of its own.
@@ -113,8 +113,8 @@ const CHIPS = [
     <section class="sg-section" aria-labelledby="sg-type">
       <h2 id="sg-type" class="sg-heading">Type</h2>
       <p class="sg-note">
-        Google Sans for UI and body, Vidaloka for display. Display sizes are clamps — resize the
-        window to see them move. The one documented exception is the work tile title, which is sans.
+        Syne for display (600, tight), Instrument Sans for UI and body, JetBrains Mono for uppercase labels, Instrument Serif italic for accents. Display sizes are clamps — resize the
+        window to see them move.
       </p>
 
       <ul class="sg-type">
@@ -294,7 +294,7 @@ const CHIPS = [
     margin: 0;
     font-family: var(--font-display);
     font-size: var(--text-title);
-    font-weight: 400;
+    font-weight: 700;
     color: var(--color-ink);
   }
 
@@ -316,6 +316,7 @@ const CHIPS = [
     font-size: var(--text-micro);
     letter-spacing: 0.14em;
     text-transform: uppercase;
+    font-family: var(--font-mono);
     color: var(--color-ink-faint);
   }
 
@@ -590,6 +591,7 @@ const CHIPS = [
     font-size: var(--text-micro);
     letter-spacing: 0.14em;
     text-transform: uppercase;
+    font-family: var(--font-mono);
     transition: background-color var(--dur-fast) ease;
   }
 

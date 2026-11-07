@@ -375,6 +375,7 @@
     font-size: 0.6875rem;
     font-weight: 500;
     text-transform: uppercase;
+    font-family: var(--font-mono);
     letter-spacing: 0.12em;
     box-shadow: 0 4px 16px rgb(0 0 0 / 0.28);
     opacity: 0;

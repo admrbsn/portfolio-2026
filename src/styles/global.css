@@ -1,10 +1,13 @@
 @import 'tailwindcss';
 
-/* Sans (all UI + body) and display (all headings). Two families, no serif
-   body face — the italic serif accents were removed, so Instrument Serif is
-   gone entirely. */
-@import '@fontsource-variable/google-sans';
-@import '@fontsource/vidaloka/400.css';
+/* Four families, one job each: Syne (headings), Instrument Sans (all UI and
+   body), JetBrains Mono (small uppercase labels), Instrument Serif italic
+   (accents). Instrument Serif ships one weight and only its italic is loaded —
+   it is the accent face, never upright. */
+@import '@fontsource-variable/syne/wght.css';
+@import '@fontsource-variable/instrument-sans/wght.css';
+@import '@fontsource/instrument-serif/400-italic.css';
+@import '@fontsource-variable/jetbrains-mono/wght.css';
 /* Arcade face for the Breakout CTA and the game's own chrome. Latin subset
    only (~9KB) and self-hosted like the rest, so it costs one same-origin font
    request that the browser only issues once the CTA renders — it is not
@@ -23,18 +26,34 @@
 --------------------------------------------------------------------------- */
 @theme {
   /* Type ------------------------------------------------------------------ */
-  /* Google Sans does all UI and body work, and the wordmark. A humanist
-     grotesque with slightly open apertures — warmer than a neutral grotesque
-     without competing with Vidaloka's high-contrast display shapes. It runs a
-     little wider than a neutral sans at the same size, so long values in tight
-     cells (the at-a-glance grid, persona traits) are the first place to check
-     after changing type size. */
-  --font-sans: 'Google Sans Variable', ui-sans-serif, system-ui, sans-serif;
+  /* Instrument Sans does all UI and body work, and the wordmark. A plain,
+     slightly narrow grotesque — it is there to be quiet, so the character on
+     the page comes from the Syne headings and nothing competes with them.
+     Variable 400–700; nothing should ask it for more. Check the tight cells
+     (the at-a-glance grid, persona traits) first after any type-size change. */
+  --font-sans: 'Instrument Sans Variable', ui-sans-serif, system-ui, sans-serif;
 
   /* The one knob for display headings (hero, section headings, work/case
-     titles, stats, wordmark). Vidaloka is single-weight; where a heading needs
-     more heft, thicken with the text-stroke helper rather than a bolder cut. */
-  --font-display: 'Vidaloka', ui-serif, Georgia, serif;
+     titles, stats). Syne, and Syne only here — never body copy.
+
+     **Its width is tied to its weight.** There is no wdth axis: Syne was drawn
+     so that heavier is wider, and by 700–800 it is fully extended. 600 is the
+     setting — the lightest weight that still holds the page against the body,
+     and ~7% narrower than 700 across the hero line. To make it tighter, lower
+     the weight (550 sits between); `font-stretch` does nothing. The weight
+     lives on `.font-display` in the base layer, not in markup. */
+  --font-display: 'Syne Variable', ui-sans-serif, system-ui, sans-serif;
+
+  /* Italic accents only — pull quotes, and anywhere a phrase should sound
+     spoken rather than stated. One weight, italic. Never a heading, never a
+     paragraph. */
+  --font-serif: 'Instrument Serif', ui-serif, Georgia, serif;
+
+  /* Small uppercase labels only — eyebrows, blueprint captions, row numbers,
+     meta columns. Never a sentence and never a heading. A mono at 12px with
+     wide tracking reads as annotation on the drawing, which is what every one
+     of those labels is. */
+  --font-mono: 'JetBrains Mono Variable', ui-monospace, SFMono-Regular, monospace;
 
   /* Wordmark (nav brand only). Resolves to the same family as --font-sans and
      is kept separate on purpose: the brand mark should be able to change
@@ -67,8 +86,8 @@
      reproduction of it, and the 5px grid ties the panel to the game it opens. */
   --font-cartridge: 'Baumans', var(--font-arcade);
 
-  /* Display font tuning. Set for Vidaloka — a high-contrast display serif with
-     a large x-height and sturdy stems; gentle tracking, modest leading.
+  /* Display font tuning. Set for Syne at 600 — a wide geometric display face;
+     tight tracking.
 
      **The three display steps are one ladder and they move together.** They sit
      at a ~1.33 ratio (80 / 60 / 48 at 1440) so the homepage hero, a section
@@ -77,25 +96,29 @@
      display alone once left `--text-title` a single pixel behind the h1 it is
      supposed to sit under.
 
-     The ladder was cut roughly 30% from where it started (display capped at
-     8.25rem, 8vw). At that size the homepage h1 ran two lines of ~115px and
+     Tracking is strongly negative (-0.03 to -0.04em) because Syne is wide and
+     sets loose by default — without pulling it in, a headline reads as a row
+     of separate letters rather than a word.
+
+     The ladder was cut roughly 30% from where it started (display
+     capped at 8.25rem, 8vw). At that size the homepage h1 ran two lines of ~115px and
      took a third of the viewport before the argument started, and everything
      under it — stats, lead, the rule at the foot — read as an afterthought
      attached to a poster. Benchmarked against cloudflare.com, whose h1 measures
      72px at the same 1440 viewport. */
   --text-display: clamp(2.125rem, 5.6vw, 5rem);
-  --text-display--line-height: 1.04;
-  --text-display--letter-spacing: -0.01em;
+  --text-display--line-height: 1;
+  --text-display--letter-spacing: -0.04em;
 
   --text-title: clamp(1.875rem, 4.2vw, 3.75rem);
-  --text-title--line-height: 0.98;
-  --text-title--letter-spacing: -0.025em;
+  --text-title--line-height: 1;
+  --text-title--letter-spacing: -0.035em;
 
-  /* Hero stat figures — serif, sized to sit under the display without
+  /* Hero stat figures — display face, sized to sit under the display without
      competing with it. */
   --text-stat: clamp(2rem, 3.4vw, 3rem);
   --text-stat--line-height: 1;
-  --text-stat--letter-spacing: -0.01em;
+  --text-stat--letter-spacing: -0.03em;
 
   --text-lead: clamp(1.25rem, 2.2vw, 1.875rem);
   --text-lead--line-height: 1.35;
@@ -360,6 +383,30 @@
    Base
 --------------------------------------------------------------------------- */
 @layer base {
+  /*
+    Every uppercase label is mono. That is the system rule, and this is where
+    it lives for markup: the `uppercase` utility carries the family with it.
+    Component stylesheets that set `text-transform: uppercase` themselves set
+    `font-family: var(--font-mono)` beside it — keep the pair together.
+
+    In the base layer on purpose, so any utility wins: an uppercase element
+    that should stay sans takes `font-sans` and that is the end of it. Breakout
+    is outside the rule — its labels name their own arcade face.
+  */
+  .uppercase {
+    font-family: var(--font-mono);
+  }
+
+  /*
+    Display weight. Headings used to carry `font-normal` in markup because the
+    old serif had one weight; the weight belongs to the role, so it lives here,
+    once. Base layer so any `font-*` weight utility on an element still wins.
+  */
+  .font-display {
+    /* Syne at 600: narrower than its extended 700/800 cuts. See --font-display. */
+    font-weight: 600;
+  }
+
   html {
     /* Lenis drives scrolling; native smooth would fight it. */
     scroll-behavior: auto;
@@ -543,6 +590,7 @@
     line-height: 1;
     letter-spacing: 0.2em;
     text-transform: uppercase;
+    font-family: var(--font-mono);
     color: var(--color-ink);
     opacity: 0.2;
     pointer-events: none;
@@ -705,6 +753,183 @@
     background-size: var(--dot-pitch) var(--dot-pitch);
     mask-image: var(--dot-fade);
   }
+}
+
+/* ---------------------------------------------------------------------------
+   Sticky offset that follows the nav. Sticky columns (the homepage Experience
+   intro, /about's "Point of view") sit `--sticky-top` from the viewport edge:
+   the nav's measured height plus a gap while the bar shows, the gap alone once
+   it retracts — otherwise a column parked under where the nav *was* leaves a
+   nav-sized hole above it. Same seam as `.case-back` in the case study: `<Nav>`
+   renders immediately before `<main>`, so its `data-nav-state` reaches main by
+   sibling selector, and `--nav-h` is the bar's measured height (`nav.ts`).
+
+   The gap is 8rem minus the bar at rest, so the visible state lands exactly
+   where the old `top-32` did. Consumers transition `top` over the nav's own
+   500ms retract so the column moves with it rather than after it.
+--------------------------------------------------------------------------- */
+:root {
+  --sticky-gap: 3.6875rem;
+  --sticky-top: calc(var(--nav-h, 4.3125rem) + var(--sticky-gap));
+}
+[data-nav][data-nav-state='hidden'] ~ main {
+  --sticky-top: var(--sticky-gap);
+}
+
+/* ---------------------------------------------------------------------------
+   Agent dot — "an agent is working here". A small accent dot with a slow
+   expanding ring, used inline beside anything an agent is doing on
+   /how-i-work (the hub's Product agent, the PRD banner, Linear's coding-agent
+   chips, PostHog's background agent). One shared class so the signal means one
+   thing everywhere. Static under reduced/failed motion.
+--------------------------------------------------------------------------- */
+@layer components {
+  .agent-dot {
+    position: relative;
+    display: inline-block;
+    flex-shrink: 0;
+    width: 6px;
+    height: 6px;
+    border-radius: 9999px;
+    background: var(--color-accent);
+    vertical-align: middle;
+  }
+  .agent-dot::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: inherit;
+    border: 1px solid var(--color-accent);
+    opacity: 0;
+    animation: agent-ping 2.4s var(--ease-out-expo) infinite;
+  }
+  @keyframes agent-ping {
+    0% { transform: scale(0.6); opacity: 0.7; }
+    80%, 100% { transform: scale(1.9); opacity: 0; }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .agent-dot::after { animation: none; }
+}
+html[data-motion='reduced'] .agent-dot::after,
+html[data-motion='failed'] .agent-dot::after {
+  animation: none;
+}
+
+/* ---------------------------------------------------------------------------
+   Signal — the homepage hero's TV-glitch vocabulary, turned down for use
+   further down the page. The hero's own version (index.astro, `.outage`) is the
+   loud one: dims, tears, debris. This is the quiet one: a blue/purple
+   chromatic split and a single torn slice, for ~200ms, rarely.
+
+   Two forms:
+
+   - `.signal` — idles, then glitches once at the end of every cycle. Set
+     `--signal-dur` (11–19s reads as "occasionally") and `--signal-delay` per
+     element, and give neighbours durations that share no factor, or headings
+     on the same screen start glitching in step and it reads as a loop.
+   - `.signal-hover` — one-shot on hover of the nearest `.group` (or itself).
+     Re-hover replays it; it never idles.
+
+   Both need `data-text` carrying the element's own text — the copies are
+   `content: attr(data-text)` pseudo-elements, and `/ ''` keeps screen readers
+   from reading the word three times. The copies inherit font, width and
+   `text-wrap`, so a multi-line heading wraps them identically.
+
+   `isolation: isolate` makes the element its own stacking context so the
+   copies' `z-index: -1` lands behind its text and not behind the section.
+   Off entirely under reduced or failed motion.
+--------------------------------------------------------------------------- */
+@layer components {
+  .signal,
+  .signal-hover {
+    position: relative;
+    isolation: isolate;
+  }
+  .signal::before,
+  .signal::after,
+  .signal-hover::before,
+  .signal-hover::after {
+    content: attr(data-text);
+    content: attr(data-text) / '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: 0;
+    mix-blend-mode: screen;
+    text-shadow: none;
+    animation-timing-function: steps(1, end);
+  }
+  .signal::before,
+  .signal-hover::before {
+    color: var(--color-accent);
+    -webkit-text-fill-color: var(--color-accent);
+  }
+  .signal::after,
+  .signal-hover::after {
+    color: var(--color-accent-warm);
+    -webkit-text-fill-color: var(--color-accent-warm);
+  }
+
+  .signal::before {
+    animation: signal-a var(--signal-dur, 13.1s) steps(1, end) var(--signal-delay, 4s) infinite;
+  }
+  .signal::after {
+    animation: signal-b var(--signal-dur, 13.1s) steps(1, end) var(--signal-delay, 4s) infinite;
+  }
+
+  .group:hover .signal-hover::before,
+  .signal-hover:hover::before {
+    animation: signal-hover-a 0.32s steps(1, end) 1;
+  }
+  .group:hover .signal-hover::after,
+  .signal-hover:hover::after {
+    animation: signal-hover-b 0.32s steps(1, end) 1;
+  }
+
+  /* Idle glitch: everything happens in the last ~1.5% of the cycle. */
+  @keyframes signal-a {
+    0%, 97.39% { opacity: 0; transform: none; clip-path: none; }
+    97.4% { opacity: 0.9; transform: translate(-2px, 0); }
+    97.8% { opacity: 0.9; transform: translate(-4px, 1px); clip-path: inset(34% -3% 38% -3%); }
+    98.2% { opacity: 0.9; transform: translate(-1px, 0); clip-path: none; }
+    98.6%, 100% { opacity: 0; transform: none; clip-path: none; }
+  }
+  @keyframes signal-b {
+    0%, 97.39% { opacity: 0; transform: none; clip-path: none; }
+    97.4% { opacity: 0.9; transform: translate(2px, 0); }
+    97.8% { opacity: 0.9; transform: translate(9px, 0); clip-path: inset(58% -3% 24% -3%); }
+    98.2% { opacity: 0.9; transform: translate(3px, -1px); clip-path: none; }
+    98.6%, 100% { opacity: 0; transform: none; clip-path: none; }
+  }
+  @keyframes signal-hover-a {
+    0% { opacity: 0.9; transform: translate(-3px, 0); }
+    33% { opacity: 0.9; transform: translate(-6px, 1px); clip-path: inset(20% -3% 52% -3%); }
+    66% { opacity: 0.9; transform: translate(-1px, 0); clip-path: none; }
+    100% { opacity: 0; transform: none; }
+  }
+  @keyframes signal-hover-b {
+    0% { opacity: 0.9; transform: translate(3px, 0); }
+    33% { opacity: 0.9; transform: translate(8px, 0); clip-path: inset(60% -3% 18% -3%); }
+    66% { opacity: 0.9; transform: translate(2px, -1px); clip-path: none; }
+    100% { opacity: 0; transform: none; }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .signal::before,
+  .signal::after,
+  .signal-hover::before,
+  .signal-hover::after {
+    display: none;
+  }
+}
+html[data-motion='reduced'] :is(.signal, .signal-hover)::before,
+html[data-motion='reduced'] :is(.signal, .signal-hover)::after,
+html[data-motion='failed'] :is(.signal, .signal-hover)::before,
+html[data-motion='failed'] :is(.signal, .signal-hover)::after {
+  display: none;
 }
 
 /* Reduced motion, belt and braces.

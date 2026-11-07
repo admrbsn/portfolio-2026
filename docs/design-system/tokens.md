@@ -105,10 +105,19 @@ that survives seeing all five studies side by side.
 
 ## Type
 
-**Google Sans** for all UI, body copy and the wordmark. **Vidaloka** for display
-(`--text-display`, `--text-title`, `--text-stat`, headings). Two families across
-the whole portfolio, no third — the two extra faces below belong to the Breakout
-island and appear nowhere else.
+Four families, and each has exactly one job. The mono and serif come from
+alyssa-tucker.com; Syne and Instrument Sans were picked here after Bricolage,
+Syne-everywhere and Anybody were all tried and cut:
+
+| Family | Token | Job |
+| --- | --- | --- |
+| **Syne** (variable, 600) | `--font-display` | Every display heading — hero, section headings, work and case titles, stats |
+| **Instrument Sans** (variable, 400–700) | `--font-sans` | All UI, body and the wordmark |
+| **JetBrains Mono** (variable) | `--font-mono` | Every small uppercase label: eyebrows, blueprint captions, meta columns, row numbers |
+| **Instrument Serif**, italic only | `--font-serif` | Accents — pull quotes, a phrase that should sound spoken. Never a heading, never a paragraph |
+
+The two extra faces further down belong to the Breakout island and appear
+nowhere else.
 
 | Token | Value | At 1440 |
 | --- | --- | --- |
@@ -135,14 +144,21 @@ against cloudflare.com, whose h1 measures 72px at the same viewport.
 each set their own hero size inline, deliberately — see
 [patterns.md](patterns.md).
 
-- **Vidaloka ships a single weight.** Set it at `font-normal`, never
-  `font-bold`. Where a heading needs more heft, thicken it with the text-stroke
-  helper. Its descenders are long, so `--text-display` needs a line-height near
-  1; tightening further crowds the line below.
-- **Google Sans runs wider** than a neutral grotesque at the same size. After any
-  type-size change, check the tight cells first — the at-a-glance grid, the
-  persona traits, the funnel step captions — since those wrap before anything
-  else.
+- **Syne's width is its weight.** It has no width axis — heavier is wider,
+  and by 700–800 it is fully extended. 600 is set once on `.font-display` in
+  the base layer (never `font-normal` or a weight in markup); tighten by
+  lowering it, since `font-stretch` does nothing. Tracking on the ladder is
+  -0.03 to -0.04em because a wide face sets loose.
+- **Syne is for headings only.** Set in paragraphs it was tried and cut — its
+  regular weight reads rounded and odd at body size. Body is Instrument Sans,
+  whose job is to stay quiet beside it.
+- **Every uppercase label is mono.** The `uppercase` utility carries
+  `--font-mono` with it (base layer, so `font-sans` on the element overrides),
+  and any component stylesheet that sets `text-transform: uppercase` sets
+  `font-family: var(--font-mono)` beside it. Mono runs wider than the sans
+  at the same tracking — check meta columns and narrow cells after edits.
+- **Instrument Serif is loaded italic-only** and nothing upright uses it.
+  `PullQuote` is its only consumer today.
 - `--font-wordmark` resolves to `var(--font-sans)` and is kept separate
   deliberately: the brand mark should be changeable without dragging every
   paragraph with it.
@@ -160,14 +176,12 @@ each set their own hero size inline, deliberately — see
   both of these into the game's own lazily-loaded stylesheet, because the only
   thing justifying eager loading is that the CTA itself renders them.
 
-**The documented exception**: the work tile title in `WorkTile.astro` is sans. A
-tile title is a claim read at a glance beside a screenshot, and the serif was
-doing section-heading work in a caption's slot. The switch carried three
-adjustments — size ceiling `2rem → 1.75rem` (Google Sans is wider), `font-medium`
-for the weight the serif got from contrast, leading `1.1 → 1.15` (the serif's
-descenders were what allowed the tighter setting). Follow that pattern if it ever
-comes up again. The case study `h1` stays Vidaloka: the tile and the page are the
-same words in different roles, and only the tile is a caption.
+There used to be one documented exception here: the homepage work tile set its
+title in sans, because beside a 16/9 screenshot the title was a caption. The
+tiles became a text-only index (`WorkRow.astro`), the title is the loudest thing
+in the row again, and it is back in the display face at `--text-stat` — one step under
+the section's `--text-title` heading. The lesson survives the exception: **a
+title's face follows its role in the layout, not the field it comes from.**
 
 ## Shared paint
 
@@ -178,7 +192,7 @@ apart.
 
 | Value | Used by |
 | --- | --- |
-| `--hatch`, `--hatch-line`, `--hatch-fill` | dead-space bands, the work tile placeholder |
+| `--hatch`, `--hatch-line`, `--hatch-fill` | dead-space bands |
 | `--dots`, `--dot-ink`, `--dot-pitch`, `--dot-fade` | the substrate under `.page-rails` |
 | `--rule-dash` | the two page rails, and nothing else |
 | `--gradient-accent` | `.accent-gradient` — long runs |
@@ -255,7 +269,7 @@ a printing error and not enough to read as soft.
 Three things opt out, and should stay out:
 
 - **Circles and pills** — status dot, cursor, nav and gallery buttons, persona
-  signal chips, the white CTA. Those are shapes, not softened rectangles.
+  signal chips, the white CTA, the work index's row numbers. Those are shapes, not softened rectangles.
 - **Depictions** — `Device`'s phone bezel, the leadership-moment illustrations.
   A phone has round corners; square them and it stops being a phone.
 - **Breakout** — its own aesthetic, deliberately hard-edged.

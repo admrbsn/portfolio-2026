@@ -9,12 +9,13 @@ import '../styles/global.css';
 // CSS variable, and a literal here drifts the moment the token moves.
 import { surfaceHex } from '../lib/brand';
 
-// Preload the two fonts above the fold. Without this the big Vidaloka display
-// heading paints in the Georgia fallback and reflows when the webfont lands —
+// Preload the two fonts above the fold — Syne for the hero heading,
+// Instrument Sans for everything else. Without this the big hero heading
+// paints in the system fallback and reflows when the webfont lands —
 // worth ~0.1 of CLS on its own. Importing with ?url gives the hashed, Astro-
 // served path so the <link> below points at the real built asset.
-import vidalokaWoff2 from '@fontsource/vidaloka/files/vidaloka-latin-400-normal.woff2?url';
-import sansWoff2 from '@fontsource-variable/google-sans/files/google-sans-latin-wght-normal.woff2?url';
+import displayWoff2 from '@fontsource-variable/syne/files/syne-latin-wght-normal.woff2?url';
+import sansWoff2 from '@fontsource-variable/instrument-sans/files/instrument-sans-latin-wght-normal.woff2?url';
 
 interface Props {
   title: string;
@@ -45,7 +46,7 @@ const ogUrl = new URL(ogImage, Astro.site);
     <meta name="theme-color" content={surfaceHex} />
     <link rel="canonical" href={canonical} />
 
-    <link rel="preload" href={vidalokaWoff2} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={displayWoff2} as="font" type="font/woff2" crossorigin />
     <link rel="preload" href={sansWoff2} as="font" type="font/woff2" crossorigin />
 
     <title>{title}</title>

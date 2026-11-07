@@ -57,8 +57,10 @@ Read those before touching anything visual. The short version, for orientation:
 - Tailwind v4 is CSS-first. **There is no `tailwind.config.js`** — the `@theme`
   block in `src/styles/global.css` is the config, and every key in it becomes a
   utility.
-- **Two type families** (Google Sans for UI and body, Vidaloka for display),
-  **one accent palette** site-wide, **one radius** (`--radius-ui`, 3px). Every
+- **Four type families, one role each**: Syne for display (600 — its width
+  grows with weight, so lighter is tighter), Instrument Sans for UI and body,
+  JetBrains Mono for every small uppercase label, Instrument Serif italic for
+  accents only. Plus **one accent palette** site-wide, **one radius** (`--radius-ui`, 3px). Every
   exception is listed in `tokens.md`; if it is not on that list, it is a mistake.
 - **The accent follows the hero wash.** `--color-accent` / `-warm` / `--color-status`
   are tuned to `<NoiseGradient>`'s default `iris` variant (bright blue into deep
@@ -537,8 +539,8 @@ files read the way they do:
 
 - **`title` is a claim, not a product name.** "Doubling submissions on a core
   flow", not "Tribute Recording Flow Redesign". The product name lives in
-  `client`, which renders as the eyebrow above the h1 and on the work tile. All
-  five titles are kept to roughly 32–42 characters so the index reads evenly.
+  `client`, which renders as the eyebrow above the h1 and in the homepage work
+  index's meta column. All five titles are kept to roughly 32–42 characters so the index reads evenly.
 - **`summary` carries specifics**, ideally numbers — it is the lead paragraph
   under the h1 *and* the meta description, so it should not restate the title.
 - **`impact` sits above the body.** Every benchmarked site states outcomes in
@@ -596,14 +598,15 @@ as a foreign rectangle. Two rules if you retune it: **grayscale first** (or the
 source's colour leaks at the blend edges), and **keep it below the threshold
 where the UI inside the screenshot becomes legible** — the moment individual
 buttons read, it is a picture again rather than a texture. It is `aria-hidden`
-(the same art carries a real `alt` on the work index) and hidden below `md`,
+(as is the homepage's hover preview of the same art) and hidden below `md`,
 where the hero is one narrow column and the diagonal has nowhere to go.
 
 Two consequences worth knowing before adding it back:
 
-- `WorkTile` carries **no `transition:name`**. The tile used to morph into the
-  full-bleed hero image; with no counterpart on the case study page, an
-  unpaired name animates the tile out on its own. It is a plain cross-fade now.
+- The homepage work index carries **no `transition:name`**. Its tiles used to
+  morph into the full-bleed hero image; with no counterpart on the case study
+  page, an unpaired name animates the source out on its own. It is a plain
+  cross-fade now.
 - The hero's colour comes from `.hero-wash`, a low-alpha radial pair of the
   brand blue and purple, plus `.hero-grain` — the same inline-SVG fractal
   noise `<NoiseGradient />` uses, copied rather than imported because that

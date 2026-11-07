@@ -1,0 +1,182 @@
+---
+import RuleCross from './RuleCross.astro';
+import BrandMark from './BrandMark.astro';
+import ToolHeader from './ToolHeader.astro';
+import type { Brand } from '../data/brands';
+
+/*
+  Notion → PRDs. The mock is a PRD page the hub's agent drafted: properties,
+  then a body where every claim carries a citation chip back to the tool it
+  came from. That is the point being made — a PRD built from evidence the agent
+  fetched, not from memory — so the chips are the loudest thing in it.
+
+  The Problem lines are the real findings from the recording-flow case study
+  (33% overall; 79% past the first screen, 42% of those finishing; mobile
+  worse; drop-outs stuck waiting on processing), so the mock and the work
+  agree. Keep them in step if the case study changes.
+*/
+type Cite = { brand: Brand; label: string };
+const cite = (brand: Brand, label: string): Cite => ({ brand, label });
+
+const props: { k: string; v: string; accent?: boolean }[] = [
+  { k: 'Status', v: 'In review', accent: true },
+  { k: 'Owner', v: 'Adam Robertson' },
+  { k: 'Linear', v: 'REC-140 · Recording flow v2' },
+  { k: 'Drafted by', v: 'Product agent · 6 sources' },
+];
+
+const body: { h: string; lines: { t: string; c?: Cite }[] }[] = [
+  {
+    h: 'Problem',
+    lines: [
+      { t: 'Only a third of contributors who start the recorder submit a video.', c: cite('posthog', 'Funnel · 33%') },
+      { t: '79% get past the first screen; only 42% of those finish. Mobile is worse.', c: cite('posthog', 'Funnel · by device') },
+      { t: 'Those who give up spend the longest waiting on video processing.', c: cite('posthog', 'Time to convert') },
+    ],
+  },
+  {
+    h: 'Constraints',
+    lines: [
+      { t: 'Uploads are capped per request; long takes need chunking.', c: cite('fern', 'POST /v1/uploads') },
+      { t: 'The current explorations assume a single-screen review.', c: cite('figma', 'Record — v15') },
+    ],
+  },
+  {
+    h: 'Goal',
+    lines: [{ t: 'Double completion without adding a screen to the flow.' }],
+  },
+];
+
+const notes = [
+  {
+    t: 'Templates, filled from evidence',
+    b: 'The agent works from our PRD template and fills it from the tools, so every PRD has the same spine and reads the same in review.',
+  },
+  {
+    t: 'Every number has a source',
+    b: 'Each claim links back to the funnel, replay, file or endpoint it came from. A stakeholder can check it without asking me.',
+  },
+  {
+    t: 'It lives with the wiki',
+    b: 'PRDs, design docs and decisions sit in one database, linked to their Linear projects, so the next PRD can cite the last one.',
+  },
+];
+---
+
+<section
+  class="relative border-t border-line px-shell py-section"
+  aria-labelledby="prds"
+  data-blueprint="The Paper Trail"
+  data-dead="bottom"
+>
+  <RuleCross />
+  <ToolHeader id="prds" brand="notion" eyebrow="Notion · PRDs" title="PRDs built from evidence" dur="15.3s" delay="3s">
+    <p>
+      A PRD used to be an afternoon of copying numbers out of dashboards. Now the agent pulls the
+      funnel, the replays, the files and the API limits itself, drafts against our template, and
+      cites every line. I spend the afternoon on the argument instead.
+    </p>
+  </ToolHeader>
+
+  <div class="relative -mx-shell-pad mt-16 grid grid-cols-1 border-y border-line lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+    <span class="bp-sq bp-sq--t bp-sq--l" aria-hidden="true"></span>
+    <span class="bp-sq bp-sq--t bp-sq--r" aria-hidden="true"></span>
+    <span class="bp-sq bp-sq--b bp-sq--l" aria-hidden="true"></span>
+    <span class="bp-sq bp-sq--b bp-sq--r" aria-hidden="true"></span>
+
+    {/* The page */}
+    <div class="relative px-shell-pad py-10 md:py-12" data-anim="reveal">
+      <div class="prd overflow-hidden rounded-ui border border-line bg-surface-lift" aria-hidden="true">
+        <div class="flex items-center gap-2 border-b border-line px-5 py-2.5 font-mono text-[0.6875rem] text-ink-faint">
+          <BrandMark name="notion" class="h-3.5 w-3.5 text-ink-dim" />
+          Product / PRDs / Recording flow v2
+        </div>
+        <div class="px-6 py-7 md:px-9 md:py-9">
+          <p class="text-[clamp(1.5rem,2.4vw,2rem)] font-semibold leading-tight tracking-[-0.02em] text-ink">Recording flow v2</p>
+
+          <dl class="mt-6 grid grid-cols-[7.5rem_minmax(0,1fr)] gap-y-2 text-[0.8125rem]">
+            {
+              props.map((p) => (
+                <>
+                  <dt class="text-ink-faint">{p.k}</dt>
+                  <dd class:list={['truncate', p.accent ? 'text-accent' : 'text-ink-dim']}>{p.v}</dd>
+                </>
+              ))
+            }
+          </dl>
+
+          <div class="prd__agent mt-7 flex items-start gap-3 rounded-ui px-4 py-3 text-[0.8125rem] text-ink-dim">
+            <span class="agent-dot mt-1.5" />
+            Drafted from 6 sources. Every claim cited; nothing here is from memory.
+          </div>
+
+          {
+            body.map((sec) => (
+              <div class="mt-7">
+                <p class="text-[0.9375rem] font-medium text-ink">{sec.h}</p>
+                <ul class="mt-2 space-y-2">
+                  {sec.lines.map((l) => (
+                    <li class="text-[0.9375rem] leading-relaxed text-ink-dim">
+                      {l.t}
+                      {l.c && (
+                        <span class="prd__cite">
+                          <BrandMark name={l.c.brand} class="h-3 w-3" />
+                          {l.c.label}
+                        </span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+
+    {/* What changed */}
+    <ol class="relative border-t border-line lg:border-l lg:border-t-0" data-anim="reveal-batch">
+      <span class="bp-sq bp-sq--t bp-sq--l lg:hidden" aria-hidden="true"></span>
+      <span class="bp-sq bp-sq--t bp-sq--r lg:hidden" aria-hidden="true"></span>
+      <span class="bp-sq bp-sq--t bp-sq--l hidden lg:block" aria-hidden="true"></span>
+      <span class="bp-sq bp-sq--b bp-sq--l hidden lg:block" aria-hidden="true"></span>
+      {
+        notes.map((n, i) => (
+          <li class:list={['relative px-shell-pad py-8', i > 0 && 'border-t border-line']}>
+            {i > 0 && (
+              <>
+                <span class="bp-sq bp-sq--t bp-sq--l" aria-hidden="true" />
+                <span class="bp-sq bp-sq--t bp-sq--r" aria-hidden="true" />
+              </>
+            )}
+            <p class="text-[1.0625rem] font-medium text-ink">{n.t}</p>
+            <p class="mt-2 text-[0.9375rem] leading-relaxed text-ink-dim">{n.b}</p>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>
+
+<style>
+  .prd__agent {
+    border: 1px dashed color-mix(in oklab, var(--color-accent) 45%, var(--color-line));
+    background: color-mix(in oklab, var(--color-accent) 6%, transparent);
+  }
+  /* A citation: the tool's mark and a label, dashed like every chip on the
+     page, sitting inline at the end of the claim it supports. */
+  .prd__cite {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin-left: 0.5rem;
+    padding: 0.05rem 0.45rem;
+    border: 1px dashed var(--color-line);
+    border-radius: var(--radius-ui);
+    vertical-align: 0.1em;
+    color: var(--color-ink-faint);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    white-space: nowrap;
+  }
+</style>

@@ -1,0 +1,41 @@
+---
+import BrandMark from './BrandMark.astro';
+import type { Brand } from '../data/brands';
+
+/*
+  The opening of every /how-i-work section: tool mark + eyebrow, a claim as the
+  h2 (with the `.signal` glitch, on its own clock), and a lead. One component
+  so twelve sections can't drift into twelve slightly different headers.
+
+  `dur` / `delay` feed `.signal` — give each section a duration that shares no
+  factor with its neighbours, or headings on one screen glitch in step.
+*/
+interface Props {
+  id: string;
+  title: string;
+  eyebrow: string;
+  brand?: Brand;
+  dur: string;
+  delay: string;
+}
+
+const { id, title, eyebrow, brand, dur, delay } = Astro.props;
+---
+
+<div class="max-w-3xl" data-anim="reveal">
+  <p class="flex items-center gap-2.5 text-micro uppercase tracking-[0.14em] text-ink-faint">
+    {brand && <BrandMark name={brand} class="h-4 w-4 text-ink-dim" />}
+    {eyebrow}
+  </p>
+  <h2
+    id={id}
+    class="signal mt-6 scroll-mt-32 font-display text-title text-ink"
+    data-text={title}
+    style={`--signal-dur: ${dur}; --signal-delay: ${delay}`}
+  >
+    {title}
+  </h2>
+  <div class="mt-6 max-w-2xl space-y-5 text-ink-dim">
+    <slot />
+  </div>
+</div>

@@ -1,5 +1,6 @@
 ---
 import { getCollection } from 'astro:content';
+import { Image } from 'astro:assets';
 import TegakiRenderer from 'tegaki/astro';
 import { createBundle } from 'tegaki/core';
 import type { TegakiGlyphData } from 'tegaki';
@@ -11,7 +12,8 @@ import type { TegakiGlyphData } from 'tegaki';
 import signatureGlyphData from '../assets/fonts/reenie-beanie/glyphData.json';
 import signatureTtf from '../assets/fonts/reenie-beanie/reenie-beanie.ttf?url';
 import BaseLayout from '../layouts/BaseLayout.astro';
-import WorkTile from '../components/WorkTile.astro';
+import WorkRow from '../components/WorkRow.astro';
+import WorkbenchCta from '../components/WorkbenchCta.astro';
 import NoiseGradient from '../components/NoiseGradient.astro';
 import Leadership from '../components/Leadership.astro';
 import Experience from '../components/Experience.astro';
@@ -33,36 +35,17 @@ const signatureFont = createBundle({
   descender: -250,
 });
 
-// All published case studies, laid out as a staggered two-column list on the
-// home page (no separate work index). Sorted by manual order, ties break on year.
+// All published case studies, laid out as a ruled text index on the home page
+// (no separate work index). Sorted by manual order, ties break on year.
 const work = (await getCollection('work', ({ data }) => !data.draft)).sort(
   (a, b) => a.data.order - b.data.order || b.data.year - a.data.year,
 );
 
 /*
- * Two columns, with the right one dropped half a tile so the pair reads as
- * staggered rather than as a table of rows.
- *
- * The offset is a margin on the odd-indexed tiles rather than two independent
- * column elements. Independent columns would stagger continuously down the
- * page, but they also reorder the list on mobile — a single column of three
- * followed by another three, instead of the curated 1-6. This keeps DOM order
- * intact and the offset simply disappears below `lg`, where the grid is one
- * column anyway.
- *
- * `items-start` is what leaves the ragged bottoms: tiles hang from the top of
- * their row and short ones open a gap beneath.
- *
- * The offset is also what sets the vertical rhythm, and it is easy to
- * over-spend. Every tile is the same height (a 16/9 cover over three lines of
- * text, ~468px at desktop), so the distance between two tiles in the same
- * column is exactly `row gap + this offset` — the offset reappears as slack
- * under whichever tile is *not* pushed down. At `mt-40` plus `gap-y-20` that
- * measured 240px of empty column between tiles, which read as the grid coming
- * apart rather than as stagger. 96px keeps the offset legible at a fifth of a
- * tile and takes the run down to 152px.
+ * Covers for the hover preview, keyed by entry id. Only rows that link
+ * somewhere get one; the coming-soon entry has nothing to preview.
  */
-const STAGGER = 'lg:mt-24';
+const previews = work.filter((e) => e.data.cover && e.data.coverAlt && !e.data.comingSoon);
 
 /*
  * Hero stats. `20×` is the Tribute growth figure; the second is a suggested
@@ -162,7 +145,7 @@ const story = [
 >
   {/* Blueprint frame: faint vertical rails at the gutter + border-t between
       sections segment the page into a subtle grid. */}
-  <div class="page-rails">
+  <div class="page-rails home-signal">
   {/* Hero -------------------------------------------------------------
       `mt-auto` on the inner wrapper rather than `justify-end` on the section:
       with justify-end, content taller than the container overflows past the
@@ -175,7 +158,12 @@ const story = [
       the nav band makes the two together fill one viewport and lands that rule on
       screen. `--nav-h` is measured and published by `nav.ts`; the fallback is the
       bar's height at rest, for the pre-JS frame and reduced-motion visits. */}
-  {/* The 42rem ceiling on top of that is what stops the hero *growing* with the
+  {/* Padding is a clamp of `vh` both ends, and the ceiling is 50rem (was 42 with
+      `pt-32 pb-[8vh]`): with the bolder Syne hero the block read as crammed
+      between the nav and the next rule. The type is the same height; the air
+      around it is what changed.
+
+      The ceiling on top of that is what stops the hero *growing* with the
       display. Height came from the viewport alone, so on a 16:10 desktop the
       block sat in ~830px with the type occupying 300 of it and `my-auto`
       distributing the rest as two bands of empty wash — the hero read as
@@ -183,13 +171,17 @@ const story = [
       composition holds its proportions and the next section's rule breaks the
       fold, which is also the more honest signal that the page continues. */}
   <section
-    class="relative flex min-h-[min(42rem,calc(100svh-var(--nav-h,4.3125rem)))] flex-col overflow-hidden px-shell pb-[8vh] pt-32"
+    class="relative flex min-h-[min(50rem,calc(100svh-var(--nav-h,4.3125rem)))] flex-col overflow-hidden px-shell pb-[clamp(5rem,14vh,9rem)] pt-[clamp(9rem,22vh,13rem)]"
     data-blueprint="The Hook"
     style="--bp-top: calc(var(--nav-h, 4.3125rem) + 0.85rem)"
   >
     {/* No `variant`: this takes the site-wide default (`sunset`), which is what
         `--color-accent` is tuned against. Pass one only to trial a palette. */}
     <NoiseGradient />
+    {/* The tube the hero is shown on — scanlines over the wash, two roll bands
+        and a faint flicker. Between the wash and the content, so no line ever
+        crosses the headline. See `.hero-crt` in the style block. */}
+    <div class="hero-crt" aria-hidden="true"></div>
     {/* `my-auto` centres the block in the leftover space. Like mt-auto it
         collapses to 0 when content is taller than the viewport, so it keeps
         the overflow-safety that justify-center would lose. `relative z-10`
@@ -204,9 +196,65 @@ const story = [
           the first mark on the page, and it must not be a restatement of the
           headline or a list of categories — which is what the draft before the
           chip ("Colorado · Design & frontend") was. */}
-      <h1 class="font-display text-display font-normal text-ink" data-anim="reveal-heading">
-        Product Design Leader With Technical Roots
+      {/* Bolder than the 600 every other heading takes. Syne widens as it gets
+          heavier, so this is the one place the extended cut is allowed — the
+          hero is a statement, and the width is part of it. */}
+      <div class="relative">
+      <h1 class="font-display text-display font-bold text-ink" data-anim="reveal-heading">
+        Product Design Leader With <span class="outage outage--a" data-text="Technical"><span class="outage__tear" data-text="Technical">Technical</span></span>
+        <span class="outage outage--b" data-text="Roots"><span class="outage__tear" data-text="Roots">Roots</span></span>
       </h1>
+      {/* Signal debris for the glitch bursts — decoration only, outside the h1
+          so SplitText never sees it. Generated; see the style block. */}
+      <div class="debris-field" aria-hidden="true">
+        <span class="debris debris--a1">
+          <i style="left:33%;top:75%;width:46px;height:3px;background:var(--color-surface)"></i>
+          <i style="left:56%;top:78%;width:41px;height:3px;background:var(--color-accent)"></i>
+          <i style="left:32%;top:96%;width:19px;height:2px;background:var(--color-surface)"></i>
+          <i style="left:56%;top:98%;width:39px;height:3px;background:var(--color-accent)"></i>
+          <i style="left:22%;top:104%;width:30px;height:3px;background:var(--color-surface)"></i>
+          <i style="left:56%;top:49%;width:45px;height:3px;background:var(--color-accent)"></i>
+          <i style="left:18%;top:68%;width:28px;height:3px;background:var(--color-ink)"></i>
+          <i style="left:47%;top:99%;width:19px;height:3px;background:var(--color-accent)"></i>
+          <i style="left:33%;top:64%;width:28px;height:3px;background:var(--color-ink)"></i>
+          <i style="left:10%;top:84%;width:54%;height:2px;background:var(--color-ink)"></i>
+        </span>
+        <span class="debris debris--a2">
+          <i style="left:39%;top:72%;width:12px;height:3px;background:var(--color-ink)"></i>
+          <i style="left:46%;top:96%;width:44px;height:3px;background:var(--color-accent-warm)"></i>
+          <i style="left:58%;top:102%;width:33px;height:2px;background:var(--color-ink)"></i>
+          <i style="left:46%;top:56%;width:40px;height:3px;background:var(--color-ink)"></i>
+          <i style="left:30%;top:89%;width:24px;height:2px;background:var(--color-ink)"></i>
+          <i style="left:26%;top:92%;width:18px;height:3px;background:var(--color-surface)"></i>
+          <i style="left:21%;top:99%;width:21px;height:3px;background:var(--color-accent-warm)"></i>
+          <i style="left:50%;top:91%;width:36px;height:3px;background:var(--color-accent)"></i>
+          <i style="left:53%;top:97%;width:12px;height:2px;background:var(--color-accent-warm)"></i>
+        </span>
+        <span class="debris debris--b1">
+          <i style="left:71%;top:84%;width:7px;height:3px;background:var(--color-accent)"></i>
+          <i style="left:71%;top:55%;width:45px;height:2px;background:var(--color-ink)"></i>
+          <i style="left:81%;top:49%;width:37px;height:3px;background:var(--color-surface)"></i>
+          <i style="left:61%;top:89%;width:31px;height:2px;background:var(--color-surface)"></i>
+          <i style="left:78%;top:70%;width:38px;height:2px;background:var(--color-surface)"></i>
+          <i style="left:69%;top:57%;width:24px;height:2px;background:var(--color-accent-warm)"></i>
+          <i style="left:67%;top:77%;width:10px;height:2px;background:var(--color-ink)"></i>
+          <i style="left:69%;top:92%;width:13px;height:3px;background:var(--color-accent)"></i>
+          <i style="left:61%;top:57%;width:30px;height:3px;background:var(--color-accent-warm)"></i>
+          <i style="left:54%;top:72%;width:42%;height:2px;background:var(--color-ink)"></i>
+        </span>
+        <span class="debris debris--b2">
+          <i style="left:64%;top:47%;width:44px;height:3px;background:var(--color-accent)"></i>
+          <i style="left:75%;top:83%;width:11px;height:3px;background:var(--color-ink)"></i>
+          <i style="left:76%;top:46%;width:15px;height:2px;background:var(--color-accent-warm)"></i>
+          <i style="left:58%;top:75%;width:34px;height:2px;background:var(--color-ink)"></i>
+          <i style="left:80%;top:71%;width:14px;height:2px;background:var(--color-accent-warm)"></i>
+          <i style="left:79%;top:89%;width:24px;height:2px;background:var(--color-surface)"></i>
+          <i style="left:82%;top:55%;width:18px;height:2px;background:var(--color-ink)"></i>
+          <i style="left:74%;top:53%;width:39px;height:2px;background:var(--color-ink)"></i>
+          <i style="left:59%;top:50%;width:35px;height:3px;background:var(--color-ink)"></i>
+        </span>
+      </div>
+      </div>
 
       {/* Stats left, positioning statement right — the reference splits these
           across the base of the hero rather than stacking them. */}
@@ -215,19 +263,27 @@ const story = [
           {
             stats.map((stat) => (
               <div>
-                <dd class="flex items-center font-display text-stat text-ink">
+                {/* Icons sit on the baseline, not the line box's centre. Syne's
+                    numerals are short — 0.51em, closer to an x-height than a cap
+                    height — while its line box is sized for caps and descenders,
+                    so `items-center` lands the icon visibly above the digits.
+                    Baseline-aligned, an SVG's bottom edge sits on the baseline,
+                    and each nudge below drops its centre to 0.255em: half the
+                    digit height, so the icon is centred on the numerals at any
+                    size. Re-measure if the display face changes. */}
+                <dd class="flex items-baseline font-display text-stat text-ink">
                   {stat.num}
                   {stat.op === 'times' ? (
                     <svg
                       viewBox="0 0 24 24"
                       fill="none"
                       aria-hidden="true"
-                      class="mx-[0.04em] h-[0.56em] w-[0.56em]"
+                      class="mx-[0.04em] h-[0.56em] w-[0.56em] translate-y-[0.025em]"
                     >
                       <path
                         d="M18 6L6 18M6 6L18 18"
                         stroke="currentColor"
-                        stroke-width="2"
+                        stroke-width="2.75"
                         stroke-linecap="round"
                         stroke-linejoin="round"
                       />
@@ -237,12 +293,12 @@ const story = [
                       viewBox="0 0 24 24"
                       fill="none"
                       aria-hidden="true"
-                      class="mx-[0.1em] h-[0.62em] w-[0.62em]"
+                      class="mx-[0.1em] h-[0.62em] w-[0.62em] translate-y-[0.055em]"
                     >
                       <path
                         d="M4 12H20M20 12L14 6M20 12L14 18"
                         stroke="currentColor"
-                        stroke-width="2"
+                        stroke-width="2.75"
                         stroke-linecap="round"
                         stroke-linejoin="round"
                       />
@@ -328,8 +384,10 @@ const story = [
     <RuleCross />
     <h2
       id="capabilities"
-      class="font-display text-title font-normal text-ink"
+      class="signal font-display text-title text-ink"
       data-anim="reveal-heading"
+      data-text="Capabilities"
+      style="--signal-dur: 11.3s; --signal-delay: 3s"
     >
       Capabilities
     </h2>
@@ -392,19 +450,52 @@ const story = [
     data-blueprint="Greatest Hits"
   >
     <RuleCross />
-    <h2 class="font-display text-title font-normal text-ink" data-anim="reveal-heading">Selected work</h2>
-
-    <div
-      class="mt-16 grid grid-cols-1 items-start gap-x-8 gap-y-16 lg:grid-cols-2 lg:gap-x-16 lg:gap-y-14"
-      data-anim="reveal-batch"
+    <h2
+      class="signal font-display text-title text-ink"
+      data-anim="reveal-heading"
+      data-text="Selected work"
+      style="--signal-dur: 13.7s; --signal-delay: 5.5s"
     >
-      {
-        work.map((entry, i) => (
-          <WorkTile entry={entry} cellClass={i % 2 === 1 ? STAGGER : ''} eager={i < 2} />
-        ))
-      }
+      Selected work
+    </h2>
+
+    {/*
+      A ruled index rather than a grid of covers. The covers still exist, as a
+      single frame that follows the pointer over the list (`work-preview`), so
+      the imagery is there on intent and costs no vertical space otherwise.
+
+      The frame is a sibling of the <ol>, not inside it: `reveal-batch` fades
+      every child of the list, and the frame must stay at opacity 0 until hover.
+    */}
+    <div class="relative mt-14 md:mt-16" data-anim="work-preview">
+      <ol class="-mx-shell-pad list-none" data-anim="reveal-batch">
+        {work.map((entry, i) => <WorkRow entry={entry} index={i + 1} last={i === work.length - 1} />)}
+      </ol>
+
+      <div
+        class="work-preview pointer-events-none absolute left-0 top-0 z-20 hidden aspect-[16/10] w-[clamp(16rem,24vw,22rem)] overflow-hidden rounded-ui bg-surface-lift opacity-0 lg:block"
+        data-preview
+        aria-hidden="true"
+      >
+        {
+          previews.map((entry) => (
+            <Image
+              src={entry.data.cover!}
+              alt=""
+              widths={[400, 720]}
+              sizes="22rem"
+              class="absolute inset-0 h-full w-full object-cover opacity-0"
+              data-preview-img={entry.id}
+              loading="lazy"
+            />
+          ))
+        }
+      </div>
     </div>
   </section>
+
+  {/* How I work now — a pointer to /how-i-work ---------------------------- */}
+  <WorkbenchCta />
 
   {/* Leadership ------------------------------------------------------- */}
   <div class="relative border-t border-line">
@@ -427,6 +518,607 @@ const story = [
 </BaseLayout>
 
 <style>
+  /*
+    Blueprint captions ("GREATEST HITS" and the rest) as weak indicator lamps:
+    sitting at their usual 0.2, then once a cycle a stepped dip and a brief
+    over-bright pop — a bulb on a failing supply. Homepage only (the
+    `.home-signal` wrapper), and each label on its own duration so no two
+    stutter together; negative delays put them mid-cycle on load, so the page
+    does not arrive and then start misbehaving.
+  */
+  :global(.home-signal [data-blueprint])::before {
+    animation: lamp 12.3s steps(1, end) infinite;
+  }
+  :global(.home-signal [data-blueprint='The Hook'])::before { animation-duration: 9.7s; animation-delay: -2s; }
+  :global(.home-signal [data-blueprint='Story Quest'])::before { animation-duration: 12.3s; animation-delay: -7s; }
+  :global(.home-signal [data-blueprint='My toolbelt'])::before { animation-duration: 10.9s; animation-delay: -4s; }
+  :global(.home-signal [data-blueprint='Greatest Hits'])::before { animation-duration: 14.1s; animation-delay: -9s; }
+  :global(.home-signal [data-blueprint='About Me'])::before { animation-duration: 11.7s; animation-delay: -1s; }
+  :global(.home-signal [data-blueprint='War Stories'])::before { animation-duration: 16.3s; animation-delay: -12s; }
+  :global(.home-signal [data-blueprint='The Sketchbook'])::before { animation-duration: 13.3s; animation-delay: -5s; }
+  :global(.home-signal [data-blueprint='The Workbench'])::before { animation-duration: 15.7s; animation-delay: -3s; }
+  @keyframes lamp {
+    0%, 88% { opacity: 0.2; }
+    88.4% { opacity: 0.06; }
+    88.9% { opacity: 0.2; }
+    89.3% { opacity: 0.04; }
+    90.1% { opacity: 0.45; }
+    90.5%, 100% { opacity: 0.2; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    :global(.home-signal [data-blueprint])::before {
+      animation: none;
+    }
+  }
+  :global(html[data-motion='reduced'] .home-signal [data-blueprint])::before,
+  :global(html[data-motion='failed'] .home-signal [data-blueprint])::before {
+    animation: none;
+  }
+
+  /*
+    The work-index hover preview, shown on a monitor: the same 3px raster as
+    the hero's CRT, static, over the cover. Static on purpose — the frame
+    already moves with the pointer, and a rolling band inside a moving frame
+    is two motions fighting.
+  */
+  .work-preview::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background-image: repeating-linear-gradient(
+      to bottom,
+      transparent 0 2px,
+      rgb(0 0 0 / 0.2) 2px 3px
+    );
+  }
+
+  /*
+    The hero's CRT. The glitch on Technical / Roots is a TV losing signal; this
+    is the TV. Values follow `.crt` in BreakoutCTA so the two read as the same
+    tube, top of the page and bottom.
+
+    - The raster is dark lines on a 3px pitch (2px moirés on fractional zoom,
+      4px reads as stripes). Dark lines only register over something lit, so
+      they show in the purple/blue wash and vanish on the black — which is the
+      brief. A much fainter *light* raster, offset 1px into the gaps, gives the
+      black some texture too, the same fix as RASTER in the CTA.
+    - The mask follows the wash: strongest top-right, gone by the bottom-left
+      corner where the headline and stats sit.
+    - Two roll bands on clocks that share no factor (10.3s / 15.7s), so they
+      drift in and out of phase rather than looping. Each band's translateY end
+      is 100 / its height: 22% -> 455%, 9% -> 1111%. Change one, change both.
+    - A faint stepped flicker on the whole layer (~0.9–1 opacity), the supply
+      ripple an old set has even when the picture is fine.
+
+    All transform/opacity on their own layers, so it composites and never
+    repaints. Reduced motion keeps the raster (composition) and drops the bands
+    and flicker (motion), same split as the CTA.
+  */
+  .hero-crt {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background-image:
+      repeating-linear-gradient(to bottom, transparent 0 2px, rgb(0 0 0 / 0.22) 2px 3px),
+      repeating-linear-gradient(to bottom, transparent 0 1px, rgb(255 255 255 / 0.018) 1px 2px, transparent 2px 3px);
+    -webkit-mask-image: radial-gradient(130% 120% at 100% 0%, #000 30%, rgb(0 0 0 / 0.5) 62%, transparent 92%);
+    mask-image: radial-gradient(130% 120% at 100% 0%, #000 30%, rgb(0 0 0 / 0.5) 62%, transparent 92%);
+    animation: hero-crt-flicker 4.9s steps(1, end) infinite;
+  }
+  .hero-crt::before,
+  .hero-crt::after {
+    content: '';
+    position: absolute;
+    inset-inline: 0;
+    top: 0;
+    will-change: transform;
+  }
+  .hero-crt::after {
+    height: 22%;
+    background: linear-gradient(
+      to bottom,
+      transparent 0%,
+      rgb(255 255 255 / 0.022) 45%,
+      rgb(255 255 255 / 0.032) 60%,
+      transparent 100%
+    );
+    animation: hero-crt-roll 10.3s linear infinite;
+  }
+  .hero-crt::before {
+    height: 9%;
+    background: linear-gradient(
+      to bottom,
+      transparent 0%,
+      rgb(255 255 255 / 0.02) 55%,
+      transparent 100%
+    );
+    animation: hero-crt-roll-fast 15.7s linear infinite;
+    animation-delay: -6s;
+  }
+  @keyframes hero-crt-roll {
+    from { transform: translateY(-100%); }
+    to { transform: translateY(455%); }
+  }
+  @keyframes hero-crt-roll-fast {
+    from { transform: translateY(-100%); }
+    to { transform: translateY(1111%); }
+  }
+  @keyframes hero-crt-flicker {
+    0%, 100% { opacity: 1; }
+    23% { opacity: 0.92; }
+    23.6% { opacity: 1; }
+    61% { opacity: 0.88; }
+    61.4% { opacity: 0.97; }
+    61.8% { opacity: 1; }
+    84% { opacity: 0.94; }
+    84.5% { opacity: 1; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-crt {
+      animation: none;
+    }
+    .hero-crt::before,
+    .hero-crt::after {
+      display: none;
+    }
+  }
+  :global(html[data-motion='reduced']) .hero-crt,
+  :global(html[data-motion='failed']) .hero-crt {
+    animation: none;
+  }
+  :global(html[data-motion='reduced']) .hero-crt::before,
+  :global(html[data-motion='reduced']) .hero-crt::after,
+  :global(html[data-motion='failed']) .hero-crt::before,
+  :global(html[data-motion='failed']) .hero-crt::after {
+    display: none;
+  }
+
+  /*
+    The hero's signal glitch on Technical / Roots — the analog-TV look: the
+    word steady almost all the time, then a short burst where it loses sync.
+    Three layers do it, matching the reference set (whole-word chromatic split,
+    torn bright slices, pixel debris):
+
+    - `.outage::before/::after` — whole copies of the word in the accent blue
+      and purple, *behind* it, thrown a few px apart. Mostly the full word
+      (that is the chromatic aberration), sometimes only a band of it.
+    - `.outage__tear::before/::after` — slices of the word in ink, *in front*,
+      thrown 6–18px sideways. One is solid, one is a 3px scanline raster (the
+      CRT pitch from BreakoutCTA), which is the textured band in the refs.
+    - `.debris` — short bars scattered round the words, two groups per word
+      strobing on alternate frames.
+
+    The keyframes were generated once from a seeded LCG (so the values are
+    arbitrary but fixed, like the Breakout rack) and are plain CSS from here
+    on: edit frames directly. Every frame inside a burst is ~25ms. Every
+    layer of a word shares its duration and delay, so all three land in the same
+    burst windows and are fully off between them. The two words run on clocks
+    that share no factor (7.3s / 11.9s), so they never fall into a loop.
+
+    `steps(1, end)` throughout: a lost signal cuts, it does not ease. The main
+    word dims its *colour*, not its opacity — every layer is its descendant,
+    and an opacity dip would take the glitch down with it.
+
+    SplitText puts its word wrapper inside `.outage__tear`; the reveal tween
+    only moves that wrapper, so it never touches these properties. The `/ ""`
+    on `content` gives each copy empty alt text, or a screen reader would read
+    the word five times. Reduced motion and failed motion remove it entirely —
+    a strobing headline is exactly what that setting exists to stop.
+  */
+  .outage,
+  .outage__tear {
+    position: relative;
+    display: inline-block;
+  }
+  .outage {
+    animation: var(--glitch-main) var(--glitch-dur) steps(1, end) var(--glitch-delay) infinite;
+  }
+  .outage--a {
+    --glitch-dur: 7.3s;
+    --glitch-delay: 2.4s;
+    --glitch-main: outage-a;
+  }
+  .outage--b {
+    --glitch-dur: 11.9s;
+    --glitch-delay: 3.7s;
+    --glitch-main: outage-b;
+  }
+
+  .outage::before,
+  .outage::after,
+  .outage__tear::before,
+  .outage__tear::after {
+    content: attr(data-text);
+    content: attr(data-text) / '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    text-shadow: none;
+  }
+
+  /* Chromatic copies, behind the word. */
+  .outage::before,
+  .outage::after {
+    z-index: -1;
+    mix-blend-mode: screen;
+  }
+  .outage::before {
+    color: var(--color-accent);
+    -webkit-text-fill-color: var(--color-accent);
+  }
+  .outage::after {
+    color: var(--color-accent-warm);
+    -webkit-text-fill-color: var(--color-accent-warm);
+  }
+  .outage--a::before { animation: rgb-a1 var(--glitch-dur) steps(1, end) var(--glitch-delay) infinite; }
+  .outage--a::after { animation: rgb-a2 var(--glitch-dur) steps(1, end) var(--glitch-delay) infinite; }
+  .outage--b::before { animation: rgb-b1 var(--glitch-dur) steps(1, end) var(--glitch-delay) infinite; }
+  .outage--b::after { animation: rgb-b2 var(--glitch-dur) steps(1, end) var(--glitch-delay) infinite; }
+
+  /* Torn slices, in front. */
+  .outage__tear::before {
+    color: var(--color-ink);
+    -webkit-text-fill-color: var(--color-ink);
+  }
+  .outage__tear::after {
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    background-image: repeating-linear-gradient(
+      to bottom,
+      var(--color-ink) 0 2px,
+      transparent 2px 3px
+    );
+    background-clip: text;
+    -webkit-background-clip: text;
+  }
+  .outage--a .outage__tear::before { animation: tear-a1 var(--glitch-dur) steps(1, end) var(--glitch-delay) infinite; }
+  .outage--a .outage__tear::after { animation: tear-a2 var(--glitch-dur) steps(1, end) var(--glitch-delay) infinite; }
+  .outage--b .outage__tear::before { animation: tear-b1 var(--glitch-dur) steps(1, end) var(--glitch-delay) infinite; }
+  .outage--b .outage__tear::after { animation: tear-b2 var(--glitch-dur) steps(1, end) var(--glitch-delay) infinite; }
+
+  /*
+    Debris. Positioned in % of the headline box around the second line, which
+    is where both words sit from `md` up; below that the headline wraps
+    differently and the bars would land on the wrong words, so they are off.
+  */
+  .debris-field {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    display: none;
+  }
+  @media (min-width: 48rem) {
+    .debris-field {
+      display: block;
+    }
+  }
+  .debris {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+  }
+  .debris > i {
+    position: absolute;
+    display: block;
+  }
+  .debris--a1 { animation: debris-a1 7.3s steps(1, end) 2.4s infinite; }
+  .debris--a2 { animation: debris-a2 7.3s steps(1, end) 2.4s infinite; }
+  .debris--b1 { animation: debris-b1 11.9s steps(1, end) 3.7s infinite; }
+  .debris--b2 { animation: debris-b2 11.9s steps(1, end) 3.7s infinite; }
+
+  @keyframes outage-a {
+    0%, 79.99% { color: var(--color-ink); transform: none; }
+    80% { color: var(--color-ink); transform: translateX(3px); }
+    80.35% { color: var(--color-ink); transform: translateX(-3px); }
+    80.7% { color: var(--color-ink); transform: translateX(0px); }
+    81.05% { color: var(--color-ink); transform: translateX(-3px); }
+    81.4% { color: var(--color-ink); transform: translateX(1px); }
+    81.75% { color: var(--color-ink); transform: translateX(2px); }
+    82.1%, 83.39% { color: var(--color-ink); transform: none; }
+    83.4% { color: color-mix(in oklab, var(--color-ink) 34%, transparent); transform: translateX(2px); }
+    83.75% { color: color-mix(in oklab, var(--color-ink) 82%, transparent); transform: translateX(-1px); }
+    84.1% { color: color-mix(in oklab, var(--color-ink) 62%, transparent); transform: translateX(3px); }
+    84.45% { color: var(--color-ink); transform: translateX(2px); }
+    84.8% { color: color-mix(in oklab, var(--color-ink) 62%, transparent); transform: translateX(0px); }
+    85.15% { color: var(--color-ink); transform: translateX(2px); }
+    85.5%, 100% { color: var(--color-ink); transform: none; }
+  }
+
+  @keyframes rgb-a1 {
+    0%, 79.99% { opacity: 0; transform: none; }
+    80% { opacity: 0; clip-path: inset(-10% -4%); transform: translate(-4px, -2px); }
+    80.35% { opacity: 1; clip-path: inset(26% -4% 62% -4%); transform: translate(-4px, 0px); }
+    80.7% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(-3px, 1px); }
+    81.05% { opacity: 1; clip-path: inset(74% -4% 11% -4%); transform: translate(-3px, 0px); }
+    81.4% { opacity: 1; clip-path: inset(7% -4% 74% -4%); transform: translate(-5px, 2px); }
+    81.75% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(-8px, 2px); }
+    82.1%, 83.39% { opacity: 0; transform: none; }
+    83.4% { opacity: 1; clip-path: inset(2% -4% 85% -4%); transform: translate(-7px, 0px); }
+    83.75% { opacity: 1; clip-path: inset(66% -4% 15% -4%); transform: translate(-3px, 1px); }
+    84.1% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(-4px, 2px); }
+    84.45% { opacity: 1; clip-path: inset(45% -4% 46% -4%); transform: translate(-8px, 0px); }
+    84.8% { opacity: 1; clip-path: inset(37% -4% 55% -4%); transform: translate(-8px, 0px); }
+    85.15% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(-6px, -1px); }
+    85.5%, 100% { opacity: 0; transform: none; }
+  }
+
+  @keyframes rgb-a2 {
+    0%, 79.99% { opacity: 0; transform: none; }
+    80% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(7px, -2px); }
+    80.35% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(5px, -1px); }
+    80.7% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(4px, -1px); }
+    81.05% { opacity: 1; clip-path: inset(7% -4% 82% -4%); transform: translate(3px, 0px); }
+    81.4% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(7px, -2px); }
+    81.75% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(3px, -2px); }
+    82.1%, 83.39% { opacity: 0; transform: none; }
+    83.4% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(8px, 1px); }
+    83.75% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(5px, -1px); }
+    84.1% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(3px, -1px); }
+    84.45% { opacity: 1; clip-path: inset(55% -4% 30% -4%); transform: translate(3px, 2px); }
+    84.8% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(6px, -1px); }
+    85.15% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(6px, -1px); }
+    85.5%, 100% { opacity: 0; transform: none; }
+  }
+
+  @keyframes tear-a1 {
+    0%, 79.99% { opacity: 0; transform: none; clip-path: inset(0 0 100% 0); }
+    80% { opacity: 1; clip-path: inset(40% -4% 50% -4%); transform: translateX(-16px); background-position: 0 0px; }
+    80.35% { opacity: 1; clip-path: inset(25% -4% 62% -4%); transform: translateX(-15px); background-position: 0 1px; }
+    80.7% { opacity: 0; clip-path: inset(13% -4% 66% -4%); transform: translateX(9px); background-position: 0 2px; }
+    81.05% { opacity: 1; clip-path: inset(67% -4% 18% -4%); transform: translateX(15px); background-position: 0 0px; }
+    81.4% { opacity: 1; clip-path: inset(39% -4% 47% -4%); transform: translateX(13px); background-position: 0 1px; }
+    81.75% { opacity: 1; clip-path: inset(23% -4% 60% -4%); transform: translateX(8px); background-position: 0 2px; }
+    82.1%, 83.39% { opacity: 0; transform: none; clip-path: inset(0 0 100% 0); }
+    83.4% { opacity: 1; clip-path: inset(56% -4% 23% -4%); transform: translateX(-17px); background-position: 0 0px; }
+    83.75% { opacity: 1; clip-path: inset(2% -4% 79% -4%); transform: translateX(8px); background-position: 0 1px; }
+    84.1% { opacity: 1; clip-path: inset(5% -4% 81% -4%); transform: translateX(8px); background-position: 0 2px; }
+    84.45% { opacity: 1; clip-path: inset(66% -4% 19% -4%); transform: translateX(-10px); background-position: 0 2px; }
+    84.8% { opacity: 0; clip-path: inset(26% -4% 61% -4%); transform: translateX(-17px); background-position: 0 2px; }
+    85.15% { opacity: 1; clip-path: inset(25% -4% 65% -4%); transform: translateX(-13px); background-position: 0 1px; }
+    85.5%, 100% { opacity: 0; transform: none; clip-path: inset(0 0 100% 0); }
+  }
+
+  @keyframes tear-a2 {
+    0%, 79.99% { opacity: 0; transform: none; clip-path: inset(0 0 100% 0); }
+    80% { opacity: 1; clip-path: inset(77% -4% 9% -4%); transform: translateX(-14px); background-position: 0 2px; }
+    80.35% { opacity: 1; clip-path: inset(42% -4% 36% -4%); transform: translateX(-9px); background-position: 0 2px; }
+    80.7% { opacity: 1; clip-path: inset(15% -4% 66% -4%); transform: translateX(16px); background-position: 0 0px; }
+    81.05% { opacity: 0; clip-path: inset(31% -4% 47% -4%); transform: translateX(11px); background-position: 0 1px; }
+    81.4% { opacity: 1; clip-path: inset(8% -4% 72% -4%); transform: translateX(-11px); background-position: 0 1px; }
+    81.75% { opacity: 1; clip-path: inset(53% -4% 35% -4%); transform: translateX(-17px); background-position: 0 2px; }
+    82.1%, 83.39% { opacity: 0; transform: none; clip-path: inset(0 0 100% 0); }
+    83.4% { opacity: 1; clip-path: inset(11% -4% 73% -4%); transform: translateX(15px); background-position: 0 2px; }
+    83.75% { opacity: 1; clip-path: inset(7% -4% 76% -4%); transform: translateX(-14px); background-position: 0 1px; }
+    84.1% { opacity: 1; clip-path: inset(21% -4% 58% -4%); transform: translateX(-18px); background-position: 0 0px; }
+    84.45% { opacity: 1; clip-path: inset(51% -4% 32% -4%); transform: translateX(-6px); background-position: 0 0px; }
+    84.8% { opacity: 1; clip-path: inset(53% -4% 35% -4%); transform: translateX(16px); background-position: 0 1px; }
+    85.15% { opacity: 1; clip-path: inset(19% -4% 60% -4%); transform: translateX(10px); background-position: 0 0px; }
+    85.5%, 100% { opacity: 0; transform: none; clip-path: inset(0 0 100% 0); }
+  }
+
+  @keyframes debris-a1 {
+    0%, 79.99% { opacity: 0; transform: none; }
+    80% { opacity: 1; transform: translateX(-1px); }
+    80.35% { opacity: 0; transform: translateX(-3px); }
+    80.7% { opacity: 1; transform: translateX(0px); }
+    81.05% { opacity: 0; transform: translateX(-5px); }
+    81.4% { opacity: 1; transform: translateX(2px); }
+    81.75% { opacity: 1; transform: translateX(-9px); }
+    82.1%, 83.39% { opacity: 0; transform: none; }
+    83.4% { opacity: 1; transform: translateX(-10px); }
+    83.75% { opacity: 1; transform: translateX(-3px); }
+    84.1% { opacity: 1; transform: translateX(-3px); }
+    84.45% { opacity: 0; transform: translateX(-10px); }
+    84.8% { opacity: 1; transform: translateX(5px); }
+    85.15% { opacity: 1; transform: translateX(9px); }
+    85.5%, 100% { opacity: 0; transform: none; }
+  }
+
+  @keyframes debris-a2 {
+    0%, 79.99% { opacity: 0; transform: none; }
+    80% { opacity: 0; transform: translateX(-9px); }
+    80.35% { opacity: 1; transform: translateX(5px); }
+    80.7% { opacity: 0; transform: translateX(-3px); }
+    81.05% { opacity: 1; transform: translateX(0px); }
+    81.4% { opacity: 0; transform: translateX(-5px); }
+    81.75% { opacity: 1; transform: translateX(4px); }
+    82.1%, 83.39% { opacity: 0; transform: none; }
+    83.4% { opacity: 1; transform: translateX(-3px); }
+    83.75% { opacity: 1; transform: translateX(-6px); }
+    84.1% { opacity: 0; transform: translateX(-8px); }
+    84.45% { opacity: 1; transform: translateX(1px); }
+    84.8% { opacity: 0; transform: translateX(-2px); }
+    85.15% { opacity: 1; transform: translateX(9px); }
+    85.5%, 100% { opacity: 0; transform: none; }
+  }
+
+  @keyframes outage-b {
+    0%, 37.39% { color: var(--color-ink); transform: none; }
+    37.4% { color: var(--color-ink); transform: translateX(0px); }
+    37.6% { color: var(--color-ink); transform: translateX(-3px); }
+    37.8% { color: var(--color-ink); transform: translateX(0px); }
+    38% { color: color-mix(in oklab, var(--color-ink) 34%, transparent); transform: translateX(1px); }
+    38.2% { color: color-mix(in oklab, var(--color-ink) 34%, transparent); transform: translateX(3px); }
+    38.4%, 88.39% { color: var(--color-ink); transform: none; }
+    88.4% { color: var(--color-ink); transform: translateX(-2px); }
+    88.6% { color: var(--color-ink); transform: translateX(-2px); }
+    88.8% { color: var(--color-ink); transform: translateX(-2px); }
+    89% { color: var(--color-ink); transform: translateX(1px); }
+    89.2% { color: color-mix(in oklab, var(--color-ink) 62%, transparent); transform: translateX(1px); }
+    89.4% { color: color-mix(in oklab, var(--color-ink) 62%, transparent); transform: translateX(0px); }
+    89.6%, 89.99% { color: var(--color-ink); transform: none; }
+    90% { color: color-mix(in oklab, var(--color-ink) 34%, transparent); transform: translateX(1px); }
+    90.2% { color: var(--color-ink); transform: translateX(-2px); }
+    90.4% { color: var(--color-ink); transform: translateX(-2px); }
+    90.6% { color: var(--color-ink); transform: translateX(3px); }
+    90.8%, 100% { color: var(--color-ink); transform: none; }
+  }
+
+  @keyframes rgb-b1 {
+    0%, 37.39% { opacity: 0; transform: none; }
+    37.4% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(-3px, -2px); }
+    37.6% { opacity: 1; clip-path: inset(41% -4% 38% -4%); transform: translate(-7px, 0px); }
+    37.8% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(-3px, -1px); }
+    38% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(-4px, 2px); }
+    38.2% { opacity: 0; clip-path: inset(-10% -4%); transform: translate(-7px, 0px); }
+    38.4%, 88.39% { opacity: 0; transform: none; }
+    88.4% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(-3px, 1px); }
+    88.6% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(-6px, 1px); }
+    88.8% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(-4px, -1px); }
+    89% { opacity: 0; clip-path: inset(-10% -4%); transform: translate(-6px, 0px); }
+    89.2% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(-6px, -1px); }
+    89.4% { opacity: 1; clip-path: inset(51% -4% 27% -4%); transform: translate(-6px, 0px); }
+    89.6%, 89.99% { opacity: 0; transform: none; }
+    90% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(-6px, -1px); }
+    90.2% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(-6px, 0px); }
+    90.4% { opacity: 1; clip-path: inset(35% -4% 58% -4%); transform: translate(-3px, -2px); }
+    90.6% { opacity: 1; clip-path: inset(53% -4% 32% -4%); transform: translate(-8px, 0px); }
+    90.8%, 100% { opacity: 0; transform: none; }
+  }
+
+  @keyframes rgb-b2 {
+    0%, 37.39% { opacity: 0; transform: none; }
+    37.4% { opacity: 1; clip-path: inset(43% -4% 36% -4%); transform: translate(3px, 0px); }
+    37.6% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(5px, 0px); }
+    37.8% { opacity: 0; clip-path: inset(-10% -4%); transform: translate(5px, 2px); }
+    38% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(6px, 2px); }
+    38.2% { opacity: 1; clip-path: inset(39% -4% 50% -4%); transform: translate(4px, -1px); }
+    38.4%, 88.39% { opacity: 0; transform: none; }
+    88.4% { opacity: 1; clip-path: inset(79% -4% 0% -4%); transform: translate(4px, 0px); }
+    88.6% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(6px, 1px); }
+    88.8% { opacity: 1; clip-path: inset(19% -4% 64% -4%); transform: translate(4px, 2px); }
+    89% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(5px, -2px); }
+    89.2% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(8px, 2px); }
+    89.4% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(7px, 0px); }
+    89.6%, 89.99% { opacity: 0; transform: none; }
+    90% { opacity: 1; clip-path: inset(39% -4% 42% -4%); transform: translate(5px, 0px); }
+    90.2% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(5px, -1px); }
+    90.4% { opacity: 1; clip-path: inset(-10% -4%); transform: translate(8px, -2px); }
+    90.6% { opacity: 1; clip-path: inset(5% -4% 84% -4%); transform: translate(4px, -2px); }
+    90.8%, 100% { opacity: 0; transform: none; }
+  }
+
+  @keyframes tear-b1 {
+    0%, 37.39% { opacity: 0; transform: none; clip-path: inset(0 0 100% 0); }
+    37.4% { opacity: 1; clip-path: inset(67% -4% 17% -4%); transform: translateX(14px); background-position: 0 0px; }
+    37.6% { opacity: 1; clip-path: inset(50% -4% 29% -4%); transform: translateX(-10px); background-position: 0 1px; }
+    37.8% { opacity: 1; clip-path: inset(3% -4% 81% -4%); transform: translateX(7px); background-position: 0 1px; }
+    38% { opacity: 1; clip-path: inset(51% -4% 33% -4%); transform: translateX(7px); background-position: 0 1px; }
+    38.2% { opacity: 1; clip-path: inset(58% -4% 23% -4%); transform: translateX(-15px); background-position: 0 2px; }
+    38.4%, 88.39% { opacity: 0; transform: none; clip-path: inset(0 0 100% 0); }
+    88.4% { opacity: 1; clip-path: inset(79% -4% 1% -4%); transform: translateX(-18px); background-position: 0 0px; }
+    88.6% { opacity: 1; clip-path: inset(12% -4% 67% -4%); transform: translateX(7px); background-position: 0 0px; }
+    88.8% { opacity: 1; clip-path: inset(78% -4% 12% -4%); transform: translateX(13px); background-position: 0 1px; }
+    89% { opacity: 1; clip-path: inset(4% -4% 86% -4%); transform: translateX(8px); background-position: 0 1px; }
+    89.2% { opacity: 1; clip-path: inset(25% -4% 61% -4%); transform: translateX(-8px); background-position: 0 0px; }
+    89.4% { opacity: 1; clip-path: inset(36% -4% 45% -4%); transform: translateX(12px); background-position: 0 0px; }
+    89.6%, 89.99% { opacity: 0; transform: none; clip-path: inset(0 0 100% 0); }
+    90% { opacity: 1; clip-path: inset(73% -4% 18% -4%); transform: translateX(8px); background-position: 0 1px; }
+    90.2% { opacity: 1; clip-path: inset(9% -4% 82% -4%); transform: translateX(9px); background-position: 0 2px; }
+    90.4% { opacity: 1; clip-path: inset(41% -4% 45% -4%); transform: translateX(6px); background-position: 0 1px; }
+    90.6% { opacity: 1; clip-path: inset(25% -4% 61% -4%); transform: translateX(11px); background-position: 0 2px; }
+    90.8%, 100% { opacity: 0; transform: none; clip-path: inset(0 0 100% 0); }
+  }
+
+  @keyframes tear-b2 {
+    0%, 37.39% { opacity: 0; transform: none; clip-path: inset(0 0 100% 0); }
+    37.4% { opacity: 0; clip-path: inset(51% -4% 31% -4%); transform: translateX(-16px); background-position: 0 0px; }
+    37.6% { opacity: 1; clip-path: inset(33% -4% 52% -4%); transform: translateX(-13px); background-position: 0 1px; }
+    37.8% { opacity: 1; clip-path: inset(78% -4% 0% -4%); transform: translateX(-17px); background-position: 0 2px; }
+    38% { opacity: 1; clip-path: inset(38% -4% 52% -4%); transform: translateX(17px); background-position: 0 0px; }
+    38.2% { opacity: 1; clip-path: inset(59% -4% 23% -4%); transform: translateX(-15px); background-position: 0 0px; }
+    38.4%, 88.39% { opacity: 0; transform: none; clip-path: inset(0 0 100% 0); }
+    88.4% { opacity: 1; clip-path: inset(10% -4% 73% -4%); transform: translateX(17px); background-position: 0 0px; }
+    88.6% { opacity: 1; clip-path: inset(70% -4% 18% -4%); transform: translateX(8px); background-position: 0 0px; }
+    88.8% { opacity: 1; clip-path: inset(37% -4% 51% -4%); transform: translateX(-11px); background-position: 0 1px; }
+    89% { opacity: 0; clip-path: inset(28% -4% 55% -4%); transform: translateX(-13px); background-position: 0 1px; }
+    89.2% { opacity: 1; clip-path: inset(79% -4% 0% -4%); transform: translateX(16px); background-position: 0 1px; }
+    89.4% { opacity: 0; clip-path: inset(51% -4% 38% -4%); transform: translateX(-6px); background-position: 0 1px; }
+    89.6%, 89.99% { opacity: 0; transform: none; clip-path: inset(0 0 100% 0); }
+    90% { opacity: 1; clip-path: inset(77% -4% 14% -4%); transform: translateX(-10px); background-position: 0 2px; }
+    90.2% { opacity: 1; clip-path: inset(47% -4% 46% -4%); transform: translateX(7px); background-position: 0 1px; }
+    90.4% { opacity: 1; clip-path: inset(34% -4% 47% -4%); transform: translateX(-15px); background-position: 0 0px; }
+    90.6% { opacity: 1; clip-path: inset(42% -4% 49% -4%); transform: translateX(17px); background-position: 0 2px; }
+    90.8%, 100% { opacity: 0; transform: none; clip-path: inset(0 0 100% 0); }
+  }
+
+  @keyframes debris-b1 {
+    0%, 37.39% { opacity: 0; transform: none; }
+    37.4% { opacity: 1; transform: translateX(-5px); }
+    37.6% { opacity: 0; transform: translateX(6px); }
+    37.8% { opacity: 1; transform: translateX(1px); }
+    38% { opacity: 0; transform: translateX(-3px); }
+    38.2% { opacity: 1; transform: translateX(-2px); }
+    38.4%, 88.39% { opacity: 0; transform: none; }
+    88.4% { opacity: 1; transform: translateX(0px); }
+    88.6% { opacity: 1; transform: translateX(4px); }
+    88.8% { opacity: 1; transform: translateX(-9px); }
+    89% { opacity: 0; transform: translateX(-9px); }
+    89.2% { opacity: 1; transform: translateX(0px); }
+    89.4% { opacity: 0; transform: translateX(3px); }
+    89.6%, 89.99% { opacity: 0; transform: none; }
+    90% { opacity: 1; transform: translateX(-5px); }
+    90.2% { opacity: 0; transform: translateX(-10px); }
+    90.4% { opacity: 1; transform: translateX(-4px); }
+    90.6% { opacity: 1; transform: translateX(1px); }
+    90.8%, 100% { opacity: 0; transform: none; }
+  }
+
+  @keyframes debris-b2 {
+    0%, 37.39% { opacity: 0; transform: none; }
+    37.4% { opacity: 1; transform: translateX(6px); }
+    37.6% { opacity: 1; transform: translateX(8px); }
+    37.8% { opacity: 0; transform: translateX(8px); }
+    38% { opacity: 1; transform: translateX(-2px); }
+    38.2% { opacity: 0; transform: translateX(10px); }
+    38.4%, 88.39% { opacity: 0; transform: none; }
+    88.4% { opacity: 0; transform: translateX(-2px); }
+    88.6% { opacity: 1; transform: translateX(9px); }
+    88.8% { opacity: 0; transform: translateX(-9px); }
+    89% { opacity: 1; transform: translateX(-9px); }
+    89.2% { opacity: 0; transform: translateX(8px); }
+    89.4% { opacity: 1; transform: translateX(4px); }
+    89.6%, 89.99% { opacity: 0; transform: none; }
+    90% { opacity: 1; transform: translateX(8px); }
+    90.2% { opacity: 1; transform: translateX(5px); }
+    90.4% { opacity: 0; transform: translateX(-1px); }
+    90.6% { opacity: 1; transform: translateX(3px); }
+    90.8%, 100% { opacity: 0; transform: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .outage {
+      animation: none;
+    }
+    .outage::before,
+    .outage::after,
+    .outage__tear::before,
+    .outage__tear::after,
+    .debris-field {
+      display: none;
+    }
+  }
+  :global(html[data-motion='reduced']) .outage,
+  :global(html[data-motion='failed']) .outage {
+    animation: none;
+  }
+  :global(html[data-motion='reduced']) .outage::before,
+  :global(html[data-motion='reduced']) .outage::after,
+  :global(html[data-motion='reduced']) .outage__tear::before,
+  :global(html[data-motion='reduced']) .outage__tear::after,
+  :global(html[data-motion='reduced']) .debris-field,
+  :global(html[data-motion='failed']) .outage::before,
+  :global(html[data-motion='failed']) .outage::after,
+  :global(html[data-motion='failed']) .outage__tear::before,
+  :global(html[data-motion='failed']) .outage__tear::after,
+  :global(html[data-motion='failed']) .debris-field {
+    display: none;
+  }
+
   /*
     Capability hover. The target is a span rather than the <li>, so the hit area
     is the width of the words — on an <li> it would span the whole column and
