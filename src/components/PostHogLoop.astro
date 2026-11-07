@@ -52,7 +52,7 @@ const steps = [5, 25, 50, 100];
 
   {/* The loop ----------------------------------------------------------- */}
   <div class="ph-loop mt-16" aria-hidden="true" data-anim="reveal">
-    <div class="ph-loop__row">
+    <div class="ph-loop__row" data-ph-loop data-lenis-prevent>
       {
         loop.map((stage, i) => (
           <>
@@ -222,15 +222,47 @@ const steps = [5, 25, 50, 100];
     85% { opacity: 1; }
     100% { left: calc(100% - 5px); opacity: 0; }
   }
+  /*
+    Below lg the chain doesn't fit, and wrapping it dropped the links — five
+    boxes in a heap, nothing connecting them. Instead it stays one line and
+    runs off the screen, pulled out to the rails so it scrolls edge to edge.
+    The script then plays it as a single signal: one link at a time, the strip
+    scrolling to keep the live link centred, the stop it reaches lighting up.
+    A touch hands the scroll back to the reader.
+  */
   @media (max-width: 63.9375rem) {
     .ph-loop__row {
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 0.5rem;
+      position: relative;
+      overflow-x: auto;
+      margin-inline: calc(-1 * var(--spacing-shell-pad));
+      padding: 0.25rem var(--spacing-shell-pad);
+      scrollbar-width: none;
     }
-    .ph-loop__link {
+    .ph-loop__row::-webkit-scrollbar {
       display: none;
     }
+    .ph-loop__link {
+      flex: 0 0 3.5rem;
+    }
+    .ph-loop__row.is-stepped .ph-loop__packet {
+      animation: none;
+      opacity: 0;
+    }
+    .ph-loop__row.is-stepped .ph-loop__link.is-active .ph-loop__packet {
+      animation: ph-packet-once var(--step) var(--ease-in-out-quart) forwards;
+    }
+    .ph-loop__stop {
+      transition: border-color var(--dur-fast) ease;
+    }
+    .ph-loop__stop.is-lit {
+      border-style: solid;
+      border-color: color-mix(in oklab, var(--color-accent) 70%, var(--color-line));
+    }
+  }
+  @keyframes ph-packet-once {
+    0% { left: 0; opacity: 0; }
+    12% { opacity: 1; }
+    100% { left: calc(100% - 5px); opacity: 1; }
   }
 
   /* At lg the three cells share a subgrid row, so every card stretches to the
@@ -364,3 +396,106 @@ const steps = [5, 25, 50, 100];
     left: calc(50% - 2.5px);
   }
 </style>
+
+<script>
+  /*
+    Phone-width pipeline: one packet at a time down the chain, scrolling the
+    strip so the live link stays centred. CSS owns the look (`is-stepped`,
+    `is-active`, `is-lit`); this only sequences it. Runs only while the strip
+    is on screen, never under reduced motion, and backs off for a few seconds
+    whenever the reader scrolls it themselves. Same teardown contract as the
+    motion registry.
+  */
+  const STEP = 1100; // ms per link — also `--step` on the row
+  const HOLD = 1600; // ms on "You merge" before rewinding
+  const HANDS_OFF = 5000; // ms of no auto-scroll after the reader touches it
+
+  function initLoop(row: HTMLElement) {
+    const narrow = window.matchMedia('(max-width: 63.9375rem)');
+    const reduced = () =>
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+      ['reduced', 'failed'].includes(document.documentElement.dataset.motion ?? '');
+    const links = [...row.querySelectorAll<HTMLElement>('.ph-loop__link')];
+    const stops = [...row.querySelectorAll<HTMLElement>('.ph-loop__stop')];
+    let timer = 0;
+    let step = 0;
+    let visible = false;
+    let touchedAt = -Infinity;
+
+    row.style.setProperty('--step', `${STEP}ms`);
+
+    const centre = (el: HTMLElement) => {
+      if (performance.now() - touchedAt < HANDS_OFF) return;
+      const left = el.offsetLeft + el.offsetWidth / 2 - row.clientWidth / 2;
+      row.scrollTo({ left: Math.max(0, left), behavior: 'smooth' });
+    };
+
+    const clear = () => {
+      links.forEach((l) => l.classList.remove('is-active'));
+      stops.forEach((s) => s.classList.remove('is-lit'));
+    };
+
+    const tick = () => {
+      if (step < links.length) {
+        const link = links[step];
+        links.forEach((l) => l.classList.remove('is-active'));
+        void link.offsetWidth; // restart the packet's animation
+        link.classList.add('is-active');
+        stops[step].classList.add('is-lit');
+        centre(link);
+        step += 1;
+        timer = window.setTimeout(tick, STEP);
+      } else if (step === links.length) {
+        stops[step].classList.add('is-lit');
+        centre(stops[step]);
+        step += 1;
+        timer = window.setTimeout(tick, HOLD);
+      } else {
+        clear();
+        step = 0;
+        centre(stops[0]);
+        timer = window.setTimeout(tick, STEP);
+      }
+    };
+
+    const sync = () => {
+      window.clearTimeout(timer);
+      const on = narrow.matches && visible && !reduced();
+      row.classList.toggle('is-stepped', narrow.matches && !reduced());
+      if (on) timer = window.setTimeout(tick, 400);
+      else {
+        clear();
+        step = 0;
+      }
+    };
+
+    const io = new IntersectionObserver(([e]) => {
+      visible = e.isIntersecting;
+      sync();
+    });
+    io.observe(row);
+    narrow.addEventListener('change', sync);
+    const onTouch = () => (touchedAt = performance.now());
+    row.addEventListener('pointerdown', onTouch);
+    row.addEventListener('wheel', onTouch, { passive: true });
+
+    return () => {
+      window.clearTimeout(timer);
+      io.disconnect();
+      narrow.removeEventListener('change', sync);
+      row.removeEventListener('pointerdown', onTouch);
+      row.removeEventListener('wheel', onTouch);
+    };
+  }
+
+  let teardowns: (() => void)[] = [];
+
+  document.addEventListener('astro:page-load', () => {
+    teardowns = [...document.querySelectorAll<HTMLElement>('[data-ph-loop]')].map(initLoop);
+  });
+
+  document.addEventListener('astro:before-swap', () => {
+    teardowns.forEach((fn) => fn());
+    teardowns = [];
+  });
+</script>

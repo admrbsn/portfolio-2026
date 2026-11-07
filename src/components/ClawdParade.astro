@@ -123,11 +123,11 @@ const SPACING = CYCLE / walkers.length; // seconds between walkers
 // Walker i runs i·SPACING ahead, so arrivals land every SPACING seconds at
 // phase (ARRIVE·CYCLE) mod SPACING. The station's own clock is SPACING long
 // and starts its flip on that phase.
-// The gate opens LEAD seconds before each arrival, so it is already up when
-// the walker reaches it, and stays up OPEN seconds in all — long enough for
-// the walker to clear the post on the far side before it drops again.
-const LEAD = 2.4;
-const OPEN = 3.6; // = 42.35% of SPACING — the literal in `station-wait` / `station-ok`
+// The gate opens LEAD seconds before each arrival, as the walker's front
+// edge reaches the arm's tip, and stays up OPEN seconds in all: long enough
+// for the walker to clear the post on the far side before it drops again.
+const LEAD = 1.4;
+const OPEN = 2.6; // = 30.59% of SPACING — the literal in `station-wait` / `station-ok`
 const STATION_PHASE = (((ARRIVE * CYCLE - LEAD) % SPACING) + SPACING) % SPACING;
 ---
 
@@ -290,15 +290,15 @@ const STATION_PHASE = (((ARRIVE * CYCLE - LEAD) % SPACING) + SPACING) % SPACING;
        delay is unset. */
     animation-delay: var(--phase);
   }
-  /* 42.35% = OPEN / SPACING (3.6s of 8.5s). Keyframe offsets can't take a
+  /* 30.59% = OPEN / SPACING (2.6s of 8.5s). Keyframe offsets can't take a
      custom property, so keep it in step with OPEN by hand. */
   @keyframes station-wait {
-    0%, 42.35% { opacity: 0; }
-    42.36%, 100% { opacity: 1; }
+    0%, 30.59% { opacity: 0; }
+    30.6%, 100% { opacity: 1; }
   }
   @keyframes station-ok {
-    0%, 42.35% { opacity: 1; }
-    42.36%, 100% { opacity: 0; }
+    0%, 30.59% { opacity: 1; }
+    30.6%, 100% { opacity: 0; }
   }
   .walker {
     z-index: 1;

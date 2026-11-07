@@ -218,6 +218,9 @@ const chapters: { href: string; label: string; brand?: Brand }[] = [
     padding: 0.45rem 0.8rem;
     border: 1px dashed var(--color-line);
     border-radius: var(--radius-ui);
+    /* Opaque, so on a phone the strip slides over the dashed rails rather
+       than the rails showing through the chips. */
+    background: var(--color-surface);
     color: var(--color-ink-dim);
     font-size: 0.8125rem;
     white-space: nowrap;

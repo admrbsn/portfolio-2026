@@ -21,7 +21,8 @@ import type { Brand } from '../data/brands';
   under absolutely-positioned nodes without the lines distorting: the box and
   the viewBox share a 16:9 ratio, so `preserveAspectRatio="none"` stretches
   nothing. Below `md` there is no room for a hub-and-spoke, so it becomes the
-  hub over a two-column grid of the same nodes, and the spokes are dropped.
+  hub over a two-column grid of the same nodes, wired by a bus instead of
+  spokes (see ROW_AT).
 */
 
 type Node = { key: string; brand?: Brand; name: string; role: string; x: number; y: number };
@@ -39,6 +40,18 @@ const nodes: Node[] = [
 ];
 
 const HUB = { x: 80, y: 45 };
+
+/*
+  Below `md` the spokes become a bus: a trunk from the hub down the gutter
+  between the two columns, and a stub into each node. One accent pulse runs
+  down the trunk and each row's pair flashes as it passes. Rows are equal
+  height (`grid-auto-rows: 1fr`), so the trunk can end exactly on the last
+  row's centre in CSS; these are the fractions of the run at which the pulse
+  reaches each row's centre, at typical phone heights. Times are seconds into
+  BUS_RUN, the moving part of the cycle (75% of `hub-bus`'s 3s).
+*/
+const BUS_RUN = 2.25;
+const ROW_AT = [0.2, 0.47, 0.73, 1];
 
 const trace: { brand?: Brand; tool: string; action: string; wait?: boolean; local?: boolean }[] = [
   { brand: 'posthog', tool: 'PostHog', action: 'Query the record → submit funnel, last 30 days' },
@@ -143,10 +156,13 @@ const trace: { brand?: Brand; tool: string; action: string; wait?: boolean; loca
         <div class="hub__core hub__core--flat mx-auto">
           <BrandMark name="notion" class="h-8 w-8 text-ink" />
         </div>
-        <div class="mt-6 grid grid-cols-2 gap-3">
+        <div class="hub__grid relative mt-6 grid grid-cols-2 gap-x-6 gap-y-3">
           {
-            nodes.map((n) => (
-              <div class="hub__node hub__node--flat">
+            nodes.map((n, i) => (
+              <div
+                class="hub__node hub__node--flat"
+                style={`--tap-delay: ${(ROW_AT[Math.floor(i / 2)] * BUS_RUN).toFixed(2)}s`}
+              >
                 {n.brand ? <BrandMark name={n.brand} class="h-4 w-4 text-ink-dim" /> : <span class="hub__doc" />}
                 <span class="block">
                   <span class="block text-[0.8125rem] leading-tight text-ink">{n.name}</span>
@@ -155,6 +171,10 @@ const trace: { brand?: Brand; tool: string; action: string; wait?: boolean; loca
               </div>
             ))
           }
+          {/* Last, so the nodes keep their odd/even column order. */}
+          <span class="hub__bus">
+            <span class="hub__bus-run"><span class="hub__bus-pulse" /></span>
+          </span>
         </div>
       </div>
     </div>
@@ -283,7 +303,73 @@ const trace: { brand?: Brand; tool: string; action: string; wait?: boolean; loca
     white-space: nowrap;
   }
   .hub__node--flat {
+    position: relative;
     white-space: normal;
+    animation: hub-tap-node 3s linear infinite;
+    animation-delay: var(--tap-delay);
+  }
+
+  /* The bus (below md). Gaps: 1.5rem between columns, 0.75rem between rows,
+     1.5rem from the hub to the first row. */
+  .hub__grid {
+    grid-auto-rows: 1fr;
+  }
+  /* Stub from the trunk into each node, across half the column gap. */
+  .hub__node--flat::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 0.75rem;
+    height: 1px;
+    background: var(--color-line);
+    animation: hub-tap-stub 3s linear infinite;
+    animation-delay: var(--tap-delay);
+  }
+  .hub__node--flat:nth-child(odd)::before {
+    left: calc(100% + 1px);
+  }
+  .hub__node--flat:nth-child(even)::before {
+    right: calc(100% + 1px);
+  }
+  /* The trunk: from the hub's bottom edge to the last row's centre. With
+     equal rows, half a row is (100% − 3 row gaps) / 8. */
+  .hub__bus {
+    position: absolute;
+    left: calc(50% - 0.5px);
+    top: -1.5rem;
+    bottom: calc((100% - 2.25rem) / 8);
+    width: 1px;
+    background: var(--color-line);
+    overflow: hidden;
+  }
+  /* The run is the trunk's own height, so translating it 100% carries the
+     pulse from the top of the trunk to the bottom exactly. */
+  .hub__bus-run {
+    position: absolute;
+    inset: 0;
+    animation: hub-bus 3s linear infinite;
+  }
+  .hub__bus-pulse {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1px;
+    height: 1.5rem;
+    translate: 0 -50%;
+    background: linear-gradient(transparent, var(--color-accent), transparent);
+  }
+  @keyframes hub-bus {
+    0% { transform: translateY(0); opacity: 1; }
+    75% { transform: translateY(100%); opacity: 1; }
+    75.01%, 100% { transform: translateY(100%); opacity: 0; }
+  }
+  @keyframes hub-tap-stub {
+    0% { background: var(--color-accent); }
+    20%, 100% { background: var(--color-line); }
+  }
+  @keyframes hub-tap-node {
+    0% { border-color: color-mix(in oklab, var(--color-accent) 70%, var(--color-line)); }
+    25%, 100% { border-color: var(--color-line); }
   }
   /* Notion's own pages — a stack of two sheets rather than a borrowed mark. */
   .hub__doc {
@@ -296,14 +382,27 @@ const trace: { brand?: Brand; tool: string; action: string; wait?: boolean; loca
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .hub__flow {
+    .hub__flow,
+    .hub__bus-run {
       animation: none;
       opacity: 0;
     }
+    .hub__node--flat,
+    .hub__node--flat::before {
+      animation: none;
+    }
   }
   :global(html[data-motion='reduced']) .hub__flow,
-  :global(html[data-motion='failed']) .hub__flow {
+  :global(html[data-motion='failed']) .hub__flow,
+  :global(html[data-motion='reduced']) .hub__bus-run,
+  :global(html[data-motion='failed']) .hub__bus-run {
     animation: none;
     opacity: 0;
+  }
+  :global(html[data-motion='reduced']) .hub__node--flat,
+  :global(html[data-motion='failed']) .hub__node--flat,
+  :global(html[data-motion='reduced']) .hub__node--flat::before,
+  :global(html[data-motion='failed']) .hub__node--flat::before {
+    animation: none;
   }
 </style>
