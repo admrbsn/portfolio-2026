@@ -9,8 +9,10 @@ import RichText from './RichText.astro';
   line each. Invocation is `/impeccable <command> <target>`; `pin` makes a
   standalone shortcut. The CI strip uses only documented behaviour: `npx
   impeccable detect` with `--github` annotations, deterministic rules (no count on the
-  page — it changes between versions), exit code 2 on findings. Nothing here may be invented — it is the section most
-  likely to be read by someone who uses the tool.
+  page — it changes between versions), exit code 2 on findings. Nothing about
+  Impeccable here may be invented — it is the section most likely to be read
+  by someone who uses the tool. `check:system` beside it is the project's own
+  script, not an Impeccable command.
 */
 const groups: { name: string; note: string; cmds: [string, string][] }[] = [
   {
@@ -134,28 +136,98 @@ const groups: { name: string; note: string; cmds: [string, string][] }[] = [
     }
   </div>
 
-  {/* The gate ------------------------------------------------------------ */}
-  <div class="mt-16 grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-center" data-anim="reveal">
-    <div class="rounded-ui border border-line bg-surface-lift px-5 py-4 font-mono text-[0.8125rem] leading-[1.9] text-ink-dim" aria-hidden="true">
-      <p><span class="text-ink-faint"># the one I use most, as its own shortcut</span></p>
-      <p><span class="text-accent-warm">/impeccable</span> <span class="text-accent">pin</span> audit</p>
-      <p><span class="text-accent-warm">/audit</span></p>
-      <p class="mt-3"><span class="text-ink-faint"># the same rules, no agent, on every PR</span></p>
-      <p><span class="text-ink-faint">$</span> <span class="text-accent-warm">npx impeccable detect</span> <span class="text-accent">--github</span> src/</p>
-      <p><span class="text-ink-faint">exit 2 · findings — the check fails</span></p>
+  {/*
+    The gates ------------------------------------------------------------
+    Two deterministic checks, side by side, because they answer different
+    questions. Impeccable asks whether the UI is good; `check:system` asks
+    whether it's ours — a hand-built dialog can pass every taste rule and still
+    bypass the component system. The system check is the project's own script
+    (illustrative findings, real daisyUI names: `text-danger` isn't a daisyUI
+    colour, `text-error` is — Southleft's "ghost token" case). Neither has a
+    model in the enforcement path, the State of AI in Design Systems study's
+    strongest pattern.
+  */}
+  <div class="mt-16 max-w-2xl" data-anim="reveal">
+    <p class="text-[1.0625rem] font-medium text-ink">Two gates, and neither one is an agent</p>
+    <p class="mt-2 text-ink-dim">
+      Impeccable judges whether the UI is good. It can’t tell whether it’s ours: a hand-built
+      dialog can be beautiful and still go around the system. So a second check runs the system’s
+      own rules: tokens only from the daisyUI theme, every class a component doc names has to
+      exist, documented components before new ones, and axe for the basics. The agent runs both
+      before it hands work back, and both annotate the pull request. Taste stops being a review
+      comment someone has to remember to leave, and becomes a check that has to pass.
+    </p>
+  </div>
+
+  <div class="mt-10 grid gap-6 lg:grid-cols-2" aria-hidden="true" data-anim="reveal-batch">
+    <div class="gate">
+      <p class="gate__head"><span>Is it good?</span><span>impeccable</span></p>
+      <div class="gate__body">
+        <p><span class="text-ink-faint"># the one I use most, as its own shortcut</span></p>
+        <p><span class="text-accent-warm">/impeccable</span> <span class="text-accent">pin</span> audit</p>
+        <p><span class="text-accent-warm">/audit</span></p>
+        <p class="mt-3"><span class="text-ink-faint"># the same rules, no agent, on every PR</span></p>
+        <p><span class="text-ink-faint">$</span> <span class="text-accent-warm">npx impeccable detect</span> <span class="text-accent">--github</span> src/</p>
+        <p><span class="text-ink-faint">exit 2 · findings — the check fails</span></p>
+      </div>
     </div>
-    <div>
-      <p class="text-[1.0625rem] font-medium text-ink">Drift fails the build</p>
-      <p class="mt-2 max-w-lg text-ink-dim">
-        The detector runs a set of deterministic rules without an agent in the loop, and annotates
-        the pull request on GitHub. Taste stops being a review comment someone has to remember to
-        leave, and becomes a check that has to pass.
-      </p>
+
+    <div class="gate">
+      <p class="gate__head"><span>Is it ours?</span><span>check:system</span></p>
+      <div class="gate__body">
+        <p><span class="text-ink-faint">$</span> <span class="text-accent-warm">bun run check:system</span></p>
+        <ul class="mt-2 space-y-2">
+          {
+            [
+              ['record-step.tsx:42', '`text-[13px]` is a raw value', 'use `text-sm`'],
+              ['record-step.tsx:58', '`text-danger` isn’t in the theme', 'did you mean `text-error`?'],
+              ['upload-sheet.tsx:12', 'hand-built dialog', 'use docs/components/modal.md'],
+              ['review.tsx:31', 'button has no accessible name', 'axe · button-name'],
+            ].map(([where, what, fix]) => (
+              <li class="gate__find">
+                <span class="block text-ink-faint">✖ {where}</span>
+                <span class="block text-ink"><RichText text={what} /></span>
+                <span class="block text-accent">→ <RichText text={fix} /></span>
+              </li>
+            ))
+          }
+        </ul>
+        <p class="mt-3"><span class="text-ink-faint">exit 1 · 4 findings — the check fails</span></p>
+      </div>
     </div>
   </div>
 </section>
 
 <style>
+  .gate {
+    overflow: hidden;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-ui);
+    background: var(--color-surface-lift);
+  }
+  .gate__head {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.625rem 1.25rem;
+    border-bottom: 1px solid var(--color-line);
+    color: var(--color-ink-faint);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+  }
+  .gate__head > span:first-child {
+    color: var(--color-ink);
+  }
+  .gate__body {
+    padding: 1rem 1.25rem;
+    color: var(--color-ink-dim);
+    font-family: var(--font-mono);
+    font-size: 0.8125rem;
+    line-height: 1.9;
+  }
+  .gate__find {
+    line-height: 1.6;
+  }
   .imp-cmd {
     justify-self: start;
     padding: 0.1rem 0.5rem;

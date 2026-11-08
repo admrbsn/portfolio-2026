@@ -31,19 +31,19 @@ const artifacts = [
     b: 'The agent drafts against the same template for everyone, so review is about the argument, not the format.',
   },
   {
-    k: 'PRODUCT.md · DESIGN.md',
+    k: 'DESIGN.md · docs/components',
     t: 'The standard lives in the repo',
-    b: 'Not in my head. Every agent and every designer works against the same two files, and changing the standard is a pull request.',
+    b: 'Not in my head. Principles in one file, a contract per component, an index built from them. Changing the standard is a pull request, and a component’s doc changes in the same one as its code.',
   },
   {
-    k: 'impeccable detect',
-    t: 'The check holds the line',
-    b: 'It runs on every pull request, including the reviews I’m not in. Taste that only exists in one reviewer doesn’t scale.',
+    k: 'check:system · detect',
+    t: 'Two gates hold the line',
+    b: 'One checks the system was used, one checks the result is good. Both run on every pull request, including the reviews I’m not in. Taste that only exists in one reviewer doesn’t scale.',
   },
   {
     k: 'Writes need a yes',
     t: 'One trust model',
-    b: 'Agents read freely; anything that changes another tool waits for a person. The same rule for the whole team, not a setting each of us remembers.',
+    b: 'Agents read freely; anything that changes another tool waits for a person. Secrets and production data stay out of reach, because read-only isn’t the same as safe.',
   },
 ];
 ---

@@ -30,7 +30,7 @@ function highlight(src: string, lang: Lang): Seg[][] {
           { t: slash[2] ?? '', c: 'tok-f' },
           { t: slash[3] },
         ];
-      const npx = line.match(/^(\$ )(npx impeccable \S+)(.*)$/);
+      const npx = line.match(/^(\$ )(npx impeccable \S+|bun run \S+)(.*)$/);
       if (npx)
         return [
           { t: npx[1], c: 'tok-c' },
@@ -62,7 +62,8 @@ const steps: { id: string; title: string; body: string; file: string; lang: Lang
     code: `# Task: prototype the recording-flow redesign
 
 ## Context
-Read PRODUCT.md and DESIGN.md before writing code.
+Read PRODUCT.md and DESIGN.md, then
+docs/components/index.json, before writing code.
 Contributors are on a phone, often recording for the
 first time, usually minutes before a deadline.
 
@@ -71,13 +72,16 @@ One flow, mobile-first: record → review → submit.
 Completion is the metric. Every extra screen costs it.
 
 ## Constraints
-- Use the tokens in \`src/styles/global.css\`.
-  No new colours, no new radii.
+- Build from documented components only. If none
+  fits, propose one in docs/components; don't invent.
+- daisyUI theme tokens only: no raw values, no new
+  colours, no new radii.
 - Ask for the camera in context, never on load.
 - Design every state: denied, recording, uploading,
   failed upload, success.
 
 ## Done when
+- \`check:system\` and \`impeccable detect\` both pass
 - It runs at 390px with no horizontal scroll
 - A keyboard and a screen reader can finish the flow
 - You've listed what you assumed and couldn't verify`,
@@ -131,7 +135,7 @@ three minutes, without losing them at the camera step.
   {
     id: 'passes',
     title: 'Run taste passes, not review meetings',
-    body: 'Shape, critique, polish, harden — each a command against a narrow target. The same rules run in CI, so drift fails the build.',
+    body: 'Shape, critique, polish, harden — each a command against a narrow target. Then both gates: the system check and the taste check, in CI as well, so drift fails the build.',
     file: 'session.sh',
     lang: 'sh',
     code: `# Plan the UX before any code exists
@@ -145,7 +149,8 @@ three minutes, without losing them at the camera step.
 /impeccable polish the review screen
 /impeccable harden the upload states
 
-# Same rules in CI, no agent required
+# Both gates, before handing back and again in CI
+$ bun run check:system
 $ npx impeccable detect --github src/`,
   },
 ];

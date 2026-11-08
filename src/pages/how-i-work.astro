@@ -8,6 +8,7 @@ import Workbench from '../components/Workbench.astro';
 import RelumeGrid from '../components/RelumeGrid.astro';
 import FigmaNow from '../components/FigmaNow.astro';
 import NotionPrd from '../components/NotionPrd.astro';
+import SystemContracts from '../components/SystemContracts.astro';
 import ImpeccableDeep from '../components/ImpeccableDeep.astro';
 import FernDocs from '../components/FernDocs.astro';
 import LinearBoard from '../components/LinearBoard.astro';
@@ -53,6 +54,7 @@ const chapters: { href: string; label: string; brand?: Brand }[] = [
   { href: '#point-guard', label: 'The hub', brand: 'notion' },
   { href: '#prds', label: 'PRDs', brand: 'notion' },
   { href: '#workbench', label: 'Workbench' },
+  { href: '#system', label: 'The system' },
   { href: '#impeccable', label: 'Impeccable', brand: 'impeccable' },
   { href: '#relume', label: 'Relume', brand: 'relume' },
   { href: '#fern', label: 'Fern', brand: 'fern' },
@@ -65,7 +67,7 @@ const chapters: { href: string; label: string; brand?: Brand }[] = [
 
 <BaseLayout
   title="How I work with AI · Adam Robertson"
-  description="One redesign through an AI-first toolchain: Notion as the hub for MCP-connected agents, evidence-cited PRDs, briefs for Claude Code, Impeccable taste passes, Relume, Fern docs, Linear, and PostHog’s self-driving loop."
+  description="One redesign through an AI-first toolchain: Notion as the hub for MCP-connected agents, evidence-cited PRDs, briefs for Claude Code, a design system agents can read, two deterministic gates, Impeccable taste passes, Relume, Fern docs, Linear, and PostHog’s self-driving loop."
 >
   <div class="page-rails signal-page">
     {/* Hero — text-first, on the about page's pattern and scale. No
@@ -134,6 +136,7 @@ const chapters: { href: string; label: string; brand?: Brand }[] = [
     <NotionHub />
     <NotionPrd />
     <Workbench />
+    <SystemContracts />
     <ImpeccableDeep />
     <RelumeGrid />
     <FernDocs />
