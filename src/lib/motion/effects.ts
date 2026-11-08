@@ -10,10 +10,20 @@ export type Teardown = () => void;
 /* -------------------------------------------------------------------------
    Headline reveal — the signature move.
 
-   SplitText splits into lines, each wrapped in an overflow-hidden `.split-line`
-   so the characters rise out of a mask rather than just fading. Splitting by
-   line requires the webfont to be loaded, otherwise line breaks are computed
-   against the fallback metrics and re-flow the moment the real font lands.
+   "Signal acquire": each word resolves out of blur as it settles a fifth of
+   its height, staggered across the heading — a lens finding focus, in keeping
+   with the site's transmission vocabulary.
+
+   It replaced a masked rise (lines clipped by an overflow-hidden wrapper,
+   words sliding up out of it). That read as a template: the clip is a hard
+   horizontal edge with nothing behind it, and type appearing out of a slot
+   in the page is the most-used reveal on the web. No clip now, so nothing
+   can be cut off either.
+
+   Splitting by line still requires the webfont to be loaded, otherwise line
+   breaks are computed against the fallback metrics and re-flow the moment
+   the real font lands. `filter` is cleared on completion so no word is left
+   holding a filter layer under the heading's own glitch effects.
    ------------------------------------------------------------------------- */
 export function revealHeading(el: HTMLElement): Teardown {
   const split = new SplitText(el, {
@@ -29,10 +39,13 @@ export function revealHeading(el: HTMLElement): Teardown {
   gsap.set(el, { opacity: 1 });
 
   const tween = gsap.from(split.words, {
-    yPercent: 118,
-    duration: 1.2,
-    ease: 'expo.out',
-    stagger: { amount: 0.4 },
+    opacity: 0,
+    yPercent: 22,
+    filter: 'blur(12px)',
+    duration: 1.3,
+    ease: 'power3.out',
+    stagger: { amount: 0.55 },
+    clearProps: 'filter',
     scrollTrigger: {
       trigger: el,
       start: 'top 88%',

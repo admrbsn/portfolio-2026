@@ -578,13 +578,10 @@
     will-change: opacity, transform;
   }
 
-  /* SplitText wraps each line in this; clipping it produces the "type rises
-     out of a mask" reveal that carries most of the character on these sites. */
+  /* SplitText wraps each line in this. Deliberately not clipped: the reveal
+     resolves words out of blur, and a clip would cut the blur off square. */
   .split-line {
-    overflow: hidden;
     display: block;
-    padding-bottom: 0.1em;
-    margin-bottom: -0.1em;
   }
 
   .marquee-track {
