@@ -87,19 +87,22 @@ export function initNav() {
     const y = window.scrollY;
     const diff = y - lastY;
 
+    // Write only on change. Rewriting an attribute with the same value still
+    // invalidates every selector keyed on it — and `[data-nav-state] ~ main`
+    // reaches the whole page, so a per-frame write recalculated main's styles
+    // and repainted the sticky chapter strip's backdrop blur on every scroll
+    // frame, which read as a flicker.
     if (Math.abs(diff) > DELTA) {
       // Scrolling down, past the hero — retract.
-      if (diff > 0 && y > HIDE_AFTER) {
-        nav.dataset.navState = 'hidden';
-      } else if (diff < 0) {
-        nav.dataset.navState = 'visible';
-      }
+      const next = diff > 0 && y > HIDE_AFTER ? 'hidden' : diff < 0 ? 'visible' : null;
+      if (next && nav.dataset.navState !== next) nav.dataset.navState = next;
       lastY = y;
     }
 
     // The scrim only exists away from the top, where the nav would otherwise
     // sit on top of arbitrary content.
-    nav.dataset.navScrim = y > HIDE_AFTER ? 'on' : 'off';
+    const scrim = y > HIDE_AFTER ? 'on' : 'off';
+    if (nav.dataset.navScrim !== scrim) nav.dataset.navScrim = scrim;
 
     ticking = false;
   }

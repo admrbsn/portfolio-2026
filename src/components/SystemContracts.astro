@@ -330,7 +330,7 @@ const css = rendered
           <span>docs / design / v3</span>
           <span class="hidden sm:inline">one truth · everything else is an index</span>
         </div>
-        <ul class="sys-tabs flex overflow-x-auto border-b border-line px-3 font-mono text-[0.6875rem]" data-lenis-prevent>
+        <ul class="sys-tabs flex overflow-x-auto border-b border-line px-3 font-mono text-[0.6875rem]">
           {
             rendered.map((f) => (
               <li class="shrink-0">
@@ -345,7 +345,7 @@ const css = rendered
         <div class="sys-files">
           {
             rendered.map((f) => (
-              <pre class={`sys-file sys-file--${f.id}`} data-lenis-prevent>
+              <pre class={`sys-file sys-file--${f.id}`}>
                 {/* One row per line: whitespace inside a `pre` line renders. */}
                 {f.lines.map((segs) => (
                   <span class="sys-line">{segs.map((s) => (s.c ? <span class={s.c}>{s.t}</span> : s.t))}</span>
