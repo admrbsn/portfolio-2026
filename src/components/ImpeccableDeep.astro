@@ -144,7 +144,8 @@ const groups: { name: string; note: string; cmds: [string, string][] }[] = [
     bypass the component system. The system check is the project's own script
     (illustrative findings built on Tribute's real rules: `btn-primary` is
     daisyUI's primary, not the occasion colour — the v3-design skill's own
-    non-negotiable; modals extend `BaseModal`). Neither has a
+    non-negotiable; modals extend `BaseModal`; a component changed without
+    its contract fails, which is what keeps hand-written docs from rotting). Neither has a
     model in the enforcement path, the State of AI in Design Systems study's
     strongest pattern.
   */}
@@ -153,8 +154,8 @@ const groups: { name: string; note: string; cmds: [string, string][] }[] = [
     <p class="mt-2 text-ink-dim">
       Impeccable judges whether the UI is good. It can’t tell whether it’s ours: a hand-built
       dialog can be beautiful and still go around the system. So a second check runs the system’s
-      own rules: daisyUI for structure and the tribute’s theme for brand, every class a component
-      contract names has to exist, documented components before new ones, and axe for the basics. The agent runs both
+      own rules: daisyUI for structure and the tribute’s theme for brand, documented components
+      before new ones, a component’s contract changed with its code, and axe for the basics. The agent runs both
       before it hands work back, and both annotate the pull request. Taste stops being a review
       comment someone has to remember to leave, and becomes a check that has to pass.
     </p>
@@ -180,9 +181,9 @@ const groups: { name: string; note: string; cmds: [string, string][] }[] = [
         <ul class="mt-2 space-y-2">
           {
             [
-              ['RecordStep.ts:42', '`text-[13px]` is a raw value', 'use `text-sm`'],
               ['RecordStep.ts:58', '`btn-primary` on an occasion CTA', 'use `btn` + `--theme-primary-color`'],
               ['UploadSheet.ts:12', 'hand-built dialog', 'extend `BaseModal` · components/modal.md'],
+              ['BaseModal.ts', 'changed, but `components/modal.md` didn’t', 'update the contract in this PR'],
               ['ReviewStep.ts:31', 'button has no accessible name', 'axe · button-name'],
             ].map(([where, what, fix]) => (
               <li class="gate__find">

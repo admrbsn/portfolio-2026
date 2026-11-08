@@ -16,11 +16,13 @@ import ToolHeader from './ToolHeader.astro';
     primary, not the occasion colour — the real non-negotiable the gate
     finding in ImpeccableDeep is built on.
 
-  Two files are the upgrades the sources argue for and the repo doesn't have
-  yet, presented like the rest of the page as how I'd run it today: a
-  per-component contract with frontmatter (`components/modal.md`, from the
-  real `product-modals-slideouts.md` and `BaseModal.ts`), and an index
-  generated from those contracts.
+  The page tells the expert version of this setup and the repo is brought up
+  to it afterwards (Adam's call, 2026-11-08): two files here, a
+  per-component contract (`components/modal.md`, from the real
+  `product-modals-slideouts.md` and `BaseModal.ts`) and an index generated
+  from the contracts, are that version. So are the gates, the drift check and
+  the evals the page describes. Keep the copy in the present tense; if the
+  repo ever stops matching, fix the repo.
 
   Sources, credited in the footnote:
   - State of AI in Design Systems (July 2026): agent docs compiled from one
@@ -224,7 +226,7 @@ const principles = [
   },
   {
     t: 'Contracts, not prose',
-    b: 'Each component’s frontmatter is what agents and the gates check against; the prose under it is for people. The index is built from it, never typed by hand.',
+    b: 'Each component doc opens with a short structured header: what it is, what it allows, when to use it. Agents and the gates check against that; the prose is for people. The index is built from the headers, never typed by hand.',
   },
   {
     t: 'Link, don’t copy',
@@ -232,7 +234,7 @@ const principles = [
   },
   {
     t: 'Measured, not assumed',
-    b: 'Five real tasks, run with and without the system, scored on imports, API fidelity, token discipline, accessibility, compile and judgment. If the docs don’t move the score, they’re decoration.',
+    b: 'Five real tasks, run with and without the system, scored on reuse, token discipline, accessibility and judgment. If the docs don’t move the score, they’re decoration.',
   },
 ];
 
@@ -359,8 +361,7 @@ const css = rendered
   {/* Above the ruled grid, not under it: the band below is hatched, and
       type doesn't go on the hatch. */}
   <p class="mt-6 max-w-2xl text-[0.8125rem] leading-relaxed text-ink-faint">
-    The router, the skill and the daisyUI subset are the real files, trimmed. The component
-    contract and the generated index are where they go next. Shaped by Kaelig Deloumeau-Prigent’s
+    Trimmed from Tribute’s design docs. Shaped by Kaelig Deloumeau-Prigent’s
     <a href="https://state-of-ai-in-design-systems.netlify.app/" class="sys-src">State of AI in Design Systems</a>
     (July 2026) and Southleft’s
     <a href="https://southleft.com/insights/design-systems/what-does-ai-readiness-mean-in-design-systems/" class="sys-src">What does AI-readiness mean in design systems?</a>
