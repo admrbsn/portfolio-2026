@@ -4,131 +4,180 @@ import ToolHeader from './ToolHeader.astro';
 
 /*
   The system (/how-i-work): the design system written for agents as much as
-  for people. The setup is the real one — a DESIGN.md of principles, daisyUI
-  theme tokens, and one Markdown contract per component — presented, like the
-  rest of the page, as how I'd run it today.
+  for people, drawn from the real Tribute repo (~/Sites/tribute):
 
-  The direction comes from two sources, credited in the footnote:
-  - State of AI in Design Systems (July 2026): agent docs that are compiled
-    from one source rather than hand-written; enumerated components so
-    anything else is provably invented; Atlassian's eval finding that a large
-    DESIGN.md costs ~92% more tokens than structured lookup and pushes agents
-    to re-create components instead of importing them.
+  - PRODUCT.md at the root (Impeccable's product schema) — intent.
+  - `.agents/skills/v3-design/SKILL.md` — first step and non-negotiables.
+  - `docs/design/v3/README.md` — a router keyed by the paths being edited,
+    so an agent opens only the doc it needs.
+  - `daisy-components.md` — the daisyUI subset, linking daisyUI's llms.txt
+    rather than vendoring it; daisyUI for structure, each tribute's theme
+    variables (`--theme-primary-color`) for brand. `btn-primary` is daisyUI's
+    primary, not the occasion colour — the real non-negotiable the gate
+    finding in ImpeccableDeep is built on.
+
+  Two files are the upgrades the sources argue for and the repo doesn't have
+  yet, presented like the rest of the page as how I'd run it today: a
+  per-component contract with frontmatter (`components/modal.md`, from the
+  real `product-modals-slideouts.md` and `BaseModal.ts`), and an index
+  generated from those contracts.
+
+  Sources, credited in the footnote:
+  - State of AI in Design Systems (July 2026): agent docs compiled from one
+    source, not hand-written; enumerated components so anything else is
+    provably invented; Atlassian's eval finding that a large DESIGN.md costs
+    ~92% more tokens than structured lookup and pushes agents to re-create
+    components instead of importing them.
   - Southleft, "What does AI-readiness mean in design systems?": one truth in
-    one place, everything else an index; never hand-write lists of
-    components or tokens; judgment only improves by running evals, scored on
-    the Open Design System Bench axes (imports, apiFidelity, tokenDiscipline,
-    a11yStatic, compile, judgment — judgment weighted 30%).
-  No eval scores appear on the page: none have been published, and a made-up
-  number here would undercut the whole section.
+    one place, everything else an index; judgment only improves by running
+    evals, on the Open Design System Bench axes. No eval scores on the page:
+    none are published, and a made-up number would undercut the section.
 
-  The mock is CSS-only (radio + :checked), on the Fern pattern: every file in
-  one grid cell, inactive ones `visibility: hidden`, so the window is as tall
-  as its tallest file and never jumps. Class names are real daisyUI classes.
+  Interaction is CSS-only (radio + :checked). The trace steps and the file
+  tabs are both labels for the same radios, so clicking a step opens the file
+  the agent read at that step. Every file sits in one grid cell, inactive ones
+  `visibility: hidden`, so the window never jumps.
 */
 
 type Lang = 'md' | 'json';
 type Seg = { t: string; c?: string };
 
-const files: { id: string; name: string; status?: 'stable' | 'generated'; lang: Lang; code: string }[] = [
+const files: { id: string; name: string; tag?: string; lang: Lang; code: string }[] = [
   {
-    id: 'button',
-    name: 'button.md',
-    status: 'stable',
+    id: 'skill',
+    name: 'SKILL.md',
     lang: 'md',
     code: `---
-name: Button
-status: stable
-classes: [btn, btn-primary, btn-ghost, btn-sm, btn-lg]
-states: [default, hover, focus, loading, disabled]
-use_when: The user starts an action
-avoid_when: Going to another page (use a link)
-related: [link, icon-button]
-a11y:
-  - Visible label, or aria-label when icon-only
-  - Loading keeps focus and sets aria-busy
+name: v3-design
+description: Tribute v3 UI conventions. Use when
+  editing v3 templates, components or styles.
 ---
 
-# Button
+# V3 design system
 
-One primary per view. Loading swaps the label for a
-spinner but keeps the width, so nothing jumps under
-a thumb.`,
+## First step
+Read docs/design/v3/README.md and open only the
+linked doc for the files you are changing.
+
+## Non-negotiables
+1. No daisyUI on marketing pages.
+2. Branded primary buttons: btn +
+   var(--theme-primary-color), not btn-primary.
+3. Modals extend BaseModal.`,
   },
   {
-    id: 'input',
-    name: 'input.md',
-    status: 'stable',
+    id: 'router',
+    name: 'README.md',
     lang: 'md',
-    code: `---
-name: Input
-status: stable
-classes: [input, input-sm, input-error]
-states: [default, focus, error, disabled]
-use_when: One line of free text
-avoid_when: A fixed set of options (use select)
-related: [textarea, select, form-field]
-a11y:
-  - The label stays visible; a placeholder isn't one
-  - Errors are tied to the field with aria-describedby
----
+    code: `# Tribute v3 design (for humans and agents)
 
-# Input
+## Which doc to open
+| You are editing          | Read                  |
+| tribute/v3/src/**        | product-app.md        |
+| Modals or slideouts      | components/modal.md   |
+| Daisy class names        | daisy-components.md   |
+| templates/v3/homepage**  | marketing-pages.md    |
 
-Errors say what to do next, not what went wrong:
-"Add a title so people know who it's for."`,
+## Do not
+- Add daisyUI classes to marketing templates.
+- Copy daisyUI's llms.txt into the repo. Link it.
+
+## Maintaining these docs
+Change a token, update its table in the same PR.`,
+  },
+  {
+    id: 'index',
+    name: 'index.json',
+    tag: 'gen',
+    lang: 'json',
+    code: `{
+  "source": "docs/design/v3/components/*.md",
+  "note": "Generated on build. Do not edit.",
+  "components": [
+    { "name": "Modal", "status": "stable",
+      "extends": "BaseModal.ts",
+      "doc": "components/modal.md" },
+    { "name": "Slideout", "status": "stable",
+      "extends": "BaseSlideout.ts",
+      "doc": "components/slideout.md" },
+    { "name": "Button", "status": "stable",
+      "doc": "components/button.md" },
+    { "name": "Alert", "status": "stable",
+      "doc": "components/alert.md" }
+  ]
+}`,
   },
   {
     id: 'modal',
     name: 'modal.md',
-    status: 'stable',
     lang: 'md',
     code: `---
 name: Modal
 status: stable
-classes: [modal, modal-box, modal-action]
-states: [closed, open]
+extends: BaseModal.ts
+classes: [modal, modal-box, modal-backdrop]
+regions: [header, content, footer?]
+widths: [max-w-md, max-w-lg, max-w-2xl]
 use_when: One decision that blocks the flow
-avoid_when: More than one decision (use a page)
-related: [sheet, alert]
+avoid_when: More than one decision (use a slideout)
 a11y:
-  - Native <dialog>; focus is trapped, Esc closes
+  - Native <dialog>; Esc and the backdrop close it
   - Focus returns to the trigger on close
 ---
 
 # Modal
 
-Opens as a bottom sheet on a phone. Never stack two.`,
+Pick the closest existing width before adding one.
+Header and footer share the chrome colours,
+--modal-header-bg and --modal-border.`,
   },
   {
-    id: 'index',
-    name: 'index.json',
-    status: 'generated',
-    lang: 'json',
-    code: `{
-  "source": "docs/components/*.md",
-  "note": "Generated on build. Do not edit.",
-  "components": [
-    { "name": "Button", "status": "stable",
-      "use_when": "The user starts an action",
-      "doc": "docs/components/button.md" },
-    { "name": "Input", "status": "stable",
-      "use_when": "One line of free text",
-      "doc": "docs/components/input.md" },
-    { "name": "Modal", "status": "stable",
-      "use_when": "One decision that blocks the flow",
-      "doc": "docs/components/modal.md" },
-    { "name": "Banner", "status": "deprecated",
-      "replaced_by": "Alert" }
-  ]
-}`,
+    id: 'daisy',
+    name: 'daisy-components.md',
+    lang: 'md',
+    code: `# daisyUI subset (product app)
+
+Upstream: daisyui.com/llms.txt (linked, not copied)
+
+## Daisy vs Tribute theme vars
+| Need                    | Use                       |
+| Occasion-branded action | btn + --theme-primary-... |
+| Cancel, low emphasis    | btn btn-ghost             |
+| Dialog structure        | modal, modal-box          |
+| Status, warnings        | alert alert-soft          |
+
+btn-primary is daisyUI's primary, not the occasion
+colour. Avoid it for main actions.`,
   },
 ];
 
-const DEFAULT_FILE = 'button';
+const DEFAULT_FILE = 'skill';
+
+/* One task, the route the agent takes. `file` makes a step a label for that
+   file's radio; steps without one are the task and the outcome. */
+const trace: { file?: string; k: string; t: string; done?: boolean }[] = [
+  { k: 'Task', t: 'Add a “ready to send?” confirm before a recording uploads' },
+  { file: 'skill', k: 'Skill', t: 'v3-design loads: the edit is in tribute/v3/src' },
+  { file: 'router', k: 'Route', t: 'The router opens one doc, not the whole system' },
+  { file: 'index', k: 'Discover', t: 'Modal and Button already exist. Nothing new to invent' },
+  { file: 'modal', k: 'Contract', t: 'Extend BaseModal, max-w-lg, header and footer regions' },
+  { file: 'daisy', k: 'Tokens', t: 'The CTA is btn + the tribute’s theme colour, not btn-primary' },
+  { k: 'Gates', t: 'check:system and impeccable detect both pass', done: true },
+  { k: 'You', t: 'Review the pull request, then merge', done: true },
+];
+
+/* The pipeline the section sits in, left to right. The system is the one
+   stop with parts, and the one this section opens. */
+const stack: { k: string; t: string; parts?: string[] }[] = [
+  { k: 'Explore', t: 'Relume · Claude Design' },
+  { k: 'The system', t: 'What every agent reads first', parts: ['PRODUCT.md', 'daisyUI', 'Theme tokens', 'Component docs'] },
+  { k: 'Build', t: 'Claude Code' },
+  { k: 'Check', t: 'Two gates · review' },
+  { k: 'Measure', t: 'PostHog' },
+];
 
 /* A tiny highlighter: frontmatter keys and list markers in warm, values and
-   JSON strings in the accent, Markdown headings in ink, prose dim. */
+   JSON strings in the accent, Markdown headings in ink, table pipes faint. */
 function highlight(src: string, lang: Lang): Seg[][] {
   let inFront = false;
   return src.split('\n').map((line): Seg[] => {
@@ -156,7 +205,12 @@ function highlight(src: string, lang: Lang): Seg[][] {
       if (li) return [{ t: li[1], c: 'sy-k' }, { t: li[2] }];
       return [{ t: line }];
     }
+    if (line.startsWith('|')) {
+      return line.split(/(\|)/).filter(Boolean).map((p) => (p === '|' ? { t: p, c: 'sy-p' } : { t: p }));
+    }
     if (line.startsWith('#')) return [{ t: line, c: 'sy-h' }];
+    const li = line.match(/^(- |\d+\. )(.*)$/);
+    if (li) return [{ t: li[1], c: 'sy-k' }, { t: li[2] }];
     return [{ t: line }];
   });
 }
@@ -165,16 +219,16 @@ const rendered = files.map((f) => ({ ...f, lines: highlight(f.code, f.lang) }));
 
 const principles = [
   {
+    t: 'Route, don’t load',
+    b: 'The skill reads one router and opens only the doc for the files being changed. One long manifest teaches agents to rebuild components instead of reaching for them.',
+  },
+  {
     t: 'Contracts, not prose',
-    b: 'The frontmatter is what agents check against; the prose under it is for people. A variant that isn’t listed doesn’t exist.',
+    b: 'Each component’s frontmatter is what agents and the gates check against; the prose under it is for people. The index is built from it, never typed by hand.',
   },
   {
-    t: 'Generated, never hand-listed',
-    b: 'The index is built from the docs, and DESIGN.md points to it instead of repeating it. Hand-written lists are the first thing to go stale.',
-  },
-  {
-    t: 'DESIGN.md stays principles',
-    b: 'How it should feel and why, not every token. A long manifest teaches agents to rebuild components instead of reaching for them.',
+    t: 'Link, don’t copy',
+    b: 'daisyUI’s own llms.txt stays upstream and the docs link to it. A copied vocabulary goes stale the day daisyUI ships, and our docs only hold our decisions.',
   },
   {
     t: 'Measured, not assumed',
@@ -186,7 +240,9 @@ const css = rendered
   .map(
     (f) =>
       `.sys #sys-f-${f.id}:checked ~ .sys-body .sys-file--${f.id}{visibility:visible}` +
-      `.sys #sys-f-${f.id}:checked ~ .sys-body .sys-nav__item--${f.id}{background:var(--color-surface);color:var(--color-ink)}`,
+      `.sys #sys-f-${f.id}:checked ~ .sys-body .sys-tab--${f.id}{color:var(--color-ink);border-color:var(--color-accent)}` +
+      `.sys #sys-f-${f.id}:checked ~ .sys-body .sys-step--${f.id}{background:var(--color-surface-lift);border-color:color-mix(in oklab,var(--color-accent) 55%,var(--color-line))}` +
+      `.sys #sys-f-${f.id}:checked ~ .sys-body .sys-step--${f.id} .sys-step__k{color:var(--color-accent)}`,
   )
   .join('\n');
 ---
@@ -201,42 +257,89 @@ const css = rendered
   <ToolHeader id="system" eyebrow="The system" title="A system agents can read" dur="12.7s" delay="5s">
     <p>
       Agents don’t read a design system the way people do. They need to know what exists, what
-      it’s for, and what they’re not allowed to invent. So ours is written for them as much as
-      for us: <code class="code-inline">DESIGN.md</code> for the principles, and one contract per
-      component in <code class="code-inline">docs/components</code>, built on daisyUI’s theme
-      tokens. Class names come from daisyUI’s own docs, so ours only hold our decisions.
+      it’s for, and what they’re not allowed to invent. On Tribute that’s four layers:
+      <code class="code-inline">PRODUCT.md</code> for the intent, daisyUI for structure, each
+      tribute’s theme tokens for its brand, and component docs for the patterns, with a design
+      skill that routes every edit to the one doc it needs.
     </p>
     <p>
-      Find the system first, check against it after. The agent reads the index before it builds,
-      and the gates in the next section check that it used what it found.
+      Find the system first, check against it after. Below is one real task, step by step. Click
+      a step to open the file the agent read.
     </p>
   </ToolHeader>
 
-  {/* The docs folder ----------------------------------------------------- */}
-  <div class="sys mt-16 overflow-hidden rounded-ui border border-line bg-surface-lift" aria-hidden="true" data-anim="reveal">
+  {/* The pipeline ------------------------------------------------------- */}
+  <ol class="sys-stack mt-14" aria-label="Where the system sits" data-anim="reveal">
+    {
+      stack.map((s, i) => (
+        <>
+          {i > 0 && <li class="sys-stack__link" aria-hidden="true" />}
+          <li class:list={['sys-stack__stop', s.parts && 'sys-stack__stop--here']}>
+            <span class="block font-mono text-[0.625rem] uppercase tracking-[0.14em] text-ink-faint">{s.k}</span>
+            <span class="mt-1 block text-[0.875rem] text-ink">{s.t}</span>
+            {s.parts && (
+              <span class="mt-3 flex flex-wrap gap-1.5">
+                {s.parts.map((p) => (
+                  <span class="sys-chip">{p}</span>
+                ))}
+              </span>
+            )}
+          </li>
+        </>
+      ))
+    }
+  </ol>
+
+  {/* One task, traced ---------------------------------------------------- */}
+  <div class="sys mt-12" data-anim="reveal">
     {rendered.map((f) => <input type="radio" name="sys-file" id={`sys-f-${f.id}`} class="sr-only" tabindex="-1" checked={f.id === DEFAULT_FILE} />)}
 
-    <div class="sys-body">
-      <div class="flex items-center justify-between border-b border-line px-5 py-2.5 font-mono text-[0.6875rem] text-ink-faint">
-        <span>docs / components</span>
-        <span class="hidden sm:inline">one truth · everything else is an index</span>
-      </div>
+    <div class="sys-body grid gap-6 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
+      <ol class="space-y-2" aria-hidden="true">
+        {
+          trace.map((s, i) => {
+            const inner = (
+              <>
+                <span class="sys-step__n">{String(i).padStart(2, '0')}</span>
+                <span class="min-w-0 flex-1">
+                  <span class="sys-step__k">{s.k}</span>
+                  <span class="mt-0.5 block text-[0.875rem] leading-snug text-ink">{s.t}</span>
+                </span>
+                {s.done && <span class="sys-step__ok">✓</span>}
+              </>
+            );
+            return (
+              <li>
+                {s.file ? (
+                  <label for={`sys-f-${s.file}`} class={`sys-step sys-step--link sys-step--${s.file}`}>
+                    {inner}
+                  </label>
+                ) : (
+                  <div class:list={['sys-step', i === 0 && 'sys-step--task']}>{inner}</div>
+                )}
+              </li>
+            );
+          })
+        }
+      </ol>
 
-      <div class="grid grid-cols-1 md:grid-cols-[12rem_minmax(0,1fr)]">
-        {/* Files: a row that scrolls on phones, a column from md. */}
-        <ul class="sys-nav flex overflow-x-auto border-b border-line py-2 font-mono text-[0.75rem] md:block md:overflow-visible md:border-b-0 md:border-r md:py-4" data-lenis-prevent>
+      <div class="min-w-0 overflow-hidden rounded-ui border border-line bg-surface-lift" aria-hidden="true">
+        <div class="flex items-center justify-between border-b border-line px-5 py-2.5 font-mono text-[0.6875rem] text-ink-faint">
+          <span>docs / design / v3</span>
+          <span class="hidden sm:inline">one truth · everything else is an index</span>
+        </div>
+        <ul class="sys-tabs flex overflow-x-auto border-b border-line px-3 font-mono text-[0.6875rem]" data-lenis-prevent>
           {
             rendered.map((f) => (
               <li class="shrink-0">
-                <label for={`sys-f-${f.id}`} class={`sys-nav__item sys-nav__item--${f.id}`}>
+                <label for={`sys-f-${f.id}`} class={`sys-tab sys-tab--${f.id}`}>
                   {f.name}
-                  {f.status === 'generated' && <span class="sys-tag">gen</span>}
+                  {f.tag && <span class="sys-tag">{f.tag}</span>}
                 </label>
               </li>
             ))
           }
         </ul>
-
         <div class="sys-files">
           {
             rendered.map((f) => (
@@ -256,7 +359,8 @@ const css = rendered
   {/* Above the ruled grid, not under it: the band below is hatched, and
       type doesn't go on the hatch. */}
   <p class="mt-6 max-w-2xl text-[0.8125rem] leading-relaxed text-ink-faint">
-    Shaped by Kaelig Deloumeau-Prigent’s
+    The router, the skill and the daisyUI subset are the real files, trimmed. The component
+    contract and the generated index are where they go next. Shaped by Kaelig Deloumeau-Prigent’s
     <a href="https://state-of-ai-in-design-systems.netlify.app/" class="sys-src">State of AI in Design Systems</a>
     (July 2026) and Southleft’s
     <a href="https://southleft.com/insights/design-systems/what-does-ai-readiness-mean-in-design-systems/" class="sys-src">What does AI-readiness mean in design systems?</a>
@@ -307,26 +411,125 @@ const css = rendered
       ))
     }
   </div>
-
 </section>
 
 <style is:inline set:html={css}></style>
 
 <style>
-  .sys-nav__item {
+  /* The pipeline: dashed stops on solid links, the PostHog loop's grammar.
+     A row from lg; below it a column, the links turning vertical. */
+  .sys-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .sys-stack__stop {
+    padding: 0.75rem 1rem;
+    border: 1px dashed var(--color-line);
+    border-radius: var(--radius-ui);
+    background: var(--color-surface);
+  }
+  .sys-stack__stop--here {
+    border-style: solid;
+    border-color: var(--color-accent);
+    background: var(--color-surface-lift);
+  }
+  .sys-stack__link {
+    align-self: center;
+    width: 1px;
+    height: 1rem;
+    background: var(--color-line);
+  }
+  @media (min-width: 64rem) {
+    .sys-stack {
+      flex-direction: row;
+      align-items: center;
+    }
+    .sys-stack__stop {
+      flex: 0 1 auto;
+    }
+    .sys-stack__stop--here {
+      flex: 1 1 22rem;
+    }
+    .sys-stack__link {
+      flex: 1 1 1.5rem;
+      min-width: 1rem;
+      width: auto;
+      height: 1px;
+    }
+  }
+  .sys-chip {
+    padding: 0.1rem 0.45rem;
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-ui);
+    color: var(--color-ink-dim);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+  }
+
+  /* The trace */
+  .sys-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.875rem;
+    padding: 0.625rem 0.875rem;
+    border: 1px solid transparent;
+    border-radius: var(--radius-ui);
+    transition:
+      background-color var(--dur-fast) ease,
+      border-color var(--dur-fast) ease;
+  }
+  .sys-step--link {
+    cursor: pointer;
+  }
+  .sys-step--link:hover {
+    border-color: var(--color-line);
+  }
+  .sys-step--task {
+    border: 1px dashed var(--color-line);
+  }
+  .sys-step__n {
+    padding-top: 0.15rem;
+    color: var(--color-ink-faint);
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+  }
+  .sys-step__k {
+    display: block;
+    color: var(--color-ink-faint);
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    transition: color var(--dur-fast) ease;
+  }
+  .sys-step__ok {
+    color: var(--color-status);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+  }
+
+  /* The file window */
+  .sys-tabs {
+    scrollbar-width: none;
+  }
+  .sys-tabs::-webkit-scrollbar {
+    display: none;
+  }
+  .sys-tab {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.375rem 1.25rem;
-    color: var(--color-ink-dim);
+    gap: 0.4rem;
+    padding: 0.6rem 0.65rem;
+    border-bottom: 1px solid transparent;
+    margin-bottom: -1px;
+    color: var(--color-ink-faint);
     white-space: nowrap;
     cursor: pointer;
-    transition:
-      color var(--dur-fast) ease,
-      background-color var(--dur-fast) ease;
+    transition: color var(--dur-fast) ease;
   }
-  .sys-nav__item:hover {
-    color: var(--color-ink);
+  .sys-tab:hover {
+    color: var(--color-ink-dim);
   }
   .sys-tag {
     padding: 0 0.35rem;
@@ -344,7 +547,7 @@ const css = rendered
     grid-area: 1 / 1;
     visibility: hidden;
     margin: 0;
-    padding: 1.5rem;
+    padding: 1.25rem 1.5rem;
     overflow-x: auto;
     color: var(--color-ink-dim);
     font-family: var(--font-mono);

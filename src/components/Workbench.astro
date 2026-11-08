@@ -62,8 +62,8 @@ const steps: { id: string; title: string; body: string; file: string; lang: Lang
     code: `# Task: prototype the recording-flow redesign
 
 ## Context
-Read PRODUCT.md and DESIGN.md, then
-docs/components/index.json, before writing code.
+Read PRODUCT.md, then use the v3-design skill:
+open only the docs it routes you to.
 Contributors are on a phone, often recording for the
 first time, usually minutes before a deadline.
 
@@ -73,9 +73,9 @@ Completion is the metric. Every extra screen costs it.
 
 ## Constraints
 - Build from documented components only. If none
-  fits, propose one in docs/components; don't invent.
-- daisyUI theme tokens only: no raw values, no new
-  colours, no new radii.
+  fits, propose a contract first; don't invent one.
+- daisyUI for structure, the tribute's theme vars
+  for brand. No raw values, no btn-primary on CTAs.
 - Ask for the camera in context, never on load.
 - Design every state: denied, recording, uploading,
   failed upload, success.
