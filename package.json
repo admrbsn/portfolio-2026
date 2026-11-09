@@ -14,7 +14,8 @@
     "check:tokens": "bun scripts/check-tokens.ts",
     "make:icons": "bun scripts/make-icons.ts",
     "astro": "astro",
-    "sync:dribbble": "bun scripts/sync-dribbble.ts"
+    "sync:dribbble": "bun scripts/sync-dribbble.ts",
+    "make:resume": "bun scripts/make-resume.ts"
   },
   "dependencies": {
     "@astrojs/mdx": "^7.0.3",
@@ -36,6 +37,8 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
+    "@fontsource/geist": "^5.3.0",
+    "@fontsource/geist-mono": "^5.3.0",
     "simple-icons": "^16.36.0",
     "typescript": "6.0.3"
   }
