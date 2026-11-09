@@ -2,7 +2,7 @@
 import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import NoiseGradient from '../components/NoiseGradient.astro';
-import { experience } from '../data/experience';
+import { experience, splitLead } from '../data/experience';
 import MomentTribute from '../components/MomentTribute.astro';
 import MomentPetersons from '../components/MomentPetersons.astro';
 import ArrowUpRight from '../components/ArrowUpRight.astro';
@@ -18,16 +18,17 @@ import WorkbenchCta from '../components/WorkbenchCta.astro';
  */
 
 /*
- * One icon per principle, in the order supplied. Stored as path arrays because
- * the compass is a two-path glyph; everything inherits `currentColor` and a
- * shared stroke width from the <svg> wrapper.
+ * One icon per principle, in the order supplied. Stored as path arrays so a
+ * glyph can have more than one path; everything inherits `currentColor` and a
+ * shared stroke width from the <svg> wrapper. "Lead with compassion" is two
+ * hearts (it was a compass, which matched the word's sound, not its meaning).
  *
  * The last is a flexed arm. It ships at stroke-width 2; the shared <svg>
  * wrapper overrides that to 1.6 so it sits at the same weight as the rest.
  */
 const principleIcons = [
   [
-    'M18 15.8369C19.4559 16.5683 20.7041 17.742 21.6152 19.2096C21.7956 19.5003 21.8858 19.6456 21.917 19.8468C21.9804 20.2558 21.7008 20.7585 21.3199 20.9204C21.1325 21 20.9216 21 20.5 21M16 11.5322C17.4817 10.7959 18.5 9.26686 18.5 7.5C18.5 5.73314 17.4817 4.20411 16 3.46776M14 7.5C14 9.98528 11.9852 12 9.49996 12C7.01468 12 4.99996 9.98528 4.99996 7.5C4.99996 5.01472 7.01468 3 9.49996 3C11.9852 3 14 5.01472 14 7.5ZM2.55919 18.9383C4.1535 16.5446 6.66933 15 9.49996 15C12.3306 15 14.8464 16.5446 16.4407 18.9383C16.79 19.4628 16.9646 19.725 16.9445 20.0599C16.9289 20.3207 16.7579 20.64 16.5495 20.7976C16.2819 21 15.9138 21 15.1776 21H3.82232C3.08613 21 2.71804 21 2.4504 20.7976C2.24201 20.64 2.07105 20.3207 2.05539 20.0599C2.03529 19.725 2.20992 19.4628 2.55919 18.9383Z',
+    'M6.09436 11.2288C6.03221 10.8282 5.99996 10.4179 5.99996 10C5.99996 5.58172 9.60525 2 14.0526 2C18.4999 2 22.1052 5.58172 22.1052 10C22.1052 10.9981 21.9213 11.9535 21.5852 12.8345C21.5154 13.0175 21.4804 13.109 21.4646 13.1804C21.4489 13.2512 21.4428 13.301 21.4411 13.3735C21.4394 13.4466 21.4493 13.5272 21.4692 13.6883L21.8717 16.9585C21.9153 17.3125 21.9371 17.4895 21.8782 17.6182C21.8266 17.731 21.735 17.8205 21.6211 17.8695C21.4911 17.9254 21.3146 17.8995 20.9617 17.8478L17.7765 17.3809C17.6101 17.3565 17.527 17.3443 17.4512 17.3448C17.3763 17.3452 17.3245 17.3507 17.2511 17.3661C17.177 17.3817 17.0823 17.4172 16.893 17.4881C16.0097 17.819 15.0524 18 14.0526 18C13.6344 18 13.2237 17.9683 12.8227 17.9073M7.63158 22C10.5965 22 13 19.5376 13 16.5C13 13.4624 10.5965 11 7.63158 11C4.66668 11 2.26316 13.4624 2.26316 16.5C2.26316 17.1106 2.36028 17.6979 2.53955 18.2467C2.61533 18.4787 2.65322 18.5947 2.66566 18.6739C2.67864 18.7567 2.68091 18.8031 2.67608 18.8867C2.67145 18.9668 2.65141 19.0573 2.61134 19.2383L2 22L4.9948 21.591C5.15827 21.5687 5.24 21.5575 5.31137 21.558C5.38652 21.5585 5.42641 21.5626 5.50011 21.5773C5.5701 21.5912 5.67416 21.6279 5.88227 21.7014C6.43059 21.8949 7.01911 22 7.63158 22Z',
   ],
   [
     'M12 4V15.2C12 16.8802 12 17.7202 12.327 18.362C12.6146 18.9265 13.0735 19.3854 13.638 19.673C14.2798 20 15.1198 20 16.8 20H17M17 20C17 21.1046 17.8954 22 19 22C20.1046 22 21 21.1046 21 20C21 18.8954 20.1046 18 19 18C17.8954 18 17 18.8954 17 20ZM7 4L17 4M7 4C7 5.10457 6.10457 6 5 6C3.89543 6 3 5.10457 3 4C3 2.89543 3.89543 2 5 2C6.10457 2 7 2.89543 7 4ZM17 4C17 5.10457 17.8954 6 19 6C20.1046 6 21 5.10457 21 4C21 2.89543 20.1046 2 19 2C17.8954 2 17 2.89543 17 4ZM12 12H17M17 12C17 13.1046 17.8954 14 19 14C20.1046 14 21 13.1046 21 12C21 10.8954 20.1046 10 19 10C17.8954 10 17 10.8954 17 12Z',
@@ -36,8 +37,7 @@ const principleIcons = [
     'M12 14.9998L9 11.9998M12 14.9998C13.3968 14.4685 14.7369 13.7985 16 12.9998M12 14.9998V19.9998C12 19.9998 15.03 19.4498 16 17.9998C17.08 16.3798 16 12.9998 16 12.9998M9 11.9998C9.53214 10.6192 10.2022 9.29582 11 8.04976C12.1652 6.18675 13.7876 4.65281 15.713 3.59385C17.6384 2.53489 19.8027 1.98613 22 1.99976C22 4.71976 21.22 9.49976 16 12.9998M9 11.9998H4C4 11.9998 4.55 8.96976 6 7.99976C7.62 6.91976 11 7.99976 11 7.99976M4.5 16.4998C3 17.7598 2.5 21.4998 2.5 21.4998C2.5 21.4998 6.24 20.9998 7.5 19.4998C8.21 18.6598 8.2 17.3698 7.41 16.5898C7.02131 16.2188 6.50929 16.0044 5.97223 15.9878C5.43516 15.9712 4.91088 16.1535 4.5 16.4998Z',
   ],
   [
-    'M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z',
-    'M14.7221 8.26596C15.2107 8.10312 15.4549 8.02169 15.6174 8.07962C15.7587 8.13003 15.87 8.24127 15.9204 8.38263C15.9783 8.54507 15.8969 8.78935 15.734 9.27789L14.2465 13.7405C14.2001 13.8797 14.1769 13.9492 14.1374 14.007C14.1024 14.0582 14.0582 14.1024 14.007 14.1374C13.9492 14.1769 13.8797 14.2001 13.7405 14.2465L9.27789 15.734C8.78935 15.8969 8.54507 15.9783 8.38263 15.9204C8.24127 15.87 8.13003 15.7587 8.07962 15.6174C8.02169 15.4549 8.10312 15.2107 8.26596 14.7221L9.75351 10.2595C9.79989 10.1203 9.82308 10.0508 9.8626 9.99299C9.8976 9.94182 9.94182 9.8976 9.99299 9.8626C10.0508 9.82308 10.1203 9.79989 10.2595 9.75351L14.7221 8.26596Z',
+    'M15.5455 9.92543C15.9195 9.26103 16.2313 8.66151 16.4236 8.20521C17.3573 5.98947 16.434 3.44077 14.1769 2.40112C11.9199 1.36148 9.65341 2.4395 8.65871 4.52093C6.75657 3.2157 4.21918 3.40739 2.81989 5.44424C1.42059 7.48108 1.85975 10.142 3.77629 11.594C4.6461 12.253 6.36636 13.2242 7.98596 14.0884M16.2972 11.7499C15.8751 9.482 13.9454 7.82334 11.5156 8.27415C9.08592 8.72497 7.51488 10.9171 7.84335 13.299C8.10725 15.2127 9.56392 19.7027 10.1264 21.394C10.2032 21.6248 10.2415 21.7402 10.3175 21.8206C10.3837 21.8907 10.4717 21.9416 10.5655 21.9638C10.6732 21.9894 10.7923 21.9649 11.0306 21.916C12.7765 21.5575 17.3933 20.574 19.1826 19.8457C21.4096 18.9392 22.5589 16.4841 21.6981 14.153C20.8372 11.8219 18.4723 10.9815 16.2972 11.7499Z',
   ],
   [
     'M22 7.99992V11.9999M10.25 5.49991H6.8C5.11984 5.49991 4.27976 5.49991 3.63803 5.82689C3.07354 6.11451 2.6146 6.57345 2.32698 7.13794C2 7.77968 2 8.61976 2 10.2999L2 11.4999C2 12.4318 2 12.8977 2.15224 13.2653C2.35523 13.7553 2.74458 14.1447 3.23463 14.3477C3.60218 14.4999 4.06812 14.4999 5 14.4999V18.7499C5 18.9821 5 19.0982 5.00963 19.1959C5.10316 20.1455 5.85441 20.8968 6.80397 20.9903C6.90175 20.9999 7.01783 20.9999 7.25 20.9999C7.48217 20.9999 7.59826 20.9999 7.69604 20.9903C8.64559 20.8968 9.39685 20.1455 9.49037 19.1959C9.5 19.0982 9.5 18.9821 9.5 18.7499V14.4999H10.25C12.0164 14.4999 14.1772 15.4468 15.8443 16.3556C16.8168 16.8857 17.3031 17.1508 17.6216 17.1118C17.9169 17.0756 18.1402 16.943 18.3133 16.701C18.5 16.4401 18.5 15.9179 18.5 14.8736V5.1262C18.5 4.08191 18.5 3.55976 18.3133 3.2988C18.1402 3.05681 17.9169 2.92421 17.6216 2.88804C17.3031 2.84903 16.8168 3.11411 15.8443 3.64427C14.1772 4.55302 12.0164 5.49991 10.25 5.49991Z',
@@ -67,31 +67,33 @@ const principles = [
   },
 ];
 
+/* Step icons, one path string each (multi-path glyphs joined). Ideate's
+   brain is Lucide's `brain` (ISC); the rest are the set the principles use. */
 const process = [
   {
     phase: 'Research',
-    icon: 'M10.5 17a6.5 6.5 0 1 0 0-13 6.5 6.5 0 0 0 0 13zM15.2 15.2 20 20',
+    icon: 'M21.2 22C21.48 22 21.62 22 21.727 21.9455C21.8211 21.8976 21.8976 21.8211 21.9455 21.727C22 21.62 22 21.48 22 21.2V10.8C22 10.52 22 10.38 21.9455 10.273C21.8976 10.1789 21.8211 10.1024 21.727 10.0545C21.62 10 21.48 10 21.2 10L18.8 10C18.52 10 18.38 10 18.273 10.0545C18.1789 10.1024 18.1024 10.1789 18.0545 10.273C18 10.38 18 10.52 18 10.8V13.2C18 13.48 18 13.62 17.9455 13.727C17.8976 13.8211 17.8211 13.8976 17.727 13.9455C17.62 14 17.48 14 17.2 14H14.8C14.52 14 14.38 14 14.273 14.0545C14.1789 14.1024 14.1024 14.1789 14.0545 14.273C14 14.38 14 14.52 14 14.8V17.2C14 17.48 14 17.62 13.9455 17.727C13.8976 17.8211 13.8211 17.8976 13.727 17.9455C13.62 18 13.48 18 13.2 18H10.8C10.52 18 10.38 18 10.273 18.0545C10.1789 18.1024 10.1024 18.1789 10.0545 18.273C10 18.38 10 18.52 10 18.8V21.2C10 21.48 10 21.62 10.0545 21.727C10.1024 21.8211 10.1789 21.8976 10.273 21.9455C10.38 22 10.52 22 10.8 22L21.2 22Z M10 6.8C10 6.51997 10 6.37996 10.0545 6.273C10.1024 6.17892 10.1789 6.10243 10.273 6.0545C10.38 6 10.52 6 10.8 6H13.2C13.48 6 13.62 6 13.727 6.0545C13.8211 6.10243 13.8976 6.17892 13.9455 6.273C14 6.37996 14 6.51997 14 6.8V9.2C14 9.48003 14 9.62004 13.9455 9.727C13.8976 9.82108 13.8211 9.89757 13.727 9.9455C13.62 10 13.48 10 13.2 10H10.8C10.52 10 10.38 10 10.273 9.9455C10.1789 9.89757 10.1024 9.82108 10.0545 9.727C10 9.62004 10 9.48003 10 9.2V6.8Z M3 12.8C3 12.52 3 12.38 3.0545 12.273C3.10243 12.1789 3.17892 12.1024 3.273 12.0545C3.37996 12 3.51997 12 3.8 12H6.2C6.48003 12 6.62004 12 6.727 12.0545C6.82108 12.1024 6.89757 12.1789 6.9455 12.273C7 12.38 7 12.52 7 12.8V15.2C7 15.48 7 15.62 6.9455 15.727C6.89757 15.8211 6.82108 15.8976 6.727 15.9455C6.62004 16 6.48003 16 6.2 16H3.8C3.51997 16 3.37996 16 3.273 15.9455C3.17892 15.8976 3.10243 15.8211 3.0545 15.727C3 15.62 3 15.48 3 15.2V12.8Z M2 2.8C2 2.51997 2 2.37996 2.0545 2.273C2.10243 2.17892 2.17892 2.10243 2.273 2.0545C2.37996 2 2.51997 2 2.8 2H5.2C5.48003 2 5.62004 2 5.727 2.0545C5.82108 2.10243 5.89757 2.17892 5.9455 2.273C6 2.37996 6 2.51997 6 2.8V5.2C6 5.48003 6 5.62004 5.9455 5.727C5.89757 5.82108 5.82108 5.89757 5.727 5.9455C5.62004 6 5.48003 6 5.2 6H2.8C2.51997 6 2.37996 6 2.273 5.9455C2.17892 5.89757 2.10243 5.82108 2.0545 5.727C2 5.62004 2 5.48003 2 5.2V2.8Z',
     title: 'Establishing why',
     body: 'The Research Phase is where we identify the purpose for all the decisions we will eventually make. At this point, I determine goals and outcomes and challenge assumptions, using user research, mental models, and storyboards to help define how users think. The primary goal is to first figure out what users want and why they want it — this forms the basis for all our future design decisions.',
     tools: 'PlaybookUX, Userbrain, Dovetail, Maze',
   },
   {
     phase: 'Ideate',
-    icon: 'M4 12h5M9 12l7-6M9 12l7 6M9 12h11M16 6h4M16 18h4',
+    icon: 'M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4 M17.599 6.5a3 3 0 0 0 .399-1.375 M6.003 5.125A3 3 0 0 0 6.401 6.5 M3.477 10.896a4 4 0 0 1 .585-.396 M19.938 10.5a4 4 0 0 1 .585.396 M6 18a4 4 0 0 1-1.967-.516 M19.967 17.484A4 4 0 0 1 18 18',
     title: 'Explore and expand options',
     body: 'In Ideation, we brainstorm and collaborate to explore possibilities through various exercises. Ideation may need to be streamlined to meet the needs of a startup project, but it is critical for more complex, larger initiatives. Design sprints, either with fellow designers or stakeholders, are central to this stage. We use techniques such as How Might We, Crazy 8s, and Spicy Debates to generate multiple possible solutions. These exercises take up significant time, but they give us numerous ways to innovate and force us to rethink how we traditionally design.',
     tools: 'Mural, Miro',
   },
   {
     phase: 'Make',
-    icon: 'M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3zM12 12l8-4.5M12 12v9M12 12 4 7.5',
+    icon: 'M20.5 7.27783L12 12.0001M12 12.0001L3.49997 7.27783M12 12.0001L12 21.5001M21 16.0586V7.94153C21 7.59889 21 7.42757 20.9495 7.27477C20.9049 7.13959 20.8318 7.01551 20.7354 6.91082C20.6263 6.79248 20.4766 6.70928 20.177 6.54288L12.777 2.43177C12.4934 2.27421 12.3516 2.19543 12.2015 2.16454C12.0685 2.13721 11.9315 2.13721 11.7986 2.16454C11.6484 2.19543 11.5066 2.27421 11.223 2.43177L3.82297 6.54288C3.52345 6.70928 3.37369 6.79248 3.26463 6.91082C3.16816 7.01551 3.09515 7.13959 3.05048 7.27477C3 7.42757 3 7.59889 3 7.94153V16.0586C3 16.4013 3 16.5726 3.05048 16.7254C3.09515 16.8606 3.16816 16.9847 3.26463 17.0893C3.37369 17.2077 3.52345 17.2909 3.82297 17.4573L11.223 21.5684C11.5066 21.726 11.6484 21.8047 11.7986 21.8356C11.9315 21.863 12.0685 21.863 12.2015 21.8356C12.3516 21.8047 12.4934 21.726 12.777 21.5684L20.177 17.4573C20.4766 17.2909 20.6263 17.2077 20.7354 17.0893C20.8318 16.9847 20.9049 16.8606 20.9495 16.7254C21 16.5726 21 16.4013 21 16.0586Z',
     title: 'Realizing our vision',
     body: 'In the Make Stage, we transform our ideas into tangible products — my favourite part of the design process. Based on our findings from the Research Phase, we begin forming hypotheses and developing our products. Whether we are working in Figma or rapidly prototyping using modern tools, this is where the product takes shape and comes alive. As a designer, I can express my creativity at this stage while also making meaningful contributions to the end product.',
     tools: 'Figma, Bolt, v0',
   },
   {
     phase: 'Check',
-    icon: 'M20 12a8 8 0 1 1-2.34-5.66M20 4v4h-4M8.5 12.5l2.5 2.5 5-5',
+    icon: 'M6 15L8 17L12.5 12.5M8 8V5.2C8 4.0799 8 3.51984 8.21799 3.09202C8.40973 2.71569 8.71569 2.40973 9.09202 2.21799C9.51984 2 10.0799 2 11.2 2H18.8C19.9201 2 20.4802 2 20.908 2.21799C21.2843 2.40973 21.5903 2.71569 21.782 3.09202C22 3.51984 22 4.0799 22 5.2V12.8C22 13.9201 22 14.4802 21.782 14.908C21.5903 15.2843 21.2843 15.5903 20.908 15.782C20.4802 16 19.9201 16 18.8 16H16M5.2 22H12.8C13.9201 22 14.4802 22 14.908 21.782C15.2843 21.5903 15.5903 21.2843 15.782 20.908C16 20.4802 16 19.9201 16 18.8V11.2C16 10.0799 16 9.51984 15.782 9.09202C15.5903 8.71569 15.2843 8.40973 14.908 8.21799C14.4802 8 13.9201 8 12.8 8H5.2C4.0799 8 3.51984 8 3.09202 8.21799C2.71569 8.40973 2.40973 8.71569 2.21799 9.09202C2 9.51984 2 10.0799 2 11.2V18.8C2 19.9201 2 20.4802 2.21799 20.908C2.40973 21.2843 2.71569 21.5903 3.09202 21.782C3.51984 22 4.07989 22 5.2 22Z',
     title: 'Ongoing improvement',
     body: "The Check Phase is the core of my design process — it's where we validate our assumptions and continuously refine the work through user testing and data analysis. This continues long after the design is complete. Occasionally we discover that our data-backed assumptions were wrong, or that users reacted badly to some part of the product. That is exactly why the Check Phase matters: it hands us real-world opportunities for growth. Whether we are taking a 25% conversion rate to 50% or fine-tuning flows on user feedback, this is where we measure whether the design actually served anyone.",
     tools: 'PostHog, GA4',
@@ -105,12 +107,12 @@ const inPractice = [
     kicker: 'Process & team transformation',
     title: 'Rethinking what a design system actually is',
     paras: [
-      "Most design systems live in Figma. Ours used to. When we began Tribute's full platform replatform, I made a call that changed how my entire team works: we were cutting Figma out of the critical path and building a design system rooted in AI and rapid prototyping, where the deliverable wasn't a static file. It was functioning code.",
-      "The team of four was skeptical at first. That's a fair reaction when you're asking designers to change the most fundamental part of their workflow. But I stayed close to the work, experimented alongside them, and compressed our sprint cycles down to one week by combining Lean UX and traditional Agile across product, design, and engineering simultaneously.",
-      'Within a few sprints, something shifted. The feedback loops got tighter. Stakeholders were reacting to real, working product instead of mockups. Decisions that used to take weeks were getting made in days. The reluctance disappeared because the results were undeniable.',
+      "Most design systems live in Figma. Ours used to. When we began rebuilding Tribute's platform, I made a call that changed how my team works: we were cutting Figma out of the critical path and building a design system rooted in AI and rapid prototyping, where the deliverable wasn't a static file. It was functioning code.",
+      "The team of four was skeptical at first. That's a fair reaction when you're asking designers to change the most fundamental part of their workflow. But I stayed close to the work, experimented alongside them, and compressed our sprints to one week by combining Lean UX and traditional Agile across product, design, and engineering.",
+      'Within a few sprints, something shifted. The feedback loops got tighter. Stakeholders were reacting to real, working product instead of mockups. Decisions that took weeks were made in days. The reluctance disappeared because the results were undeniable.',
     ],
     outcome:
-      'Team of 4 went from skeptical to thriving. One-week sprint cycles became the new normal. The system now ships production-ready components, not handoffs.',
+      'Team of 4 went from skeptical to thriving. One-week sprints became the norm, and the system ships production-ready components, not handoffs.',
   },
   {
     year: '2020',
@@ -121,15 +123,32 @@ const inPractice = [
     // below both already carry it.
     title: 'A 4.6-star app built across two continents',
     paras: [
-      "When Peterson's decided to build a test prep app, the timeline was aggressive and the team was distributed. I was leading design and frontend in Denver while our engineering team was based in Ukraine. Asynchronous by necessity, high-stakes by design.",
+      "When Peterson's decided to build a test prep app, the timeline was aggressive and the team was distributed. I was leading design and frontend in Denver while our engineering team was based in Ukraine, and we had 90 days from first sketch to the App Store. Asynchronous by necessity, high-stakes by design.",
       "What could have been a coordination nightmare became one of the most efficient projects I've ever run. We established clear async rituals, kept design decisions documented and visible, and used the timezone gap to our advantage. By the time Denver woke up, Kyiv had already pushed code. By the time Kyiv signed off, we had new designs waiting.",
-      'I worked directly with the CEO and CTO throughout, which kept decisions fast and alignment tight. There was no middle layer to slow things down. When something needed to change, it changed the same day.',
+      'I worked directly with the CEO and CTO throughout, which kept decisions fast and alignment tight. There was no middle layer to slow things down. When something needed to change, it changed the same day, and Kyiv was building it by morning.',
     ],
     outcome:
-      'Shipped in under 3 months. 4.6-star App Store rating, 10,000+ downloads, and featured by Apple in its first week.',
+      'Shipped across two continents in under 3 months: a 4.6-star App Store rating, 10,000+ downloads, and featured by Apple in its first week.',
   },
 ];
 
+
+/*
+ * Birds over the Point of view photo: far-off specks, not drawn birds. Each
+ * wanders a looping path (one of three, `path`) around its own patch of sky —
+ * circling, doubling back, rising and dipping — because a speck crossing in a
+ * straight line at a steady speed reads as a plane. `x`/`y` are the patch's
+ * centre (% of the frame), `dur` the loop in seconds, `delay` negative so
+ * they're mid-flight on load. Two share a patch and a path, offset, as a
+ * loose pair. No Math.random(): SSG output stays byte-stable.
+ */
+const birds = [
+  { x: 24, y: 11, path: 'a', dur: 23, delay: -4, size: 3.2 },
+  { x: 27, y: 12, path: 'a', dur: 23, delay: -6.5, size: 2.6 },
+  { x: 71, y: 8, path: 'b', dur: 31, delay: -14, size: 2.8 },
+  { x: 48, y: 15, path: 'c', dur: 27, delay: -9, size: 2.4 },
+  { x: 86, y: 6, path: 'b', dur: 36, delay: -27, size: 2.2 },
+];
 ---
 
 <BaseLayout
@@ -212,6 +231,54 @@ const inPractice = [
       </h2>
 
       <div class="max-w-2xl space-y-6 text-ink-dim" data-anim="reveal-batch">
+        {/* First visual on the page, and it opens the section — the run from
+            hero to principles was otherwise 1,500px of unbroken prose. Full
+            width of the text column: at 2.36:1 a portrait-sized crop would
+            leave the subject too small to read. `.signal-photo` (signal.css)
+            puts it on the same tube as the type: scanlines, a slow roll, and
+            an occasional reception blip. */}
+        <div class="signal-photo !mb-10">
+          {/* Drifting cloud texture, sky band only: procedural noise in a
+              strip twice the frame's width, sliding left and screened onto
+              the sky so it lifts what's there rather than painting new cloud. */}
+          <div class="photo-clouds" aria-hidden="true">
+            <svg preserveAspectRatio="none" viewBox="0 0 1200 200">
+              <filter id="pov-clouds" x="0" y="0" width="100%" height="100%">
+                <feTurbulence type="fractalNoise" baseFrequency="0.006 0.022" numOctaves="3" seed="7" stitchTiles="stitch" />
+                <feColorMatrix values="0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1.6 -0.62" />
+              </filter>
+              <rect width="1200" height="200" filter="url(#pov-clouds)" />
+            </svg>
+          </div>
+          {/* Easter egg: once every ~75s a saucer drops by, hovers, and
+              leaves, by one of three routes in turn. */}
+          <span class="ufo" aria-hidden="true">
+            <svg viewBox="0 0 24 12" fill="none">
+              <path d="M8 6.2 Q8.6 2.4 12 2.4 Q15.4 2.4 16 6.2" class="ufo__dome" />
+              <ellipse cx="12" cy="7" rx="10" ry="2.6" class="ufo__hull" />
+              <circle cx="7" cy="7.2" r="0.7" class="ufo__light" />
+              <circle cx="12" cy="7.6" r="0.7" class="ufo__light" />
+              <circle cx="17" cy="7.2" r="0.7" class="ufo__light" />
+            </svg>
+          </span>
+          <div class="photo-birds" aria-hidden="true">
+            {birds.map((b) => (
+              <span
+                class={`bird bird--${b.path}`}
+                style={`--x:${b.x}%;--y:${b.y}%;--dur:${b.dur}s;--delay:${b.delay}s;--size:${b.size}px`}
+              >
+                <span class="bird__speck"></span>
+              </span>
+            ))}
+          </div>
+          <Image
+            src={overlook}
+            alt="Looking out across a mountain range from a high ridgeline"
+            widths={[672, 1344, 1584]}
+            sizes="(min-width: 1024px) 42rem, 92vw"
+            class="block w-full"
+          />
+        </div>
         <p>
           I came up as a maker. Designer and developer, two disciplines that rarely share a brain.
           That background shaped everything about how I lead, because I've never been able to
@@ -227,23 +294,12 @@ const inPractice = [
           AI has made that more interesting than ever. The question isn't which tools to adopt. It's
           how to help a team evolve its thinking so the tools actually make the work better.
         </p>
-        <p class="text-[clamp(1.125rem,1.5vw,1.375rem)] leading-[1.5] text-ink-lead">
+        <p class="!mt-10 text-[clamp(1.375rem,2.2vw,1.875rem)] leading-[1.4] tracking-[-0.01em] text-ink-lead">
           When people ask what matters most, I point to two things:
           <span class="accent-gradient font-medium">compassion</span> and
           <span class="accent-gradient font-medium">intent</span>.
         </p>
 
-        {/* First visual on the page, and it arrives early on purpose — the run
-            from hero to principles was otherwise 1,500px of unbroken prose.
-            Runs the full width of the text column: at 2.36:1 a portrait-sized
-            crop would leave the subject too small to read. */}
-        <Image
-          src={overlook}
-          alt="Looking out across a mountain range from a high ridgeline"
-          widths={[672, 1344, 1584]}
-          sizes="(min-width: 1024px) 42rem, 92vw"
-          class="!mt-12 w-full"
-        />
       </div>
     </div>
   </section>
@@ -450,11 +506,8 @@ const inPractice = [
           process.map((step, i) => (
             <>
               {i > 0 && <span class="process-pipe__link" />}
-              {/* Make is the callout panel (global.css): the copy below calls
-                  it "my favourite part of the design process", so the drawing
-                  says so too. */}
-              <span class:list={['process-pipe__stop', step.phase === 'Make' && 'callout-panel']}>
-                <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <span class="process-pipe__stop">
+                <svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                   <path d={step.icon} />
                 </svg>
                 {step.phase}
@@ -508,10 +561,9 @@ const inPractice = [
               </>
             )}
 
-            <svg viewBox="0 0 24 24" class="h-6 w-6 text-ink-dim" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d={step.icon} />
-            </svg>
-            <h3 class="mt-6 text-[1.125rem] font-medium leading-snug text-ink">{step.phase}</h3>
+            {/* No icon: the pipeline above carries each phase's icon, and
+                repeating it here put the same four glyphs on screen twice. */}
+            <h3 class="text-[1.125rem] font-medium leading-snug text-ink">{step.phase}</h3>
             <p class="text-[1.125rem] leading-snug text-ink-faint">{step.title}</p>
             <p class="mt-4 max-w-xl text-ink-dim">{step.body}</p>
             <ul class="mt-auto flex flex-wrap gap-2 pt-8" aria-label={`${step.phase} tools`}>
@@ -549,11 +601,14 @@ const inPractice = [
     >
         Experience
       </h2>
+      {/* The résumé itself, recoloured from its original green to a deep
+          blue-purple (6.3:1 on white) between the site's two accents. */}
       <a
-        href="mailto:hi@adamrobertson.co?subject=Resume%20request"
+        href="/adam-robertson-resume.pdf"
+        download="Adam Robertson - Resume.pdf"
         class="group inline-flex shrink-0 items-center gap-2 text-micro uppercase tracking-[0.14em] text-ink-dim transition-colors hover:text-accent"
       >
-        Request a PDF
+        Download PDF
         <ArrowUpRight class="transition-transform duration-500 ease-[var(--ease-out-expo)] group-hover:translate-x-1 group-hover:-translate-y-1" />
       </a>
     </div>
@@ -588,7 +643,10 @@ const inPractice = [
                     <span class="mt-2 shrink-0 text-[0.5rem] leading-none text-accent" aria-hidden="true">
                       ◆
                     </span>
-                    {point}
+                    {(() => {
+                      const { lead, rest } = splitLead(point);
+                      return lead ? <span><strong class="font-medium text-ink">{lead}:</strong> {rest}</span> : rest;
+                    })()}
                   </li>
                 ))}
               </ul>
@@ -615,31 +673,30 @@ const inPractice = [
     display: flex;
     align-items: center;
   }
+  /* Each station is a diagram node, cloudflare.com's request-path style: the
+     icon stacked over the label. A shared min-width keeps the end stops'
+     centres at 3.25rem in, where the return loop's ends are drawn. */
   .process-pipe__stop {
     position: relative;
     z-index: 1;
     display: inline-flex;
     flex: 0 0 auto;
+    flex-direction: column;
     align-items: center;
+    justify-content: center;
     gap: 0.5rem;
-    padding: 0.625rem 1rem;
-    color: var(--color-ink);
-    font-size: 0.875rem;
-  }
-  /* The callout panel owns its own box; the dashed station is everyone else's. */
-  .process-pipe__stop:not(.callout-panel) {
+    min-width: 6.5rem;
+    padding: 0.85rem 1rem 0.75rem;
     border: 1px dashed var(--color-line);
     border-radius: var(--radius-ui);
     background: var(--color-surface);
+    color: var(--color-ink);
+    font-size: 0.875rem;
   }
+  /* No callout panel here: the caption calls the stages one loop, and
+     colouring one read as a selected step. */
   .process-pipe__stop svg {
     color: var(--color-ink-dim);
-  }
-  .process-pipe__stop.callout-panel {
-    font-weight: 500;
-  }
-  .process-pipe__stop.callout-panel svg {
-    color: var(--color-ink);
   }
   .process-pipe__link {
     flex: 1 1 auto;
@@ -732,15 +789,236 @@ const inPractice = [
     }
   }
 
+  /*
+    Principle icons as medallions — cloudflare.com's product-grid treatment:
+    each glyph in a filled disc of the site's blue-to-purple ramp, white line
+    work, a thin outer ring held off by a surface gap. It sets this section
+    apart from the process diagram's bare line icons, and reads as one family.
+  */
   .principle__icon {
-    display: block;
-    width: 1.5rem;
-    height: 1.5rem;
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 9999px;
+    background: linear-gradient(
+      135deg,
+      color-mix(in oklab, var(--color-accent) 70%, var(--color-surface)),
+      color-mix(in oklab, var(--color-accent-warm) 62%, var(--color-surface))
+    );
+    box-shadow:
+      0 0 0 3px var(--color-surface),
+      0 0 0 4px color-mix(in oklab, var(--color-accent) 40%, var(--color-line));
     color: var(--color-ink);
   }
 
   .principle__icon svg {
+    width: 1.3rem;
+    height: 1.3rem;
+  }
+
+  /*
+    The Point of view photo, alive: drifting clouds, a few birds, and a rare
+    UFO. All of it sits over the image and under `.signal-photo`'s scanlines
+    (z-index 1), so it's on the same tube. All of it goes under reduced
+    motion: frozen, a bird reads as a speck on the lens.
+
+    Birds are specks on wandering loops, not drawn birds crossing the frame:
+    drawn wings looked fake, and a straight line at a steady speed reads as
+    a plane. The UFO is greys only — a blue glow read as a brand element.
+  */
+  .signal-photo :global(img) {
+    position: relative;
+    z-index: -1;
+  }
+  .photo-clouds,
+  .photo-birds {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  /* Clouds: a strip twice the frame's width, sliding one frame-width left
+     per cycle and wrapping (stitched noise tiles seamlessly), masked to the
+     sky so it never crosses the ridge. */
+  .photo-clouds {
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 14%, transparent 36%);
+    mask-image: linear-gradient(to bottom, #000 0%, #000 14%, transparent 36%);
+    mix-blend-mode: screen;
+    opacity: 0.42;
+  }
+  .photo-clouds svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 200%;
+    height: 40%;
+    animation: clouds-drift 90s linear infinite;
+    will-change: transform;
+  }
+  @keyframes clouds-drift {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  /* Birds: a speck per bird, wandering a loop around (--x, --y). The outer
+     span owns the path (`translate` through waypoints, in px so the loop is
+     the same size on any frame); the speck owns its shape, fluttering between
+     wide-and-flat and narrow-and-tall at a slightly irregular rhythm, which
+     at this size reads as wingbeats without drawing wings. */
+  .bird {
+    position: absolute;
+    top: var(--y);
+    left: var(--x);
+    animation: var(--path) var(--dur) ease-in-out infinite;
+    animation-delay: var(--delay);
+  }
+  .bird--a {
+    --path: bird-loop-a;
+  }
+  .bird--b {
+    --path: bird-loop-b;
+  }
+  .bird--c {
+    --path: bird-loop-c;
+  }
+  .bird__speck {
+    display: block;
+    width: var(--size);
+    height: calc(var(--size) * 0.6);
+    border-radius: 9999px;
+    background: color-mix(in oklab, var(--color-surface) 85%, transparent);
+    filter: blur(0.2px);
+    animation: bird-flutter 0.74s steps(1, end) infinite;
+    animation-delay: var(--delay);
+  }
+  @keyframes bird-flutter {
+    0% { transform: scale(1.5, 0.6) rotate(-6deg); }
+    18% { transform: scale(0.9, 1.25) rotate(4deg); }
+    34% { transform: scale(1.4, 0.7); }
+    46% { transform: scale(1, 1.15) rotate(-3deg); }
+    /* a glide: held flat for most of the second half */
+    58%, 100% { transform: scale(1.6, 0.55) rotate(2deg); }
+  }
+  /* Three loops: a wide circle with a dip, a figure-eight drift, and a
+     wander that doubles back. Waypoints in px, relative to the patch. */
+  @keyframes bird-loop-a {
+    0%, 100% { translate: 0 0; }
+    15% { translate: 38px -10px; }
+    30% { translate: 62px 4px; }
+    45% { translate: 40px 16px; }
+    60% { translate: 6px 10px; }
+    75% { translate: -22px -4px; }
+    88% { translate: -12px -12px; }
+  }
+  @keyframes bird-loop-b {
+    0%, 100% { translate: 0 0; }
+    20% { translate: -30px 8px; }
+    35% { translate: -52px -6px; }
+    50% { translate: -28px -14px; }
+    65% { translate: 4px 2px; }
+    80% { translate: 30px 10px; }
+    90% { translate: 18px -6px; }
+  }
+  @keyframes bird-loop-c {
+    0%, 100% { translate: 0 0; }
+    25% { translate: 44px -8px; }
+    40% { translate: 70px -2px; }
+    55% { translate: 52px 10px; }
+    70% { translate: 18px 6px; }
+    85% { translate: -10px -10px; }
+  }
+
+  /* The UFO: hidden for most of a 75s cycle; slides in from the right over
+     the ridge, hovers with a wobble while its lights blink, then zips off up
+     and left. First pass ~20s after load. */
+  .ufo {
+    position: absolute;
+    top: 14%;
+    left: 0;
+    z-index: 0;
+    width: 15px;
+    opacity: 0;
+    pointer-events: none;
+    filter: drop-shadow(0 0 2px color-mix(in oklab, var(--color-ink) 35%, transparent));
+    /* First visit ~20s after load: the right-hand route starts at 30.7%
+       of 225s (69s), so start the clock 49s in. */
+    animation: ufo-pass 225s linear infinite;
+    animation-delay: -49s;
+  }
+  .ufo svg {
+    display: block;
     width: 100%;
-    height: 100%;
+    height: auto;
+    animation: ufo-wobble 1.6s ease-in-out infinite;
+  }
+  .ufo__hull {
+    fill: color-mix(in oklab, var(--color-surface) 75%, var(--color-ink));
+  }
+  .ufo__dome {
+    fill: color-mix(in oklab, var(--color-ink-faint) 70%, var(--color-ink));
+    opacity: 0.8;
+  }
+  .ufo__light {
+    fill: var(--color-ink);
+    animation: ufo-blink 0.9s steps(1, end) infinite;
+  }
+  .ufo__light:nth-child(4) {
+    animation-delay: -0.3s;
+  }
+  .ufo__light:nth-child(5) {
+    animation-delay: -0.6s;
+  }
+  /* Three routes in one 225s cycle, one visit every ~75s: in from the
+     right and off to the upper left; in low from the left and off climbing
+     right; down from above and back up the way it came. Between visits it is
+     invisible and waits at the next route's start, so no jump ever shows. */
+  @keyframes ufo-pass {
+    0%, 30.6% { left: 104%; top: 16%; opacity: 0; }
+    30.7% { left: 102%; top: 16%; opacity: 1; }
+    31.4% { left: 68%; top: 12%; opacity: 1; }
+    32.5% { left: 64%; top: 13%; opacity: 1; }
+    33.1% { left: -6%; top: 2%; opacity: 1; }
+    33.2% { left: -6%; top: 2%; opacity: 0; }
+
+    33.3%, 63.9% { left: -6%; top: 18%; opacity: 0; }
+    64% { left: -5%; top: 18%; opacity: 1; }
+    64.8% { left: 22%; top: 9%; opacity: 1; }
+    65.9% { left: 25%; top: 10%; opacity: 1; }
+    66.5% { left: 106%; top: -4%; opacity: 1; }
+    66.6% { left: 106%; top: -4%; opacity: 0; }
+
+    66.7%, 97.2% { left: 47%; top: -12%; opacity: 0; }
+    97.3% { left: 47%; top: -10%; opacity: 1; }
+    98.1% { left: 47%; top: 7%; opacity: 1; }
+    99.2% { left: 49%; top: 6%; opacity: 1; }
+    99.8% { left: 50%; top: -14%; opacity: 1; }
+    99.9%, 100% { left: 50%; top: -14%; opacity: 0; }
+  }
+  @keyframes ufo-wobble {
+    0%, 100% { transform: translateY(0) rotate(-4deg); }
+    50% { transform: translateY(-1.5px) rotate(4deg); }
+  }
+  @keyframes ufo-blink {
+    0% { opacity: 1; }
+    50% { opacity: 0.2; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .photo-clouds,
+    .photo-birds,
+    .ufo {
+      display: none;
+    }
+  }
+  :global(html[data-motion='reduced']) .photo-clouds,
+  :global(html[data-motion='failed']) .photo-clouds,
+  :global(html[data-motion='reduced']) .photo-birds,
+  :global(html[data-motion='failed']) .photo-birds,
+  :global(html[data-motion='reduced']) .ufo,
+  :global(html[data-motion='failed']) .ufo {
+    display: none;
   }
 </style>

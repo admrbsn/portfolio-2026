@@ -7,6 +7,12 @@
  * the same surface / line / accent set, keeps its numbers as real text, and
  * shares the `moment-reveal` effect so the two cards animate as a pair.
  *
+ * Freshened to the system the site grew into: the one radius except on the
+ * phone (a physical object keeps its own), no drop shadows, the arc and the
+ * rating ring drawn in the blue-to-purple ramp, and the 4.6 — this card's
+ * headline — as About's one callout panel, with the other stats muted and
+ * dashed around it.
+ *
  * The headline is deliberately absent: the original baked "A 4.6-star app,
  * built across two continents in 90 days" into the image, but that is the
  * card's own <h3> directly beneath. Repeating it would say the same sentence
@@ -32,6 +38,12 @@ const RATING_FRACTION = 4.6 / 5;
   {/* Globe — the distance the project was run across. */}
   <div class="pmoment__globe" data-type-rise aria-hidden="true">
     <svg viewBox="0 0 200 200" fill="none">
+      <defs>
+        <linearGradient id="pm-ramp" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" style="stop-color: var(--color-accent)" />
+          <stop offset="1" style="stop-color: var(--color-accent-warm)" />
+        </linearGradient>
+      </defs>
       <circle cx="100" cy="100" r="78" stroke="var(--color-line)" stroke-width="1" />
       {/* Latitudes as flattened ellipses; longitudes as ellipses narrowing to a line. */}
       {[0, 26, 52].map((dy) => (
@@ -55,7 +67,7 @@ const RATING_FRACTION = 4.6 / 5;
       */}
       <path
         d="M46 88 Q100 52 152 82"
-        stroke="var(--color-accent)"
+        stroke="url(#pm-ramp)"
         stroke-width="1.5"
         stroke-linecap="round"
         pathLength="1"
@@ -63,7 +75,7 @@ const RATING_FRACTION = 4.6 / 5;
         data-ring="1"
       />
       <circle cx="46" cy="88" r="4" fill="var(--color-accent)" />
-      <circle cx="152" cy="82" r="4" fill="var(--color-ink)" />
+      <circle cx="152" cy="82" r="4" fill="var(--color-accent-warm)" />
       {/* Labels sit below their dots, clear of the arc overhead. */}
       <text x="46" y="105" class="pmoment__pin">Denver</text>
       <text x="152" y="99" class="pmoment__pin">Kyiv</text>
@@ -77,12 +89,18 @@ const RATING_FRACTION = 4.6 / 5;
 
       <div class="pmoment__gauge">
         <svg viewBox="0 0 100 100" fill="none">
+          <defs>
+            <linearGradient id="pm-ring" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" style="stop-color: var(--color-accent)" />
+              <stop offset="1" style="stop-color: var(--color-accent-warm)" />
+            </linearGradient>
+          </defs>
           <circle cx="50" cy="50" r="40" stroke="color-mix(in oklab, var(--color-ink) 12%, transparent)" stroke-width="7" />
           <circle
             cx="50"
             cy="50"
             r="40"
-            stroke="var(--color-accent)"
+            stroke="url(#pm-ring)"
             stroke-width="7"
             stroke-linecap="round"
             pathLength="1"
@@ -105,8 +123,8 @@ const RATING_FRACTION = 4.6 / 5;
   <ul class="pmoment__stats">
     {
       stats.map((s) => (
-        <li class="pmoment__stat" data-type-pop>
-          <span class="pmoment__stat-label">{s.label}</span>
+        <li class:list={['pmoment__stat', s.label === 'App Store rating' && 'callout-panel']} data-type-pop>
+          <span class:list={['pmoment__stat-label', s.label === 'App Store rating' && 'callout-panel__label']}>{s.label}</span>
           <span class="pmoment__stat-value">
             {s.label === 'Timeline' ? (
               <>
@@ -179,7 +197,6 @@ const RATING_FRACTION = 4.6 / 5;
     border: 1px solid color-mix(in oklab, var(--color-ink) 18%, transparent);
     border-radius: clamp(6px, 1.4cqw, 12px);
     background: color-mix(in oklab, var(--color-surface-lift) 90%, transparent);
-    box-shadow: 0 12px 30px -14px oklch(0 0 0 / 0.7);
   }
 
   .pmoment__screen {
@@ -196,8 +213,12 @@ const RATING_FRACTION = 4.6 / 5;
     width: 100%;
     padding: clamp(0.25rem, 1.2cqw, 0.55rem) 0;
     border-radius: clamp(4px, 1cqw, 9px) clamp(4px, 1cqw, 9px) 0 0;
-    background: color-mix(in oklab, var(--color-accent) 82%, black);
-    color: var(--color-surface);
+    background: linear-gradient(
+      90deg,
+      color-mix(in oklab, var(--color-accent) 70%, var(--color-surface)),
+      color-mix(in oklab, var(--color-accent-warm) 62%, var(--color-surface))
+    );
+    color: var(--color-ink);
     text-align: center;
     font-size: clamp(0.5rem, 1.5cqw, 0.8rem);
     font-weight: 600;
@@ -238,7 +259,11 @@ const RATING_FRACTION = 4.6 / 5;
   .pmoment__stars {
     font-size: clamp(0.5rem, 1.5cqw, 0.8rem);
     letter-spacing: 0.1em;
-    color: var(--color-accent);
+    background: linear-gradient(90deg, var(--color-accent), var(--color-accent-warm));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
   }
 
   /* Stat cards --------------------------------------------------------- */
@@ -252,17 +277,27 @@ const RATING_FRACTION = 4.6 / 5;
     list-style: none;
   }
 
-  /* Same chrome as the Tribute card's nodes, so the pair reads as a set. */
+  /* Same chrome as the Tribute card's nodes (muted, dashed), so the pair
+     reads as a set; the rating is the callout panel and owns its own box. */
   .pmoment__stat {
     display: flex;
     flex-direction: column;
     gap: clamp(1px, 0.4cqw, 4px);
     margin: 0;
     padding: clamp(0.4rem, 2cqw, 0.9rem) clamp(0.5rem, 2.4cqw, 1.1rem);
-    border: 1px solid color-mix(in oklab, var(--color-ink) 16%, transparent);
-    border-radius: 0.5rem;
-    background: color-mix(in oklab, var(--color-surface-lift) 85%, transparent);
-    box-shadow: 0 8px 24px -12px oklch(0 0 0 / 0.6);
+  }
+  .pmoment__stat:not(.callout-panel) {
+    border: 1px dashed color-mix(in oklab, var(--color-ink) 22%, transparent);
+    border-radius: var(--radius-ui);
+    background: var(--color-surface);
+  }
+  /* On the panel: the stars go white (gradient on gradient disappears) and
+     the sub line lifts to read on the fill. */
+  .pmoment__stat.callout-panel .pmoment__stat-stars {
+    color: var(--color-ink);
+  }
+  .pmoment__stat.callout-panel .pmoment__stat-sub {
+    color: color-mix(in oklab, var(--color-ink) 85%, transparent);
   }
 
   .pmoment__stat-label {

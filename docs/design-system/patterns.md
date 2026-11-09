@@ -214,9 +214,11 @@ alone, against muted dashed neighbours, which is how cloudflare.com marks the
 card that matters.
 
 - **One per page, at most**, on the thing the section is about. Today: the
-  system on `/how-i-work`'s system section, "You merge" on its PostHog loop,
-  Make in `/about`'s process pipeline, a case study's lead impact. A second one
-  in view turns emphasis into a pattern.
+  system on `/how-i-work`'s system section, "You merge" on its PostHog loop, a
+  case study's lead impact, the 4.6 in `/about`'s Peterson's graphic. A second one in view turns emphasis into a pattern.
+  Not on a diagram whose stages are meant to be equal: Make on `/about`'s
+  process pipeline was tried and read as a selected step under a caption
+  calling the stages one loop.
 - Both ends sit at ~0.45 lightness so white text clears 4.5:1 across the ramp.
   Retune them together; a lighter middle or end washes the type out.
 - Gradient text doesn't go on it (gradient on gradient disappears): figures go

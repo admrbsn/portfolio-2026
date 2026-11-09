@@ -1,7 +1,9 @@
 /**
  * Work history, shared by the home résumé section (`Experience.astro`) and the
  * detailed timeline on /about. Single source of truth so the two never drift.
- * Ordered most-recent first; `period` uses en dashes for ranges.
+ * Ordered most-recent first; `period` uses en dashes for ranges. Points are the
+ * résumé PDF's bullets verbatim (public/adam-robertson-resume.pdf); keep the two
+ * in step.
  */
 export interface Job {
   period: string;
@@ -11,18 +13,26 @@ export interface Job {
   points: string[];
 }
 
+/**
+ * A point that opens with a short label ("Droplr: Built…") splits into the
+ * label and the rest, so it can be set bold the way the résumé PDF sets it.
+ */
+export function splitLead(point: string): { lead: string | null; rest: string } {
+  const m = /^([A-Z][\w .&'-]{1,24}):\s(.*)$/.exec(point);
+  return m ? { lead: m[1], rest: m[2] } : { lead: null, rest: point };
+}
+
 export const experience: Job[] = [
   {
     period: '2021–Present',
     role: 'Head of Product Design',
     company: 'Tribute',
     points: [
-      'Led the platform redesign behind 20× growth in two years',
-      'Built a tokenized design system and shipped TypeScript applications',
-      'Folded research, A/B testing and analytics into the loop, up to 30% conversion gains',
-      'Ran a six-month acquisition integration',
-      'Built and launched two native iOS apps',
-      'Consolidated three PM systems into one workflow',
+      'Led a cross-functional team of six designers and engineers through a full redesign and rebuild of Tribute’s platform, remaining hands-on across product strategy, complex workflows, and prototyping while delivering a scalable product that supported 20x growth in two years.',
+      'Established the design system, critique rituals, and standards the team built against; mentored designers, converted designs into production-ready TypeScript, and directed engineering partners to ship reliably, making UX quality a shared responsibility.',
+      'Integrated customer interviews, usability testing, A/B testing, and analytics into the design process, improving core funnels and lifting key conversion metrics by up to 50%.',
+      'Directed the integration of an acquisition in six months, resolving critical issues across system compatibility and UX while reducing operational costs by nearly 50%.',
+      'Drove the design and partnered with engineering to ship two native iOS apps and AI-enabled product experiences from concept to release, including conversational workflows, human-in-the-loop controls, error recovery, and iterative evaluation.',
     ],
   },
   {
@@ -30,45 +40,45 @@ export const experience: Job[] = [
     role: 'Sr. Manager, UX/UI Design & Frontend Development',
     company: "Peterson's",
     points: [
-      'Led design and frontend across web and mobile products',
-      'Launched a mobile app: 4.6 stars, 10,000+ downloads, 90%+ positive reviews',
-      'Redesigned LMS workflows off the back of usability testing',
+      'Led a team of four designers and frontend developers across web and mobile, introducing research-driven practices and a scalable design system that improved development speed and product consistency.',
+      'Built and launched a mobile app from concept to App Store release in six months, earning a 4.6-star rating, 90%+ positive reviews, and 10,000+ downloads.',
+      'Redesigned core LMS workflows through usability testing and iterative prototyping, simplifying critical tasks and reducing friction across the experience.',
     ],
   },
   {
-    period: 'Dec 2019–Mar 2020',
+    period: '2014–2020',
     role: 'Product Design & Development Consultant',
-    company: 'Droplr',
-    points: ['Grew organic traffic 115%', 'Hit a 98/100 Lighthouse score on a custom WordPress Multisite'],
-  },
-  {
-    period: '2017–2019',
-    role: 'Product Design & Development Consultant',
-    company: 'ETHDenver',
-    points: ['96% CSAT across the event platform'],
-  },
-  {
-    period: '2014–2017',
-    role: 'Product Design & Development Consultant',
-    company: 'Inspirato',
-    points: ['Acquired 4,000+ members for the Amex joint venture'],
+    company: 'Droplr, ETHDenver, Inspirato',
+    points: [
+      'Droplr: Built a custom WordPress Multisite platform, brand guide, and design system, increasing organic traffic by 115% and raising Lighthouse scores to 98/100.',
+      'ETHDenver: Achieved 96% CSAT by leading design and development across the event platform, integrating promotional sites, forms, scheduling tools, and social media.',
+      'Inspirato: Drove acquisition of 4,000+ members for the Inspirato x Amex joint venture, with 25% converting in the first six months, and launched the brand’s blog and content platform.',
+    ],
   },
   {
     period: '2011–2014',
     role: 'Staff Designer / Engineer',
     company: 'Webolutions',
-    points: ['Delivered 15+ client websites', 'Two Communicator Awards'],
+    points: [
+      'Delivered 15+ client websites using user-centered, responsive design, earning 2 Communicator Awards for excellence in visual design and engagement.',
+      'Managed simultaneous projects across multiple client accounts, balancing frequent stakeholder meetings, shifting priorities, and tight deadlines in a fast-moving agency environment.',
+    ],
   },
   {
     period: '2006–2011',
     role: 'Lead Interactive Designer',
     company: 'Miles Partnership',
-    points: ['Led interactive design for 10+ tourism brands', 'Directed the Colorado.com redesign'],
+    points: [
+      'Led interactive design for over 10 major tourism brands, overseeing high-traffic websites and mobile experiences with tens of millions of annual pageviews.',
+      'Directed key digital projects, including the Colorado.com redesign and the award-winning 5-Minute Meeting Planner.',
+    ],
   },
   {
     period: '2007–2009',
     role: 'Technical Specialist',
     company: 'Apple',
-    points: ['Hardware and software consultation'],
+    points: [
+      'Provided technical consultation on Apple products, troubleshooting hardware and software issues and translating complex technical concepts for non-technical customers.',
+    ],
   },
 ];

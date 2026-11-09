@@ -11,6 +11,11 @@ import tributeLogo from '../assets/about/tribute-logo.svg';
  *
  * Deliberately square-cornered: it sits inside a ruled grid whose whole point is
  * straight lines meeting at right angles, and a radius here fought that.
+ *
+ * Freshened to the system the site grew into after it was built: the one
+ * radius (`--radius-ui`), no drop shadows, muted dashed nodes the way every
+ * diagram on the site draws its secondary stops, and the blue-to-purple ramp
+ * (the callout panel's) on the one control that acts, the send button.
  */
 
 /*
@@ -150,10 +155,9 @@ const nodes = [
     /* Filled, not just outlined. At `--color-line` over the node's own opacity
        the border landed near 7% and the box was effectively invisible — so the
        scale animation looked like only the text was moving. */
-    border: 1px solid color-mix(in oklab, var(--color-ink) 16%, transparent);
-    border-radius: 0.5rem;
-    background: color-mix(in oklab, var(--color-surface-lift) 85%, transparent);
-    box-shadow: 0 8px 24px -12px oklch(0 0 0 / 0.6);
+    border: 1px dashed color-mix(in oklab, var(--color-ink) 22%, transparent);
+    border-radius: var(--radius-ui);
+    background: var(--color-surface);
   }
 
   .moment__node-label {
@@ -163,8 +167,11 @@ const nodes = [
   }
 
   .moment__node-sub {
-    font-size: 0.5rem;
-    line-height: 1.2;
+    font-family: var(--font-mono);
+    font-size: 0.45rem;
+    line-height: 1.3;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
     color: var(--color-ink-faint);
   }
 
@@ -220,9 +227,9 @@ const nodes = [
     justify-content: space-between;
     gap: 0.75rem;
     padding: clamp(0.5rem, 1.8cqw, 0.85rem);
-    border: 1px solid var(--color-line);
-    border-radius: 0.5rem;
-    background: color-mix(in oklab, var(--color-surface-lift) 70%, transparent);
+    border: 1px solid color-mix(in oklab, var(--color-ink) 18%, transparent);
+    border-radius: var(--radius-ui);
+    background: var(--color-surface-lift);
   }
 
   .moment__placeholder {
@@ -237,7 +244,7 @@ const nodes = [
     width: 1px;
     height: 1em;
     margin-left: 1px;
-    background: #fff;
+    background: var(--color-ink);
   }
 
   /* The caret only blinks once the typing run has finished — while characters
@@ -286,8 +293,9 @@ const nodes = [
 
   .moment__chip {
     padding: 0.2rem 0.5rem;
-    border-radius: 0.3rem;
-    background: color-mix(in oklab, var(--color-ink) 8%, transparent);
+    border: 1px dashed var(--color-line);
+    border-radius: var(--radius-ui);
+    font-family: var(--font-mono);
     font-size: clamp(0.55rem, 1.7cqw, 0.72rem);
     color: var(--color-ink-dim);
   }
@@ -302,9 +310,13 @@ const nodes = [
     place-items: center;
     width: clamp(1.1rem, 3.4cqw, 1.6rem);
     height: clamp(1.1rem, 3.4cqw, 1.6rem);
-    border-radius: 0.3rem;
-    background: var(--color-accent);
-    color: var(--color-surface);
+    border-radius: var(--radius-ui);
+    background: linear-gradient(
+      135deg,
+      color-mix(in oklab, var(--color-accent) 70%, var(--color-surface)),
+      color-mix(in oklab, var(--color-accent-warm) 62%, var(--color-surface))
+    );
+    color: var(--color-ink);
   }
 
   .moment__send svg {

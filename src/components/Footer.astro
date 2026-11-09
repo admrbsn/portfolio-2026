@@ -43,11 +43,12 @@ const year = new Date().getFullYear();
 
   <p
     id="copy-hint"
-    data-copy-label
     aria-live="polite"
     class="mt-8 text-micro uppercase tracking-[0.2em] text-ink-faint"
   >
-    Click to copy
+    {/* Tracking adds space after the last letter too; the negative margin
+        takes it back so a centred tracked line is centred on its ink. */}
+    <span class="mr-[-0.2em]" data-copy-label>Click to copy</span>
   </p>
 
   <ul class="mt-24 flex flex-wrap justify-center gap-x-8 gap-y-3">
@@ -61,15 +62,18 @@ const year = new Date().getFullYear();
             data-cursor-label="Visit"
             class="inline-flex items-center gap-2 text-micro uppercase tracking-[0.14em] text-ink-dim transition-colors hover:text-ink"
           >
+            {/* Sized to the text, not past it (at 1.15em the glyph stood 1.6x
+                the cap height), and lifted onto the caps' centre: uppercase
+                sits high in its line box, which also holds descender room. */}
             <svg
               viewBox={s.viewBox}
               fill="currentColor"
               aria-hidden="true"
-              class="h-[1.15em] w-[1.15em] shrink-0"
+              class="h-[1em] w-[1em] shrink-0 -translate-y-[0.02em]"
             >
               <path fill-rule={s.fillRule} d={s.icon} />
             </svg>
-            {s.label}
+            <span class="mr-[-0.14em]">{s.label}</span>
           </a>
         </li>
       ))
@@ -77,7 +81,7 @@ const year = new Date().getFullYear();
   </ul>
 
   <p class="mt-12 text-micro uppercase tracking-[0.14em] text-ink-faint">
-    &copy; {year} Adam Robertson. All rights reserved.
+    <span class="mr-[-0.14em]">&copy; {year} Adam Robertson. All rights reserved.</span>
   </p>
 </footer>
 

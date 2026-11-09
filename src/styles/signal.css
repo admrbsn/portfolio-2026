@@ -612,3 +612,85 @@ html[data-motion='failed'] .hero-crt::before,
 html[data-motion='failed'] .hero-crt::after {
   display: none;
 }
+
+/* ---------------------------------------------------------------------------
+   Signal photo — a photograph on the same tube as the type. Wrap the image
+   in `.signal-photo`. Three layers, all subtle:
+   - static scanlines over the whole frame (the raster is composition, so it
+     stays under reduced motion);
+   - two faint bright bands rolling down on unrelated clocks (10.9s, 17.3s),
+     the hero CRT's roll;
+   - a reception blip every ~11s on the image itself: a short sideways jitter
+     with a blue/purple edge split, the headings' glitch vocabulary, then
+     nothing until the next one.
+--------------------------------------------------------------------------- */
+.signal-photo {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.signal-photo img {
+  animation: signal-photo-blip 11.3s steps(1, end) infinite;
+  animation-delay: 3s;
+}
+.signal-photo::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background-image:
+    repeating-linear-gradient(to bottom, transparent 0 2px, rgb(0 0 0 / 0.2) 2px 3px),
+    repeating-linear-gradient(to bottom, transparent 0 1px, rgb(255 255 255 / 0.02) 1px 2px, transparent 2px 3px);
+  animation: hero-crt-flicker 5.3s steps(1, end) infinite;
+}
+.signal-photo::after {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  z-index: 2;
+  height: 18%;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgb(255 255 255 / 0.035) 50%,
+    transparent 100%
+  );
+  animation: signal-photo-roll 10.9s linear infinite;
+  will-change: transform;
+}
+@keyframes signal-photo-roll {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(560%); }
+}
+@keyframes signal-photo-blip {
+  0%, 95.9%, 100% { translate: 0 0; filter: none; }
+  96% {
+    translate: 3px 0;
+    filter: drop-shadow(-3px 0 0 var(--color-accent)) drop-shadow(3px 0 0 var(--color-accent-warm)) brightness(1.08);
+  }
+  96.6% { translate: -2px 0; filter: drop-shadow(2px 0 0 var(--color-accent-warm)) brightness(0.92); }
+  97.2% { translate: 1px 0; filter: none; }
+  97.6% { translate: 0 0; filter: brightness(0.96); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .signal-photo img,
+  .signal-photo::before {
+    animation: none;
+  }
+  .signal-photo::after {
+    display: none;
+  }
+}
+html[data-motion='reduced'] .signal-photo img,
+html[data-motion='failed'] .signal-photo img,
+html[data-motion='reduced'] .signal-photo::before,
+html[data-motion='failed'] .signal-photo::before {
+  animation: none;
+}
+html[data-motion='reduced'] .signal-photo::after,
+html[data-motion='failed'] .signal-photo::after {
+  display: none;
+}

@@ -1,5 +1,5 @@
 ---
-import { experience } from '../data/experience';
+import { experience, splitLead } from '../data/experience';
 import ArrowUpRight from './ArrowUpRight.astro';
 
 // Home résumé. Editorial two-column layout: the role list carries the wide
@@ -79,7 +79,10 @@ import ArrowUpRight from './ArrowUpRight.astro';
                       <span class="mt-2 shrink-0 text-[0.5rem] leading-none text-accent" aria-hidden="true">
                         ◆
                       </span>
-                      {point}
+                      {(() => {
+                        const { lead, rest } = splitLead(point);
+                        return lead ? <span><strong class="font-medium text-ink">{lead}:</strong> {rest}</span> : rest;
+                      })()}
                     </li>
                   ))}
                 </ul>
