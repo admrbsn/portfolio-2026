@@ -161,7 +161,9 @@ const html = /* html */ `<!doctype html>
     font-family: 'Geist Mono', monospace;
     font-weight: 500;
     font-size: 8pt;
-    letter-spacing: 0.12em;
+    /* Kept low on purpose: wider tracking makes PDF text extractors read
+       "W O R K  E X P E R I E N C E", and ATS parsers find sections by heading. */
+    letter-spacing: 0.05em;
     text-transform: uppercase;
     color: ${ACCENT};
     padding-bottom: 4pt;
