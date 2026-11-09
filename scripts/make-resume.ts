@@ -128,13 +128,16 @@ const html = /* html */ `<!doctype html>
   @font-face { font-family: 'Geist'; src: url('${font('node_modules/@fontsource/geist/files/geist-latin-600-normal.woff2')}') format('woff2'); font-weight: 600; }
   @font-face { font-family: 'Geist Mono'; src: url('${font('node_modules/@fontsource/geist-mono/files/geist-mono-latin-500-normal.woff2')}') format('woff2'); font-weight: 500; }
 
-  @page { size: letter; margin: 0.6in 0.75in; }
+  /* Spacing is tuned so the content fills exactly two pages: page 2 ends
+     ~0.1in above its margin. Adding a line anywhere can push Education onto
+     a third page; check the page count after any content change. */
+  @page { size: letter; margin: 0.7in 0.75in; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   body {
     font-family: 'Geist', sans-serif;
     font-size: 9.75pt;
-    line-height: 1.4;
+    line-height: 1.44;
     color: #16161a;
     /* Ligatures stay off so ATS text extraction never sees a fused "fi". */
     font-variant-ligatures: none;
@@ -150,13 +153,14 @@ const html = /* html */ `<!doctype html>
     letter-spacing: -0.01em;
     color: ${ACCENT};
   }
-  .contact { margin-top: 8pt; font-size: 9pt; color: #45454d; }
+  .contact { margin-top: 12pt; font-size: 9pt; color: #45454d; }
   .contact span { white-space: nowrap; }
   .contact span + span::before { content: '·'; margin: 0 0.55em; color: #a0a0aa; }
-  .headline { margin-top: 14pt; font-size: 12pt; font-weight: 600; letter-spacing: -0.005em; }
-  .summary { margin-top: 5pt; }
+  .headline { margin-top: 24pt; font-size: 12pt; font-weight: 600; letter-spacing: -0.005em; }
+  .summary { margin-top: 7pt; }
+  header + section { margin-top: 28pt; }
 
-  section { margin-top: 18pt; }
+  section { margin-top: 20pt; }
   h2 {
     font-family: 'Geist Mono', monospace;
     font-weight: 500;
@@ -168,13 +172,13 @@ const html = /* html */ `<!doctype html>
     color: ${ACCENT};
     padding-bottom: 4pt;
     border-bottom: 0.75pt solid #d8d8e4;
-    margin-bottom: 10pt;
+    margin-bottom: 13pt;
     break-after: avoid;
   }
   h3 { font-size: 10.5pt; font-weight: 600; line-height: 1.3; letter-spacing: -0.005em; }
 
   .job { break-inside: avoid; }
-  .job + .job { margin-top: 12pt; }
+  .job + .job { margin-top: 16pt; }
   .meta { display: flex; justify-content: space-between; align-items: baseline; gap: 1.5em; margin-top: 1pt; }
   .company { font-weight: 500; color: #33333a; }
   .where {
@@ -185,15 +189,15 @@ const html = /* html */ `<!doctype html>
     color: #6a6a74;
     white-space: nowrap;
   }
-  ul { list-style: none; margin-top: 4pt; }
+  ul { list-style: none; margin-top: 7pt; }
   li { position: relative; padding-left: 12pt; }
-  li + li { margin-top: 2.5pt; }
+  li + li { margin-top: 3pt; }
   li::before { content: ''; position: absolute; left: 2pt; top: 0.56em; width: 3.5pt; height: 3.5pt; background: ${ACCENT}; border-radius: 1pt; }
 
-  .skills p + p { margin-top: 5pt; }
+  .skills p + p { margin-top: 6pt; }
 
   .entry { break-inside: avoid; }
-  .entry + .entry { margin-top: 8pt; }
+  .entry + .entry { margin-top: 9pt; }
   .detail { color: #33333a; }
 </style>
 </head>
