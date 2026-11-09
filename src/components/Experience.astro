@@ -36,13 +36,26 @@ import ArrowUpRight from './ArrowUpRight.astro';
         sides of the design and engineering line.
       </p>
 
-      <a
-        href="/about"
-        class="group mt-8 inline-flex items-center gap-2 text-micro uppercase tracking-[0.14em] text-ink-dim transition-colors hover:text-accent"
-      >
-        See the full story
-        <ArrowUpRight class="transition-transform duration-500 ease-[var(--ease-out-expo)] group-hover:translate-x-1 group-hover:-translate-y-1" />
-      </a>
+      {/* Two quiet links, stacked: the narrow column has no room for a pair
+          side by side, and the PDF is what a recruiter landing here wants
+          first. Same file and filename as the /about link. */}
+      <div class="mt-8 flex flex-col items-start gap-4">
+        <a
+          href="/about"
+          class="group inline-flex items-center gap-2 text-micro uppercase tracking-[0.14em] text-ink-dim transition-colors hover:text-accent"
+        >
+          See the full story
+          <ArrowUpRight class="transition-transform duration-500 ease-[var(--ease-out-expo)] group-hover:translate-x-1 group-hover:-translate-y-1" />
+        </a>
+        <a
+          href="/adam-robertson-resume.pdf"
+          download="Adam Robertson - Resume.pdf"
+          class="group inline-flex items-center gap-2 text-micro uppercase tracking-[0.14em] text-ink-dim transition-colors hover:text-accent"
+        >
+          Download PDF
+          <ArrowUpRight class="transition-transform duration-500 ease-[var(--ease-out-expo)] group-hover:translate-x-1 group-hover:-translate-y-1" />
+        </a>
+      </div>
     </div>
 
     {/* Right: role list / accordion. Divide-y draws the hairlines between rows. */}
