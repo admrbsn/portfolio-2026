@@ -450,7 +450,10 @@ const inPractice = [
           process.map((step, i) => (
             <>
               {i > 0 && <span class="process-pipe__link" />}
-              <span class="process-pipe__stop">
+              {/* Make is the callout panel (global.css): the copy below calls
+                  it "my favourite part of the design process", so the drawing
+                  says so too. */}
+              <span class:list={['process-pipe__stop', step.phase === 'Make' && 'callout-panel']}>
                 <svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                   <path d={step.icon} />
                 </svg>
@@ -620,14 +623,23 @@ const inPractice = [
     align-items: center;
     gap: 0.5rem;
     padding: 0.625rem 1rem;
-    border: 1px dashed var(--color-line);
-    border-radius: var(--radius-ui);
-    background: var(--color-surface);
     color: var(--color-ink);
     font-size: 0.875rem;
   }
+  /* The callout panel owns its own box; the dashed station is everyone else's. */
+  .process-pipe__stop:not(.callout-panel) {
+    border: 1px dashed var(--color-line);
+    border-radius: var(--radius-ui);
+    background: var(--color-surface);
+  }
   .process-pipe__stop svg {
     color: var(--color-ink-dim);
+  }
+  .process-pipe__stop.callout-panel {
+    font-weight: 500;
+  }
+  .process-pipe__stop.callout-panel svg {
+    color: var(--color-ink);
   }
   .process-pipe__link {
     flex: 1 1 auto;

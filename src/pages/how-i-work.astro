@@ -15,7 +15,7 @@ import LinearBoard from '../components/LinearBoard.astro';
 import PostHogLoop from '../components/PostHogLoop.astro';
 import TeamSystem from '../components/TeamSystem.astro';
 import ClawdParade from '../components/ClawdParade.astro';
-import BrandMark from '../components/BrandMark.astro';
+import ChapterStrip from '../components/ChapterStrip.astro';
 import type { Brand } from '../data/brands';
 
 /*
@@ -53,12 +53,12 @@ const receipts = [
 const chapters: { href: string; label: string; brand?: Brand }[] = [
   { href: '#point-guard', label: 'The hub', brand: 'notion' },
   { href: '#prds', label: 'PRDs', brand: 'notion' },
-  { href: '#workbench', label: 'Workbench' },
-  { href: '#system', label: 'The system' },
-  { href: '#impeccable', label: 'Impeccable', brand: 'impeccable' },
   { href: '#relume', label: 'Relume', brand: 'relume' },
-  { href: '#fern', label: 'Fern', brand: 'fern' },
   { href: '#linear', label: 'Linear', brand: 'linear' },
+  { href: '#system', label: 'The system' },
+  { href: '#fern', label: 'Fern', brand: 'fern' },
+  { href: '#workbench', label: 'Workbench' },
+  { href: '#impeccable', label: 'Impeccable', brand: 'impeccable' },
   { href: '#posthog', label: 'PostHog', brand: 'posthog' },
   { href: '#team', label: 'The team' },
   { href: '#figma-now', label: 'Figma', brand: 'figma' },
@@ -67,7 +67,7 @@ const chapters: { href: string; label: string; brand?: Brand }[] = [
 
 <BaseLayout
   title="How I work with AI · Adam Robertson"
-  description="One redesign through an AI-first toolchain: Notion as the hub for MCP-connected agents, evidence-cited PRDs, briefs for Claude Code, a design system agents can read, two deterministic gates, Impeccable taste passes, Relume, Fern docs, Linear, and PostHog’s self-driving loop."
+  description="One redesign through an AI-first toolchain: Notion as the hub for MCP-connected agents, evidence-cited PRDs, Relume for structure, Linear, a design system agents can read, Fern docs, briefs for Claude Code, Impeccable and two deterministic gates, and PostHog’s self-driving loop."
 >
   <div class="page-rails signal-page">
     {/* Hero — text-first, on the about page's pattern and scale. No
@@ -114,37 +114,21 @@ const chapters: { href: string; label: string; brand?: Brand }[] = [
       </div>
     </section>
 
-    {/* Chapters — one ruled row of links, the way a long docs page opens.
-        It scrolls sideways on a phone rather than wrapping into a block.
-        It sticks under the nav (and rides up with it when the nav retracts),
-        and a single highlight glides to the section you're reading, filling
-        with your progress through it — see the script at the foot. */}
-    <nav aria-label="On this page" class="chapter-nav relative border-t border-line" data-chapter-nav>
-      <RuleCross />
-      <ul class="chapters relative flex gap-2 overflow-x-auto px-shell py-4">
-        <li class="chapter-ind" aria-hidden="true"><span class="chapter-ind__fill"></span></li>
-        {
-          chapters.map((c, i) => (
-            <li class="shrink-0">
-              <a href={c.href} class="chapter" data-chapter={c.href}>
-                <span class="font-mono text-[0.625rem] text-ink-faint">{String(i + 1).padStart(2, '0')}</span>
-                {c.brand && <BrandMark name={c.brand} class="h-3.5 w-3.5" />}
-                {c.label}
-              </a>
-            </li>
-          ))
-        }
-      </ul>
-    </nav>
+    {/* Chapters — the shared strip (ChapterStrip.astro), tracking sections. */}
+    <ChapterStrip chapters={chapters} />
 
+    {/* In process order, the same line the system section draws: explore
+        (the hub, the PRD, Relume's structure), commit (Linear), the context
+        agents read before they build (the system, Fern), build, check,
+        measure — then the team and Figma as the coda. */}
     <NotionHub />
     <NotionPrd />
-    <Workbench />
-    <SystemContracts />
-    <ImpeccableDeep />
     <RelumeGrid />
-    <FernDocs />
     <LinearBoard />
+    <SystemContracts />
+    <FernDocs />
+    <Workbench />
+    <ImpeccableDeep />
     <PostHogLoop />
     <TeamSystem />
     <FigmaNow />
@@ -212,283 +196,6 @@ const chapters: { href: string; label: string; brand?: Brand }[] = [
   .receipt:hover {
     background: color-mix(in oklab, var(--color-surface-lift) 60%, transparent);
   }
-  .chapters {
-    scrollbar-width: none;
-  }
-  .chapters::-webkit-scrollbar {
-    display: none;
-  }
-  .chapter {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.45rem 0.8rem;
-    border: 1px dashed var(--color-line);
-    border-radius: var(--radius-ui);
-    /* Opaque, so on a phone the strip slides over the dashed rails rather
-       than the rails showing through the chips. */
-    background: var(--color-surface);
-    color: var(--color-ink-dim);
-    font-size: 0.8125rem;
-    white-space: nowrap;
-    transition:
-      color var(--dur-fast) ease,
-      border-color var(--dur-fast) ease;
-  }
-  .chapter:hover,
-  .chapter:focus-visible {
-    border-style: solid;
-    border-color: color-mix(in oklab, var(--color-accent) 55%, var(--color-line));
-    color: var(--color-ink);
-  }
-  .chapter[aria-current='true'] {
-    color: var(--color-ink);
-  }
-
-  /*
-    Sticky strip. It sits right under the nav and rides up to the viewport
-    edge when the nav retracts, over the nav's own 500ms so the two move as
-    one. Under reduced motion the nav never retracts, so the strip stays put.
-    Opaque, with a rule under it, so the page scrolls cleanly beneath.
-  */
-  .chapter-nav {
-    position: sticky;
-    top: var(--nav-h, 4.3125rem);
-    z-index: 30;
-    background: color-mix(in oklab, var(--color-surface) 92%, transparent);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--color-line);
-    transition: top 500ms var(--ease-out-expo);
-  }
-  :global([data-nav][data-nav-state='hidden']) ~ :global(main) .chapter-nav {
-    top: 0;
-  }
-  @media (prefers-reduced-motion: reduce) {
-    :global([data-nav][data-nav-state='hidden']) ~ :global(main) .chapter-nav {
-      top: var(--nav-h, 4.3125rem);
-    }
-  }
-
-  /*
-    The highlight: one element, not a state on each chip, so it can travel.
-    The script sets its x and width to the active chip's box; it glides there
-    on an expo ease, then lands with a short signal flicker (the page's zap
-    vocabulary: a sideways jitter and a blue/purple split). The fill along its
-    foot is progress through the section, 0→1, from `--p`.
-  */
-  .chapter-ind {
-    position: absolute;
-    top: 1rem;
-    bottom: 1rem;
-    left: 0;
-    width: var(--w, 0);
-    transform: translateX(var(--x, 0));
-    border: 1px solid var(--color-accent);
-    border-radius: var(--radius-ui);
-    background: color-mix(in oklab, var(--color-accent) 9%, transparent);
-    opacity: 0;
-    pointer-events: none;
-    z-index: 1;
-    transition:
-      transform 650ms var(--ease-out-expo),
-      width 650ms var(--ease-out-expo),
-      opacity 300ms ease;
-  }
-  .chapter-ind.is-on {
-    opacity: 1;
-  }
-  .chapter-ind__fill {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 2px;
-    background: var(--color-accent);
-    transform-origin: left;
-    transform: scaleX(var(--p, 0));
-  }
-  .chapter-ind.is-landing {
-    animation: chapter-land 420ms steps(1, end);
-  }
-  @keyframes chapter-land {
-    0% { translate: 0 0; filter: none; }
-    20% { translate: 2px 0; filter: drop-shadow(-2px 0 0 var(--color-accent)) drop-shadow(2px 0 0 var(--color-accent-warm)); opacity: 0.55; }
-    40% { translate: -1px 0; filter: drop-shadow(1px 0 0 var(--color-accent-warm)); opacity: 1; }
-    60% { translate: 0 0; filter: none; opacity: 0.75; }
-    80%, 100% { translate: 0 0; filter: none; opacity: 1; }
-  }
-  /* The chips sit above the highlight's tint, so their text stays crisp. */
-  .chapters > li:not(.chapter-ind) {
-    position: relative;
-    z-index: 2;
-  }
-  .chapter[aria-current='true'] {
-    border-color: transparent;
-    background: transparent;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .chapter-ind {
-      transition: opacity 300ms ease;
-    }
-    .chapter-ind.is-landing {
-      animation: none;
-    }
-  }
-  :global(html[data-motion='reduced']) .chapter-ind,
-  :global(html[data-motion='failed']) .chapter-ind {
-    transition: opacity 300ms ease;
-  }
-  :global(html[data-motion='reduced']) .chapter-ind.is-landing,
-  :global(html[data-motion='failed']) .chapter-ind.is-landing {
-    animation: none;
-  }
 </style>
 
-<script>
-  import { getLenis } from '../lib/motion/lenis';
 
-  /*
-    Chapter strip: which section you're in, how far through it, and a click
-    that lands the section's top just under the strip (native anchors would
-    park it behind the sticky bar). Resolves its elements on each page load
-    and returns a teardown, per the motion contract.
-  */
-  function initChapters(nav: HTMLElement) {
-    const list = nav.querySelector<HTMLElement>('.chapters')!;
-    const ind = nav.querySelector<HTMLElement>('.chapter-ind')!;
-    const links = [...nav.querySelectorAll<HTMLAnchorElement>('[data-chapter]')];
-    const targets = links.map((a) => {
-      const el = document.querySelector<HTMLElement>(a.getAttribute('href')!);
-      return (el?.closest('section') as HTMLElement | null) ?? el;
-    });
-    const reduced = () =>
-      window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
-      ['reduced', 'failed'].includes(document.documentElement.dataset.motion ?? '');
-
-    let active = -1;
-    let frame = 0;
-    let landTimer = 0;
-    let touchedAt = -Infinity;
-
-    // Measured off each chip's <li>, not the link: the <li> is positioned
-    // (it stacks the chip above the highlight), so a link's offsetLeft is
-    // relative to its own <li> and always 0.
-    const chip = (i: number) => links[i].parentElement as HTMLElement;
-    const place = (i: number) => {
-      const li = chip(i);
-      ind.style.setProperty('--x', `${li.offsetLeft}px`);
-      ind.style.setProperty('--w', `${li.offsetWidth}px`);
-    };
-
-    const setActive = (i: number) => {
-      if (i === active) return;
-      const first = active === -1;
-      active = i;
-      links.forEach((a, j) => a.setAttribute('aria-current', j === i ? 'true' : 'false'));
-      if (i < 0) {
-        ind.classList.remove('is-on');
-        return;
-      }
-      // First appearance: jump into place, then fade in, rather than gliding
-      // in from the strip's left edge.
-      if (first) {
-        ind.style.transition = 'none';
-        place(i);
-        void ind.offsetWidth;
-        ind.style.transition = '';
-      } else {
-        place(i);
-      }
-      ind.classList.add('is-on');
-      if (!reduced()) {
-        window.clearTimeout(landTimer);
-        ind.classList.remove('is-landing');
-        landTimer = window.setTimeout(() => {
-          void ind.offsetWidth;
-          ind.classList.add('is-landing');
-        }, first ? 0 : 450);
-      }
-      // On a phone, keep the live chip in view — unless the reader is
-      // scrolling the strip themselves.
-      if (list.scrollWidth > list.clientWidth && performance.now() - touchedAt > 3000) {
-        const li = chip(i);
-        list.scrollTo({ left: li.offsetLeft + li.offsetWidth / 2 - list.clientWidth / 2, behavior: reduced() ? 'auto' : 'smooth' });
-      }
-    };
-
-    const measure = () => {
-      frame = 0;
-      // The reading line: just under the strip, a third of the way down what's left.
-      const stripBottom = nav.getBoundingClientRect().bottom;
-      const line = stripBottom + (window.innerHeight - stripBottom) * 0.33;
-      let i = -1;
-      targets.forEach((t, j) => {
-        if (t && t.getBoundingClientRect().top <= line) i = j;
-      });
-      if (i >= 0) {
-        const r = targets[i]!.getBoundingClientRect();
-        const p = Math.min(1, Math.max(0, (line - r.top) / r.height));
-        ind.style.setProperty('--p', p.toFixed(3));
-      }
-      setActive(i);
-    };
-    const onScroll = () => {
-      if (!frame) frame = requestAnimationFrame(measure);
-    };
-    const onResize = () => {
-      if (active >= 0) place(active);
-      onScroll();
-    };
-
-    const onClick = (e: MouseEvent) => {
-      const a = (e.target as HTMLElement).closest<HTMLAnchorElement>('[data-chapter]');
-      if (!a) return;
-      const t = targets[links.indexOf(a)];
-      if (!t) return;
-      e.preventDefault();
-      const y = t.getBoundingClientRect().top + window.scrollY;
-      // Going down, the nav retracts and only the strip is above the section;
-      // going up, the nav comes back as well.
-      const navH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--nav-h')) || 69;
-      const above = nav.offsetHeight + (y < window.scrollY ? navH : 0);
-      const top = Math.max(0, y - above + 1);
-      const lenis = getLenis();
-      if (lenis) lenis.scrollTo(top, { duration: 1.2 });
-      else window.scrollTo({ top, behavior: reduced() ? 'auto' : 'smooth' });
-      history.replaceState(null, '', a.getAttribute('href'));
-    };
-    const onTouch = () => (touchedAt = performance.now());
-
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onResize);
-    nav.addEventListener('click', onClick);
-    list.addEventListener('pointerdown', onTouch);
-    list.addEventListener('wheel', onTouch, { passive: true });
-    // Webfonts change chip widths after first paint.
-    document.fonts?.ready.then(onResize);
-    measure();
-
-    return () => {
-      cancelAnimationFrame(frame);
-      window.clearTimeout(landTimer);
-      window.removeEventListener('scroll', onScroll);
-      window.removeEventListener('resize', onResize);
-      nav.removeEventListener('click', onClick);
-      list.removeEventListener('pointerdown', onTouch);
-      list.removeEventListener('wheel', onTouch);
-    };
-  }
-
-  let teardown: (() => void) | null = null;
-
-  document.addEventListener('astro:page-load', () => {
-    const nav = document.querySelector<HTMLElement>('[data-chapter-nav]');
-    teardown = nav ? initChapters(nav) : null;
-  });
-
-  document.addEventListener('astro:before-swap', () => {
-    teardown?.();
-    teardown = null;
-  });
-</script>

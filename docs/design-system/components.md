@@ -80,7 +80,7 @@ replaces it.
 | Component | Used by | Notes |
 | --- | --- | --- |
 | `WorkRow.astro` | `/` | One row of the Selected Work index: number, title (`font-display`, `text-stat`), summary, and client / role / year on the right. **No cover in the layout** — covers appear only in the cursor-following frame driven by `data-anim="work-preview"` (fine pointers, `lg` up). Rows are rule-separated inside the shell column and never reach the rails, so they carry no squares. No `transition:name`. |
-| `NotionHub`, `NotionPrd`, `Workbench`, `ImpeccableDeep`, `RelumeGrid`, `FernDocs`, `LinearBoard`, `PostHogLoop`, `FigmaNow` | `/how-i-work` | "How I work with AI", in that order, with `TeamSystem` between `PostHogLoop` and `FigmaNow` — one redesign followed through the toolchain, framed as how it would be run *today* (it shipped in 2024, before most of these tools existed; keep that framing line in the hero). Every section opens with `ToolHeader` (mark, eyebrow, `.signal` h2 with `scroll-mt-32` for the chapter links, lead). Each has its own product mock built in markup; mocks are `aria-hidden`, and any with made-up figures says so on the page (only `NotionPrd` uses real numbers, from the recording-flow case study). `Workbench` is a code window driven by a vertical ARIA tablist; at `lg` the window is absolutely inset so the steps column sets the row height and the file scrolls (`data-lenis-prevent`). Inactive panels are `visibility: hidden` via `data-off`, never the `hidden` attribute (preflight makes that `display: none !important`). Every Impeccable command shown is one its README documents; every Relume and Notion claim is from their own pages — keep it that way. |
+| `NotionHub`, `NotionPrd`, `RelumeGrid`, `LinearBoard`, `SystemContracts`, `FernDocs`, `Workbench`, `ImpeccableDeep`, `PostHogLoop`, `FigmaNow` | `/how-i-work` | "How I work with AI", in that order (process order: explore, commit, the context agents read, build, check, measure), with `TeamSystem` between `PostHogLoop` and `FigmaNow` — one redesign followed through the toolchain, framed as how it would be run *today* (it shipped in 2024, before most of these tools existed; keep that framing line in the hero). Every section opens with `ToolHeader` (mark, eyebrow, `.signal` h2 with `scroll-mt-32` for the chapter links, lead). Each has its own product mock built in markup; mocks are `aria-hidden`, and any with made-up figures says so on the page (only `NotionPrd` uses real numbers, from the recording-flow case study). `Workbench` is a code window driven by a vertical ARIA tablist; at `lg` the window is absolutely inset so the steps column sets the row height and the file scrolls (`data-lenis-prevent`). Inactive panels are `visibility: hidden` via `data-off`, never the `hidden` attribute (preflight makes that `display: none !important`). Every Impeccable command shown is one its README documents; every Relume and Notion claim is from their own pages — keep it that way. |
 | `WorkbenchCta.astro` | `/`, `/about` | One ruled link band to `/how-i-work`. |
 | `BrandMark.astro` | `/how-i-work` | Tool marks from `src/data/brands.ts` (Simple Icons, CC0, read at build time; Relume's hexagon from its own site), always `currentColor` — never brand colours. |
 | `Leadership.astro` | `/` | Three columns at `lg`. The books image is `hidden lg:block`: stacked, it read as a second full-width photo and pushed the CTA a screen down. |
@@ -88,6 +88,21 @@ replaces it.
 | `Dribbble.astro` | `/` | Grid over generated data — see the Dribbble section in `AGENTS.md`. |
 | `MomentTribute.astro`, `MomentPetersons.astro` | `/about` | Built in code, not image exports. See [motion.md](motion.md#leadership-moment-graphics). |
 | `BreakoutCTA.astro` | every page | Loader for the game. Its script must stay a ~20-line dynamic `import()`. |
+
+### `ChapterStrip`
+
+`/how-i-work` and every case study. A sticky row of chapter links under the nav
+that rides up with it; one highlight follows the chapter being read, fills with
+progress, and lands with a signal flicker; clicks land the chapter under the
+strip; on phones it scrolls itself to keep the live chip in view.
+
+Props: `chapters` (`{ href, label, brand? }[]`), `back` (a leading plain link,
+never highlighted), `mode` (`section` — each link's heading sits in its own
+`<section>`; `heading` — headings inside one long body, a chapter running to the
+next heading), `end` (selector closing the last chapter in `heading` mode).
+
+Don't give it `data-lenis-prevent`: it's sticky, so the wheel is over it a lot
+and Lenis would stop scrolling the page there.
 
 ## MDX components
 

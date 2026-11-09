@@ -819,6 +819,50 @@
 }
 
 /* ---------------------------------------------------------------------------
+   Callout panel — the one emphasised object on a page. A flat panel in the
+   hero wash's two ends (accent blue into accent-warm purple), white type, one
+   soft drop below; no border, no glow around. The weight comes from the fill
+   alone, against muted dashed neighbours — cloudflare.com's emphasis card.
+
+   Rules:
+   - At most one per page, on the thing the section is about: the system on
+     /how-i-work's system section, "You merge" on its PostHog loop, Make on
+     /about's process, a case study's lead impact. A second one in view turns
+     emphasis into a pattern and both stop meaning anything.
+   - Both ends are mixed toward the surface to ~0.45 lightness, so white text
+     clears 4.5:1 across the whole ramp. Keep them equal if you retune: a
+     lighter middle or end washes the type out.
+   - It owns its own box. A component that styles its siblings (dashed border,
+     surface fill) applies those to `:not(.callout-panel)`, because scoped
+     component styles outrank this layer.
+--------------------------------------------------------------------------- */
+@layer components {
+  .callout-panel {
+    border: 1px solid transparent;
+    border-radius: var(--radius-ui);
+    background: linear-gradient(
+      125deg,
+      color-mix(in oklab, var(--color-accent) 54%, var(--color-surface)) 10%,
+      color-mix(in oklab, var(--color-accent-warm) 48%, var(--color-surface)) 100%
+    );
+    box-shadow: 0 14px 34px -18px color-mix(in oklab, var(--color-accent-warm) 55%, transparent);
+    color: var(--color-ink);
+  }
+  .callout-panel__label {
+    color: color-mix(in oklab, var(--color-ink) 92%, transparent);
+  }
+  .callout-panel__chip {
+    padding: 0.1rem 0.45rem;
+    border: 1px solid color-mix(in oklab, var(--color-ink) 34%, transparent);
+    border-radius: var(--radius-ui);
+    background: color-mix(in oklab, var(--color-ink) 10%, transparent);
+    color: var(--color-ink);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+  }
+}
+
+/* ---------------------------------------------------------------------------
    Agent dot — "an agent is working here". A small accent dot with a slow
    expanding ring, used inline beside anything an agent is doing on
    /how-i-work (the hub's Product agent, the PRD banner, Linear's coding-agent

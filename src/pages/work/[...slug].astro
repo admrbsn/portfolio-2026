@@ -9,6 +9,7 @@ import Stat from '../../components/mdx/Stat.astro';
 import Device from '../../components/mdx/Device.astro';
 import Gallery from '../../components/mdx/Gallery.astro';
 import NoiseGradient from '../../components/NoiseGradient.astro';
+import ChapterStrip from '../../components/ChapterStrip.astro';
 import RuleCross from '../../components/RuleCross.astro';
 
 /*
@@ -54,7 +55,13 @@ const {
   liveSiteText,
 } = entry.data;
 
-const { Content } = await render(entry);
+const { Content, headings } = await render(entry);
+
+/* The chapter strip: Impact (when there is one), then the body's h2s. */
+const chapters = [
+  ...(impact.length ? [{ href: '#impact', label: 'Impact' }] : []),
+  ...headings.filter((h) => h.depth === 2).map((h) => ({ href: `#${h.slug}`, label: h.text })),
+];
 
 /*
   The social card for a case study is its own cover, cropped to the 1.91:1 box
@@ -122,23 +129,6 @@ const glance = [
   description={summary}
   ogImage={ogCard?.src}
 >
-  {/*
-    Back link. Hidden while the hero is on screen — up there the nav is right
-    above it and the page title is unmissable — then it fades in for the rest of
-    the read, which is long enough that "how do I get out of here" is a real
-    question. Sits just under the fixed nav rather than inside it: the nav is
-    `transition:persist` and shared by every page, so a case-study-only control
-    does not belong in it.
-  */}
-  <a
-    href="/#work"
-    class="case-back"
-    data-case-back
-    data-cursor="grow"
-  >
-    <span aria-hidden="true">←</span>
-    All work
-  </a>
 
   {/*
     The blueprint rails, matching the homepage and /about. Case studies used to
@@ -151,7 +141,7 @@ const glance = [
     *on* the rail) to `px-shell` (gutter + shell-pad, which is what the nav
     uses). The section labels and dead-space hatch stay off these pages.
   */}
-  <article class="page-rails">
+  <article class="page-rails signal-page">
     {/*
       Text-first hero. The `cover` is here as *texture*, not as an image: the
       work tile's own art, desaturated, blended into the wash and masked into
@@ -184,6 +174,7 @@ const glance = [
         blobs held to the corner, so a case study reads as the quieter room.
       */}
       <NoiseGradient intensity="soft" />
+      <div class="hero-crt" aria-hidden="true"></div>
 
       {
         cover && (
@@ -251,6 +242,11 @@ const glance = [
 
     </section>
 
+    {/* Chapters: the shared strip from /how-i-work, tracking the body's h2s,
+        with the way out first. It replaces a fixed "All work" pill that sat
+        in the same spot under the nav. */}
+    <ChapterStrip chapters={chapters} back={{ href: '/#work', label: 'All work' }} mode="heading" end=".case-body" />
+
     {/*
       Impact — deliberately above the body rather than below it.
 
@@ -291,12 +287,15 @@ const glance = [
           grid) that the first one is always entered by scrolling rather than
           already mid-scrub at load.
         */
-        <section class="px-shell pb-[14vh] pt-[8vh]">
+        <section id="impact" class="px-shell pb-[14vh] pt-[8vh]">
           <h2 class="text-center text-micro uppercase tracking-[0.14em] text-ink-faint">Impact</h2>
 
           <div class="mx-auto mt-[10vh] flex max-w-2xl flex-col items-center gap-[22vh] text-center">
-            {impactItems.map((item) => (
-              <div class="impact__beat" data-anim="story-line">
+            {impactItems.map((item, i) => (
+              /* The lead result is the page's callout panel (global.css): the
+                 one number a skimming reader can't miss. Entries list impact
+                 most important first, so it's always the first. */
+              <div class:list={['impact__beat', i === 0 && 'impact__beat--lead callout-panel']} data-anim="story-line">
                 <span class:list={['impact__index', item.accentIndex && 'impact__index--accent']}>
                   {item.index}
                 </span>
@@ -417,160 +416,8 @@ const glance = [
   </article>
 </BaseLayout>
 
-<script>
-  /*
-    Reveal the back link once the hero has scrolled away. An IntersectionObserver
-    rather than a scroll listener: this fires twice for the whole page rather
-    than on every frame of a Lenis-smoothed scroll.
-  */
-  function initBackLink() {
-    const link = document.querySelector<HTMLElement>('[data-case-back]');
-    const hero = document.querySelector<HTMLElement>('[data-case-hero]');
-    const nav = document.querySelector<HTMLElement>('[data-nav]');
-    if (!link || !hero) return () => {};
-
-    const observer = new IntersectionObserver(
-      ([entry]) => link.classList.toggle('is-visible', !entry.isIntersecting),
-      // Trip once the hero's last sliver clears the nav, not its exact edge.
-      { rootMargin: '-72px 0px 0px 0px', threshold: 0 },
-    );
-    observer.observe(hero);
-
-    /*
-      Publish the nav's measured height so the CSS can put the *same* gap above
-      the link in both states — below the nav while it is showing, below the
-      viewport edge once it retracts. Measured rather than hardcoded because the
-      wordmark steps up a size at `sm`, which changes the header's height.
-    */
-    let navResize: ResizeObserver | null = null;
-
-    if (nav) {
-      const syncNavHeight = () => {
-        link.style.setProperty('--nav-h', `${Math.round(nav.offsetHeight)}px`);
-      };
-      syncNavHeight();
-      navResize = new ResizeObserver(syncNavHeight);
-      navResize.observe(nav);
-    }
-
-    return () => {
-      observer.disconnect();
-      navResize?.disconnect();
-    };
-  }
-
-  // Same teardown contract as the motion registry — the ClientRouter swaps the
-  // body, so the observer has to be released or it retains detached DOM.
-  let teardown: (() => void) | null = null;
-
-  document.addEventListener('astro:page-load', () => {
-    teardown = initBackLink();
-  });
-
-  document.addEventListener('astro:before-swap', () => {
-    teardown?.();
-    teardown = null;
-  });
-</script>
 
 <style>
-  /*
-    Back link. Fixed under the nav, and `pointer-events: none` until it is
-    actually shown so it never sits invisibly over the hero swallowing clicks.
-  */
-  .case-back {
-    /*
-      Vertical offset is a variable rather than a `top` override so it composes
-      with the enter transform below — one animated property, no layout, and the
-      two states cannot fight each other.
-    */
-    --back-shift: 0rem;
-    /*
-      One gap, used twice: between the nav's bottom edge and the link while the
-      header is showing, and between the viewport's top edge and the link once
-      it has retracted. `--nav-h` is measured and published by the script; the
-      fallback matches the header at its `sm` size in case that never runs.
-    */
-    --back-gap: 1.25rem;
-    --nav-h: 4.25rem;
-
-    position: fixed;
-    top: calc(var(--nav-h) + var(--back-gap));
-    /* Same rail as the [data-blueprint] labels: the gutter plus their 0.6rem
-       nudge. Aligns the pill's edge with the "NAVBAR" caption above it. */
-    left: calc(var(--spacing-gutter) + 0.6rem);
-    z-index: 30;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 0.9rem;
-    border-radius: 999px;
-    border: 1px solid var(--color-line);
-    background: color-mix(in oklab, var(--color-surface) 82%, transparent);
-    backdrop-filter: blur(8px);
-    color: var(--color-ink-dim);
-    font-size: var(--text-micro);
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    font-family: var(--font-mono);
-    opacity: 0;
-    pointer-events: none;
-    transform: translateY(calc(-0.4rem + var(--back-shift)));
-    transition:
-      opacity var(--dur-fast) var(--ease-out-expo),
-      transform var(--dur-base) var(--ease-out-expo),
-      color var(--dur-fast) var(--ease-out-expo),
-      border-color var(--dur-fast) var(--ease-out-expo);
-  }
-
-  .case-back.is-visible {
-    opacity: 1;
-    pointer-events: auto;
-    transform: translateY(var(--back-shift));
-  }
-
-  /*
-    Follow the nav. `nav.ts` retracts the header on scroll down and restores it
-    on scroll up, publishing `data-nav-state` — so the link rides up into the
-    vacated space and drops back down when the header returns, instead of
-    hanging in the middle of nothing.
-
-    The sibling combinator works because <Nav> is rendered immediately before
-    <main> in BaseLayout and carries `transition:persist`, so the relationship
-    survives client-side navigation.
-  */
-  :global([data-nav][data-nav-state='hidden']) ~ :global(main) .case-back {
-    /* Exactly the nav's height, so the remaining gap above the link is
-       `--back-gap` — the same as when the nav is showing. */
-    --back-shift: calc(-1 * var(--nav-h));
-  }
-
-  .case-back:hover {
-    color: var(--color-ink);
-    border-color: var(--color-accent);
-  }
-
-  /* Keyboard users get it regardless of scroll position — otherwise tabbing
-     into a link that is transparent and inert is a dead end. */
-  .case-back:focus-visible {
-    opacity: 1;
-    pointer-events: auto;
-    /* Must keep --back-shift, not `none` — otherwise focusing the link while
-       the nav is retracted snaps it back down underneath the hidden header. */
-    transform: translateY(var(--back-shift));
-  }
-
-  /* Drop the slide-in offset, but keep --back-shift applied: it is positioning,
-     not decoration — without it the link would overlap the restored nav. */
-  @media (prefers-reduced-motion: reduce) {
-    .case-back,
-    .case-back.is-visible {
-      transition: opacity var(--dur-fast) linear;
-      transform: translateY(var(--back-shift));
-    }
-  }
-
-  /*
   /*
     The cover as a corner watermark.
 
@@ -684,6 +531,25 @@ const glance = [
     line-height: 1.55;
     text-wrap: pretty;
     color: var(--color-ink-dim);
+  }
+
+  /* On the panel the gradient text would sit on a gradient fill and wash out:
+     the figure goes solid white, and the panel's own ramp carries the colour. */
+  .impact__beat--lead {
+    padding: clamp(2rem, 4vw, 3rem) clamp(1.5rem, 4vw, 3rem);
+  }
+  .impact__beat--lead .impact__index,
+  .impact__beat--lead .impact__index--accent,
+  .impact__beat--lead .impact__figure {
+    background: none;
+    -webkit-text-fill-color: currentColor;
+    color: var(--color-ink);
+  }
+  .impact__beat--lead .impact__index {
+    opacity: 0.85;
+  }
+  .impact__beat--lead .impact__detail {
+    color: color-mix(in oklab, var(--color-ink) 88%, transparent);
   }
 
   .impact__figure {

@@ -566,7 +566,7 @@ is a reading page and its title is a claim, not a cover: at the old size the
 title alone filled most of the first screen before a word of the argument:
 
 > eyebrow (`client · year`) → h1 (`title`) → lead (`summary`) → at-a-glance grid
-> → body → metrics → process gallery → next project
+> → chapter strip → impact → body → metrics → process gallery → next project
 
 The page carries `.page-rails` and every section is on `px-shell`, so its copy
 lines up with the nav's wordmark. The hero and the at-a-glance grid carry
@@ -614,41 +614,30 @@ Two consequences worth knowing before adding it back:
   With no cover on the page, the wash is the only thing carrying colour above
   the fold, so keep it.
 
-`.case-back` ("← All work", to `/#work`) is fixed just under the nav and fades
-in once the hero scrolls past, via an IntersectionObserver on `[data-case-hero]`
-rather than a scroll listener — Lenis-smoothed scrolling fires a lot of frames.
-It is `pointer-events: none` until shown so it never sits invisibly over the
-hero eating clicks, and `:focus-visible` forces it visible so tabbing into it is
-not a dead end. It deliberately lives on this page rather than in `Nav.astro`,
-which is `transition:persist` and shared by every route.
+Wayfinding is the **chapter strip** (`ChapterStrip.astro`), shared with
+`/how-i-work`: placed after the at-a-glance grid, it sticks under the nav and
+rides up with it when the nav retracts. Its first item is "← All work" (a plain
+link, never highlighted); then Impact and every body h2, built from Astro's
+`headings`. A single highlight follows the chapter being read and fills with
+progress through it; clicks land the heading just under the strip.
 
-It sits on the `[data-blueprint]` rail (`--spacing-gutter` + their `0.6rem`
-nudge), so its edge lines up with the "NAVBAR" caption — not on `--spacing-shell`
-like body content.
+It runs in `heading` mode here — a chapter is the stretch from one h2 to the
+next, and the last ends at the bottom of `.case-body` — where `/how-i-work`
+uses `section` mode. A click re-measures on arrival and settles the
+difference (twice at most), because lazy images above the target load
+mid-scroll and push it down after the distance was worked out.
 
-It also **follows the nav's retract**. `nav.ts` publishes `data-nav-state`, and
-because `<Nav>` renders immediately before `<main>` in BaseLayout, plain CSS can
-reach it:
+It replaced `.case-back`, a fixed "← All work" pill in the same spot under the
+nav. Two floating controls in one place was one too many, and the strip
+already does the job the pill's IntersectionObserver and `--nav-h` offsets
+existed for.
 
-```css
-:global([data-nav][data-nav-state='hidden']) ~ :global(main) .case-back {
-  --back-shift: -3.4rem;
-}
-```
+The page carries `signal-page` and the hero a `.hero-crt`, the same caption
+flicker and scanlines as the homepage, `/about` and `/how-i-work`.
 
-The offset is a custom property folded into `translateY`, never a `top`
-override — it has to compose with the enter transform, and every state that
-sets `transform` (`.is-visible`, `:focus-visible`, the reduced-motion block)
-must keep `var(--back-shift)` in it. Writing `transform: none` in any of them
-drops the link back under the hidden header.
-
-Both positions derive from one measured number. The script publishes the nav's
-height as `--nav-h` (via a ResizeObserver — the wordmark steps up a size at
-`sm`, changing the header height), and the CSS is `top: calc(var(--nav-h) +
-var(--back-gap))` with `--back-shift: calc(-1 * var(--nav-h))`. That makes the
-gap above the link identical in both states: below the nav while it shows,
-below the viewport edge once it retracts. Don't hardcode either value back to a
-literal — they will drift apart.
+The lead impact (the first `impact` item) renders as the site's **callout
+panel** (`.callout-panel`, global.css) — the one number a skimming reader
+can't miss. Order `impact` most important first.
 
 The metrics band and `<Gallery>` must keep the same wrapper shape
 (`mx-auto max-w-6xl px-gutter` on an inner div, padding *inside* the max-width).

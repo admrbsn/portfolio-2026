@@ -61,7 +61,7 @@ const steps = [5, 25, 50, 100];
                 <span class="ph-loop__packet" style={`animation-delay: ${((i - 1) * 0.8).toFixed(1)}s`} />
               </span>
             )}
-            <span class:list={['ph-loop__stop', i === loop.length - 1 && 'ph-loop__stop--human']}>
+            <span class:list={['ph-loop__stop', i === loop.length - 1 && 'ph-loop__stop--human callout-panel']}>
               {i === 0 && <BrandMark name="posthog" class="h-3.5 w-3.5 text-ink-dim" />}
               {stage === 'Background agent' && <span class="agent-dot" />}
               {stage}
@@ -88,7 +88,7 @@ const steps = [5, 25, 50, 100];
       <div class="ph-card" aria-hidden="true">
         <div class="flex items-center justify-between font-mono text-[0.625rem] text-ink-faint">
           <span>Replay · contributor, iOS</span>
-          <span class="ph-score">Frustration 8.4</span>
+          <span class="ph-score"><span class="ph-score__face">😤</span> Frustration <b>8.4</b></span>
         </div>
         <div class="ph-track mt-4">
           {marks.map((m) => <span class={`ph-mark ph-mark--${m.kind}`} style={`left: ${m.at}%`} title={m.label} />)}
@@ -189,16 +189,20 @@ const steps = [5, 25, 50, 100];
     align-items: center;
     gap: 0.5rem;
     padding: 0.55rem 0.9rem;
-    border: 1px dashed var(--color-line);
-    border-radius: var(--radius-ui);
-    background: var(--color-surface);
     color: var(--color-ink);
     font-size: 0.8125rem;
     white-space: nowrap;
   }
+  /* "You merge" is the page's other callout panel (global.css): the loop's
+     payoff, and the headline's "I bring the judgment" drawn as a stop. It
+     owns its own box, so the dashed card is every other stop's. */
+  .ph-loop__stop:not(.callout-panel) {
+    border: 1px dashed var(--color-line);
+    border-radius: var(--radius-ui);
+    background: var(--color-surface);
+  }
   .ph-loop__stop--human {
-    border-style: solid;
-    border-color: var(--color-accent);
+    font-weight: 500;
   }
   .ph-loop__link {
     position: relative;
@@ -254,7 +258,7 @@ const steps = [5, 25, 50, 100];
     .ph-loop__stop {
       transition: border-color var(--dur-fast) ease;
     }
-    .ph-loop__stop.is-lit {
+    .ph-loop__stop.is-lit:not(.callout-panel) {
       border-style: solid;
       border-color: color-mix(in oklab, var(--color-accent) 70%, var(--color-line));
     }
@@ -273,14 +277,45 @@ const steps = [5, 25, 50, 100];
     border-radius: var(--radius-ui);
     background: var(--color-surface-lift);
   }
+  /* The finding Replay Vision raised, so it's the loudest thing on the card:
+     a filled chip, a solid edge, the score in bold, and a face that huffs
+     every few seconds. No red: the site has one accent family, and purple at
+     full strength reads hot enough on this ground. */
   .ph-score {
-    padding: 0.05rem 0.4rem;
-    border: 1px dashed var(--color-line);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.2rem 0.55rem 0.2rem 0.4rem;
+    border: 1px solid color-mix(in oklab, var(--color-accent-warm) 70%, transparent);
     border-radius: var(--radius-ui);
+    background: color-mix(in oklab, var(--color-accent-warm) 20%, var(--color-surface-lift));
+    color: var(--color-ink);
+    font-size: 0.6875rem;
   }
-  .ph-score {
+  .ph-score b {
     color: var(--color-accent-warm);
-    border-color: color-mix(in oklab, var(--color-accent-warm) 45%, var(--color-line));
+    font-weight: 700;
+  }
+  .ph-score__face {
+    display: inline-block;
+    font-size: 0.875rem;
+    line-height: 1;
+    animation: ph-huff 4.2s ease-in-out infinite;
+  }
+  @keyframes ph-huff {
+    0%, 78%, 100% { transform: none; }
+    82% { transform: translateX(-1px) rotate(-8deg) scale(1.08); }
+    86% { transform: translateX(1px) rotate(8deg) scale(1.08); }
+    90% { transform: translateX(-1px) rotate(-5deg); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ph-score__face {
+      animation: none;
+    }
+  }
+  :global(html[data-motion='reduced']) .ph-score__face,
+  :global(html[data-motion='failed']) .ph-score__face {
+    animation: none;
   }
 
   /* Replay scrubber */

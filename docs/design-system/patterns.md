@@ -205,6 +205,28 @@ The rule to take from it: **rules are for grids that are genuinely tabular.** A
 band of three claims is a composition, not a table, and ruling it into cells is
 what made it feel secondary in the first place.
 
+## The callout panel
+
+`.callout-panel` (global.css) is the one emphasised object on a page: a flat
+panel running from the accent blue to the accent-warm purple, white type, one
+soft drop below — no border, no glow around. It takes its weight from the fill
+alone, against muted dashed neighbours, which is how cloudflare.com marks the
+card that matters.
+
+- **One per page, at most**, on the thing the section is about. Today: the
+  system on `/how-i-work`'s system section, "You merge" on its PostHog loop,
+  Make in `/about`'s process pipeline, a case study's lead impact. A second one
+  in view turns emphasis into a pattern.
+- Both ends sit at ~0.45 lightness so white text clears 4.5:1 across the ramp.
+  Retune them together; a lighter middle or end washes the type out.
+- Gradient text doesn't go on it (gradient on gradient disappears): figures go
+  solid white, as on the case study's lead impact.
+- It owns its own box. Scoped component styles outrank `@layer components`, so a
+  component styling its siblings applies the dashed border and surface fill to
+  `:not(.callout-panel)`.
+- Inside it: `.callout-panel__label` for the small caps label, `.callout-panel__chip`
+  for chips.
+
 ## Gradient text, and animating it
 
 Two utilities, both blue→purple, both `background-clip: text` over real text:
