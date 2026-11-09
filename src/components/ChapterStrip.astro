@@ -43,7 +43,7 @@ const { chapters, back, mode = 'section', end } = Astro.props;
   data-chapter-end={end}
 >
   <RuleCross />
-  <ul class="chapters relative flex gap-2 overflow-x-auto px-shell py-4">
+  <ul class="chapters relative flex gap-2 overflow-x-auto px-4 py-4 md:px-shell">
     <li class="chapter-ind" aria-hidden="true"><span class="chapter-ind__fill"></span></li>
     {
       back && (
@@ -91,6 +91,16 @@ const { chapters, back, mode = 'section', end } = Astro.props;
     transition:
       color var(--dur-fast) ease,
       border-color var(--dur-fast) ease;
+  }
+  /* Phones: the strip runs past the rails toward the screen edges (px-4 on
+     the list, where the page content sits at the shell inset), and the chips
+     grow — wider row, bigger tap targets. */
+  @media (max-width: 47.9375rem) {
+    .chapter {
+      gap: 0.55rem;
+      padding: 0.6rem 0.95rem;
+      font-size: 0.875rem;
+    }
   }
   .chapter:hover,
   .chapter:focus-visible {

@@ -166,7 +166,10 @@ const birds = [
   */}
   {/* No `data-blueprint` here: the hero's caption sits at the same height as
       the nav's own "NAVBAR" label and the two collide. */}
-  <section class="relative flex min-h-[62svh] flex-col overflow-hidden px-shell pb-[5vh] pt-36">
+  {/* Phones: no min-height to centre within, so the space is set outright —
+      the nav's measured height plus the same gap above as below. From md the
+      hero keeps its centred 62svh. */}
+  <section class="relative flex flex-col overflow-hidden px-shell pb-16 pt-[calc(var(--nav-h,4.3125rem)+4rem)] md:min-h-[62svh] md:pb-[5vh] md:pt-36">
     <NoiseGradient intensity="soft" />
     <div class="hero-crt" aria-hidden="true"></div>
 
@@ -622,17 +625,25 @@ const birds = [
     <ol class="-mr-shell-pad mt-16" data-anim="reveal-batch">
       {
         experience.map((job, i) => (
-          <li class="grid gap-4 md:grid-cols-[minmax(0,12rem)_1fr] md:gap-10">
+          <li
+            class:list={[
+              'grid gap-2 md:grid-cols-[minmax(0,12rem)_1fr] md:gap-10',
+              i === 0 && 'border-t border-line md:border-t-0',
+              i < experience.length - 1 && 'border-b border-line md:border-b-0',
+            ]}
+          >
+            {/* Phones: the year sits above the role in one column, so the rule
+                runs under the whole entry. From md the year has its own column
+                and the rule runs under the role's column only, as before. No
+                rule under the last role — the section's boundary closes it. */}
             <p class="pt-8 text-micro uppercase tracking-[0.14em] text-ink-faint md:pt-9">
               {job.period}
             </p>
-            {/* No rule under the last role — it would close a list that the
-                section's own boundary already closes. */}
             <div
               class:list={[
-                'py-8',
-                i === 0 && 'border-t border-line',
-                i < experience.length - 1 && 'border-b border-line',
+                'pb-8 md:pt-8',
+                i === 0 && 'md:border-t md:border-line',
+                i < experience.length - 1 && 'md:border-b md:border-line',
               ]}
             >
               <h3 class="text-lead font-medium leading-tight text-ink">{job.role}</h3>
@@ -640,9 +651,7 @@ const birds = [
               <ul class="mt-4 space-y-2">
                 {job.points.map((point) => (
                   <li class="flex gap-3 text-ink-dim">
-                    <span class="mt-2 shrink-0 text-[0.5rem] leading-none text-accent" aria-hidden="true">
-                      ◆
-                    </span>
+                    <span class="exp-bullet" aria-hidden="true"></span>
                     {(() => {
                       const { lead, rest } = splitLead(point);
                       return lead ? <span><strong class="font-medium text-ink">{lead}:</strong> {rest}</span> : rest;

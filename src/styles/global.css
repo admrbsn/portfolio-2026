@@ -819,6 +819,22 @@
 }
 
 /* ---------------------------------------------------------------------------
+   Experience bullet — the blueprint square (the mark at every rule crossing)
+   at list size, sat on the first line's x-height. Shared by the home résumé
+   and /about's timeline. Replaced a tiny accent diamond that read as clip art.
+--------------------------------------------------------------------------- */
+@layer components {
+  .exp-bullet {
+    flex-shrink: 0;
+    width: 5px;
+    height: 5px;
+    margin-top: 0.62em;
+    border: 1px solid var(--color-ink-faint);
+    background: var(--color-surface);
+  }
+}
+
+/* ---------------------------------------------------------------------------
    Callout panel — the one emphasised object on a page. A flat panel in the
    hero wash's two ends (accent blue into accent-warm purple), white type, one
    soft drop below; no border, no glow around. The weight comes from the fill

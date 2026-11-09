@@ -76,9 +76,7 @@ import ArrowUpRight from './ArrowUpRight.astro';
                 <ul class="max-w-xl space-y-2.5 pb-9 pt-1 md:pb-11">
                   {job.points.map((point) => (
                     <li class="flex gap-3 text-ink-dim">
-                      <span class="mt-2 shrink-0 text-[0.5rem] leading-none text-accent" aria-hidden="true">
-                        ◆
-                      </span>
+                      <span class="exp-bullet" aria-hidden="true"></span>
                       {(() => {
                         const { lead, rest } = splitLead(point);
                         return lead ? <span><strong class="font-medium text-ink">{lead}:</strong> {rest}</span> : rest;
